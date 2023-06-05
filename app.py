@@ -6,6 +6,13 @@ from flask_bootstrap import Bootstrap
 import curlify
 import logging
 import sys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+import selenium.common.exceptions as Exceptions
+from selenium.webdriver.support import expected_conditions as EC
+
+from selenium.webdriver.support.ui import WebDriverWait
+
 
 
 app = Flask(__name__)
@@ -44,14 +51,23 @@ products = [
 
 
 
-
 def search_stockx(product_name):
     options = uc.ChromeOptions()
     options.headless = True
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
 
-    driver = uc.Chrome(options=options)
+    logging.info('Loading undetected Chrome')
+
+    driver = uc.Chrome(
+            options=options,
+            # version_main=112
+        )
+    driver.set_page_load_timeout(30)
+    logging.info('Loaded Undetected chrome')
+
+
+    
 
     product_name = product_name.replace(' ', '%20')
     driver.get('https://stockx.com/fr-fr/search?s=' + product_name)
