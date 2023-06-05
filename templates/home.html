@@ -67,17 +67,7 @@ Price Watcher
     </table>
 </div>
 
-<!-- Debug section -->
-<div class="container mt-4">
-    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#debugSection" aria-expanded="false" aria-controls="debugSection">
-        Show Debug Info
-    </button>
-    <div class="collapse" id="debugSection">
-        <div class="card card-body">
-            {{ debug_info }}
-        </div>
-    </div>
-</div>
+
 
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
@@ -93,4 +83,24 @@ Price Watcher
         var edges = {{ edges|tojson }};
         console.log(edges);
     </script>
+
+{% if debug_info %}
+<div id="debug" style="display: none;">
+    <pre>{{ debug_info }}</pre>
+</div>
+
+<button id="debug-button">Show Debug Info</button>
+
+<script>
+document.getElementById('debug-button').addEventListener('click', function() {
+    var debugDiv = document.getElementById('debug');
+    if (debugDiv.style.display === 'none') {
+        debugDiv.style.display = 'block';
+    } else {
+        debugDiv.style.display = 'none';
+    }
+});
+</script>
+{% endif %}
+
 {% endblock %}
