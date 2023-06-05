@@ -1,6 +1,6 @@
 Flask==1.1.4
 Flask-Bootstrap==3.3.7.1
-undetected-chromedriver==2.2.2
+undetected-chromedriver
 curlify==2.2.1
 selenium==3.141.0
 gunicorn==20.1.0
