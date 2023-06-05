@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.11.3-slim-buster
+FROM python:3.9-slim-buster
 
 # Set the working directory in the container to /app
 WORKDIR /app
@@ -28,8 +28,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get purge --auto-remove -y curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Make port 5000 available to the world outside this container
-EXPOSE 5000
+# Make port 8000 available to the world outside this container
+EXPOSE 8000
 
 # Run gunicorn when the container launches
 CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8000"]
