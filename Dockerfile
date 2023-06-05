@@ -10,24 +10,23 @@ ADD . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# # Install Chrome
-# RUN apt-get update && apt-get install -y \
-#     apt-transport-https \
-#     ca-certificates \
-#     curl \
-#     gnupg \
-#     --no-install-recommends \
-#     && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-#     && echo "deb https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-#     && apt-get update && apt-get install -y \
-#     google-chrome-stable \
-#     --no-install-recommends \
-#     && apt-get purge --auto-remove -y curl \
-#     && rm -rf /var/lib/apt/lists/*
+# Install Chrome
+RUN apt-get update && apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    --no-install-recommends \
+    && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update && apt-get install -y \
+    google-chrome-stable \
+    --no-install-recommends \
+    && apt-get purge --auto-remove -y curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Make port 5000 available to the world outside this container
 EXPOSE 5000
-
 
 
 # Run gunicorn when the container launches
