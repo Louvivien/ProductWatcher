@@ -71,8 +71,8 @@ def search_stockx(product_name):
 
       # Access the 5th query directly
         query = queries[4]['state']['data']['browse']['results']
-        print("type(query): ", type(query))  # print the type of the query object
-        print("query: ",query)  # print the query object itself
+        # print("type(query): ", type(query))  # print the type of the query object
+        # print("query: ",query)  # print the query object itself
         return query['edges']  # return the list of edges
 
     # If we reach this point, it means that the product details were not found.
