@@ -10,10 +10,21 @@ import re
 import json
 from flask_bootstrap import Bootstrap
 import curlify
-
-
+import logging
+import sys
 import requests
 from requests.exceptions import ProxyError
+
+# Set up logging
+root = logging.getLogger()
+root.setLevel(logging.INFO)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+
 
 
 
@@ -93,6 +104,9 @@ def search_stockx(product_name):
             }
             product_name = product_name.replace(' ', '%20')
             response = requests.get('https://stockx.com/fr-fr/search?s=' + product_name, headers=headers, proxies=proxy_dict)
+            logging.info("response :", response)  
+
+            
             # If the request is successful, break the loop
             working_proxy = proxy
             break
@@ -103,7 +117,7 @@ def search_stockx(product_name):
     if working_proxy is None:
         raise Exception("No working proxy found.")
     else:
-        print(f"Working proxy found: {working_proxy['ip']}:{working_proxy['port']}")
+        logging.info(f"Working proxy found: {working_proxy['ip']}:{working_proxy['port']}")
 
 
     # Find the script tag with the id '__NEXT_DATA__'
@@ -121,7 +135,7 @@ def search_stockx(product_name):
         query = queries[4]['state']['data']['browse']['results']
         edges = query['edges']  # return the list of edges
 
-    print("edges :", edges)  # Add this line to print the edges variable
+    logging.info("edges :", edges)  # Add this line to print the edges variable
 
     if not edges:
         return None, curlify.to_curl(response.request)
