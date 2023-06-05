@@ -1,7 +1,4 @@
-Flask==2.0.1
-requests==2.25.1
-beautifulsoup4==4.9.3
-flask-bootstrap==3.3.7.1
-gunicorn==20.1.0
-curlify
-undetected_chromedriver
+flask==2.0.2
+flask_bootstrap==3.3.7.1
+requests==2.26.0
+aiohttp==3.8.1
