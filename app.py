@@ -1,6 +1,8 @@
 
 from flask import Flask, render_template, request
 import requests
+from flask import Flask, render_template, request
+import requests
 import re
 import json
 from flask_bootstrap import Bootstrap
@@ -9,6 +11,7 @@ import curlify
 
 app = Flask(__name__)
 Bootstrap(app)
+
 
 # Define the list of products
 products = [
@@ -70,6 +73,8 @@ def search_stockx(product_name):
         query = queries[4]['state']['data']['browse']['results']
         edges = query['edges']  # return the list of edges
 
+    print("edges :", edges)  # Add this line to print the edges variable
+
     if not edges:
         return None, curlify.to_curl(response.request)
     else:
@@ -91,7 +96,8 @@ def product_list():
 @app.route('/product/<product_name>')
 def product_detail(product_name):
     edges, debug_info = search_stockx(product_name)
-    return render_template('home.html', edges=edges, debug_info=debug_info)
+    return render_template('home.html', edges=edges if edges else [], debug_info=debug_info)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
