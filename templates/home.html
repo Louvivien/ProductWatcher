@@ -66,12 +66,13 @@ Price Watcher
             {% endfor %}
         </tbody>
     </table>
-<br>
-    <button id="debug-button">Show Debug Info</button>
-<br>
 
 
     {% if debug_info %}
+    <br>
+    <button id="debug-button">Show Debug Info</button>
+<br>
+
 <div id="debug" style="display: none;">
     <pre>{{ debug_info }}</pre>
 </div>
