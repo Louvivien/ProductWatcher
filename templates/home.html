@@ -66,6 +66,19 @@ Price Watcher
         </tbody>
     </table>
 </div>
+
+<!-- Debug section -->
+<div class="container mt-4">
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#debugSection" aria-expanded="false" aria-controls="debugSection">
+        Show Debug Info
+    </button>
+    <div class="collapse" id="debugSection">
+        <div class="card card-body">
+            {{ debug_info }}
+        </div>
+    </div>
+</div>
+
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
