@@ -17,10 +17,10 @@ from requests.exceptions import ProxyError
 
 # Set up logging
 root = logging.getLogger()
-root.setLevel(logging.DEBUG)
+root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 
@@ -102,20 +102,25 @@ def search_stockx(product_name):
             }
             product_name = product_name.replace(' ', '%20')
             response = requests.get('https://stockx.com/fr-fr/search?s=' + product_name, headers=headers, proxies=proxy_dict)
-            logging.debug("response :", response)  
-
-            
             # If the request is successful, break the loop
             working_proxy = proxy
             break
-        except ProxyError:
+        except ProxyError as e:
+            # Log the exception details
+            logging.info(f"ProxyError occurred: {e}")
             # If the request fails, continue to the next proxy
+            continue
+        except Exception as e:
+            # Log any other exceptions
+            logging.info(f"Unexpected error occurred: {e}")
             continue
 
     if working_proxy is None:
+        logging.info("No working proxy found.")
         raise Exception("No working proxy found.")
     else:
-        logging.debug(f"Working proxy found: {working_proxy['ip']}:{working_proxy['port']}")
+        logging.info(f"Working proxy found: {working_proxy['ip']}:{working_proxy['port']}")
+
 
 
     # Find the script tag with the id '__NEXT_DATA__'
@@ -133,7 +138,7 @@ def search_stockx(product_name):
         query = queries[4]['state']['data']['browse']['results']
         edges = query['edges']  # return the list of edges
 
-    logging.debug("edges :", edges)  # Add this line to print the edges variable
+    logging.info("edges :", edges)  # Add this line to print the edges variable
 
     if not edges:
         return None, curlify.to_curl(response.request)
