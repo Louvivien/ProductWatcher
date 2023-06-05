@@ -1,4 +1,5 @@
 Flask==2.0.1
-flask-bootstrap==3.3.7.1
-undetected-chromedriver==3.0.3
+requests==2.26.0
+Flask-Bootstrap==3.3.7.1
 curlify==2.2.1
+gunicorn==20.1.0
