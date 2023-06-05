@@ -30,5 +30,5 @@ EXPOSE 5000
 
 
 
-# Run app.py when the container launches
-CMD ["python", "app.py"]
+# Run gunicorn when the container launches
+CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8000"]
