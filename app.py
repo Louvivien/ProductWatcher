@@ -6,12 +6,10 @@ from flask_bootstrap import Bootstrap
 import curlify
 import logging
 import sys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-import selenium.common.exceptions as Exceptions
-from selenium.webdriver.support import expected_conditions as EC
 
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 
 
 
@@ -26,7 +24,6 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
-
 
 # Define the list of products
 products = [
@@ -48,31 +45,24 @@ products = [
     'Louis Vuitton Twist Chain'
 ]
 
-
-
-
 def search_stockx(product_name):
-    options = uc.ChromeOptions()
-    options.headless = True
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-
     logging.info('Loading undetected Chrome')
 
-    driver = uc.Chrome(
-            options=options,
-            # version_main=112
-        )
+    driver = uc.Chrome(headless=True)
     driver.set_page_load_timeout(30)
     logging.info('Loaded Undetected chrome')
 
-
-    
-
     product_name = product_name.replace(' ', '%20')
     driver.get('https://stockx.com/fr-fr/search?s=' + product_name)
-    logging.info("response content: %s", driver.page_source)
+    
+    try:
+        WebDriverWait(driver,15).until(EC.title_contains('StockX'))
+    except TimeoutException:
+        pass
+    
 
+
+    logging.info("response content: %s", driver.page_source)
 
     # Find the script tag with the id '__NEXT_DATA__'
     match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', driver.page_source, re.DOTALL)
@@ -96,9 +86,6 @@ def search_stockx(product_name):
     else:
         return edges, None
 
-
-
-
 @app.route('/')
 def product_list():
     if request.method == 'POST':
@@ -107,7 +94,6 @@ def product_list():
             products.append(new_product)
 
     return render_template('product_list.html', products=products)
-
 
 @app.route('/product/<product_name>')
 def product_detail(product_name):
