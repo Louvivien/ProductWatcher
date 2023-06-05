@@ -66,6 +66,11 @@ Price Watcher
             {% endfor %}
         </tbody>
     </table>
+
+    {% if debug_info %}
+<div id="debug" style="display: none;">
+    <pre>{{ debug_info }}</pre>
+</div>
 </div>
 
 
@@ -85,10 +90,7 @@ Price Watcher
         console.log(edges);
     </script>
 
-{% if debug_info %}
-<div id="debug" style="display: none;">
-    <pre>{{ debug_info }}</pre>
-</div>
+
 
 <button id="debug-button">Show Debug Info</button>
 
