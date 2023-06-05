@@ -1,0 +1,37 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Product Watcher
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Product Watcher</h1>
+    <p>Here are the products you watch :</p>
+    <br></br>
+
+    <form method="POST">
+        <input type="text" name="new_product" placeholder="Enter new product">
+        <input type="submit" value="Add Product">
+    </form>
+
+    <br></br>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product }}</td>
+                <td><a href="{{ url_for('product_detail', product_name=product) }}" class="btn btn-primary">See detailed stats</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

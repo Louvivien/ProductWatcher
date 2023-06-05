@@ -1,0 +1,83 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Price Watcher
+{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Price Watcher</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <table id="myTable" class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Image</th>
+                <th scope="col">Title</th>
+                <th scope="col">Color</th>
+                <th scope="col">Retail Price</th>
+                <th scope="col">Average Price</th>
+                <th scope="col">Sold</th>
+                <th scope="col">Highest Bid</th>
+                <th scope="col">Lowest Ask</th>
+                <th scope="col">Link</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in edges %}
+            <tr>
+                <td><img src="{{ item['node']['media']['thumbUrl'] }}" alt="{{ item['node']['title'] }}" style="width: 50px;"></td>
+                <td>{{ item['node']['title'] }}</td>
+                <td>
+                    {% if 'PM' in item['node']['title'] %}
+                        {{ item['node']['title'].split('PM', 1)[1].strip() }}
+                    {% else %}
+                        {{ item['node']['title'].split()[-1] }}
+                    {% endif %}
+                </td>                
+                <td>
+                    {% for trait in item['node']['productTraits'] %}
+                        {% if trait['name'] == 'Retail Price' %}
+                            {{ trait['value'] }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ item['node']['market']['deadStock']['averagePrice'] }}</td>
+                <td>{{ item['node']['market']['deadStock']['sold'] }}</td>
+                <td>{{ item['node']['market']['bidAskData']['highestBid'] }}</td>
+                <td>{{ item['node']['market']['bidAskData']['lowestAsk'] }}</td>
+
+                <td><a href="https://stockx.com/fr-fr/{{ item['node']['urlKey'] }}" class="btn btn-primary">View on StockX</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+
+<script>
+    var $j = jQuery.noConflict();
+    $j(document).ready(function () {
+        $j('#myTable').DataTable();
+    });
+    </script>
+    <script>
+        var edges = {{ edges|tojson }};
+        console.log(edges);
+    </script>
+{% endblock %}
