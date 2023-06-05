@@ -66,6 +66,10 @@ Price Watcher
             {% endfor %}
         </tbody>
     </table>
+<br>
+    <button id="debug-button">Show Debug Info</button>
+<br>
+
 
     {% if debug_info %}
 <div id="debug" style="display: none;">
@@ -92,7 +96,6 @@ Price Watcher
 
 
 
-<button id="debug-button">Show Debug Info</button>
 
 <script>
 document.getElementById('debug-button').addEventListener('click', function() {
