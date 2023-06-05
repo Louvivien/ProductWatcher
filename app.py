@@ -71,7 +71,8 @@ def search_stockx(product_name):
 
     product_name = product_name.replace(' ', '%20')
     response = requests.get('https://stockx.com/fr-fr/search?s=' + product_name, headers=headers)
-    logging.info("response :", response) 
+    logging.info("response content: %s", response.content)
+
 
     # Find the script tag with the id '__NEXT_DATA__'
     match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', response.text, re.DOTALL)
@@ -88,7 +89,8 @@ def search_stockx(product_name):
         query = queries[4]['state']['data']['browse']['results']
         edges = query['edges']  # return the list of edges
 
-    logging.info("edges :", edges)  
+    logging.info("edges : %s", edges)
+
 
     if not edges:
         return None, curlify.to_curl(response.request)
