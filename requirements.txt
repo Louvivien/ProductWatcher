@@ -4,8 +4,8 @@ undetected-chromedriver
 curlify==2.2.1
 selenium==3.141.0
 gunicorn==20.1.0
-markupsafe==1.1.1
-jinja2==3.0.0
+markupsafe
+jinja2
 
 
 
