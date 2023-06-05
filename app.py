@@ -4,6 +4,8 @@ import requests
 import re
 import json
 from flask_bootstrap import Bootstrap
+import curlify
+
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -52,6 +54,9 @@ def search_stockx(product_name):
 
     # Use the product name in the URL
     response = requests.get(f'https://stockx.com/fr-fr/search?s={product_name}', headers=headers)
+
+    print(curlify.to_curl(response.request))
+
 
     # Find the script tag with the id '__NEXT_DATA__'
     match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', response.text, re.DOTALL)
