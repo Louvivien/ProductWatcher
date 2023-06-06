@@ -1,24 +1,35 @@
 # Use an official Python runtime as a parent image
-FROM python:3.8-slim-buster
+FROM python:3.10 as builder
 
 # Set the working directory in the container to /app
 WORKDIR /app
 
-# Add everything in the current directory to our image, in /app
+# Add the current directory contents into the container at /app
 ADD . /app
+
+# Upgrade pip
+RUN pip install --upgrade pip
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Firefox
-RUN apt-get update && apt-get install -y firefox-esr
+# # Install Chrome
+# RUN apt-get update && apt-get install -y \
+#     apt-transport-https \
+#     ca-certificates \
+#     curl \
+#     gnupg \
+#     --no-install-recommends \
+#     && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+#     && echo "deb https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+#     && apt-get update && apt-get install -y \
+#     google-chrome-stable \
+#     --no-install-recommends \
+#     && apt-get purge --auto-remove -y curl \
+#     && rm -rf /var/lib/apt/lists/*
 
-# Install wget and geckodriver required by Selenium
-RUN apt-get update && apt-get install -y wget && \
-    wget https://github.com/mozilla/geckodriver/releases/download/v0.29.1/geckodriver-v0.29.1-linux64.tar.gz && \
-    tar -xvzf geckodriver-v0.29.1-linux64.tar.gz && \
-    chmod +x geckodriver && \
-    mv geckodriver /usr/local/bin/
+# Make port 8000 available to the world outside this container
+EXPOSE 8000
 
-# Run app.py when the container launches
-CMD ["python", "app.py"]
+# Run gunicorn when the container launches
+CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8000"]

@@ -73,7 +73,7 @@ def parse_nextjs(html: str) -> dict:
 async def scrape_product(product_name: str) -> dict:
     """scrape a single stockx product page for product data"""
     product_name = product_name.replace(' ', '%20')
-    url = 'https://stockx.com/fr-fr/search?s=' + product_name
+    url = 'https://stockx.com/api/browse?_search=' + product_name
     try:
         response = await client.get(url)
         response.raise_for_status()
@@ -93,12 +93,12 @@ async def scrape_product(product_name: str) -> dict:
     # except StopIteration:
     #     raise ValueError("Could not find product dataset in page cache", response)
     # Navigate to the 'results' key
-    queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
-    query = queries[4]['state']['data']['browse']['results']
-    edges = query['edges']
-    logging.info("edges :", edges)   
+    # queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
+    # query = queries[4]['state']['data']['browse']['results']
+    # edges = query['edges']
+    logging.info("data :", data)   
 
-    return edges
+    return data
 
 
 
@@ -110,6 +110,6 @@ async def product_list(request: Request):
 @app.get("/product/{product_name}", response_class=HTMLResponse)
 async def product_detail(request: Request, product_name: str):
     result = await scrape_product(product_name)
-    return templates.TemplateResponse("home.html", {"request": request, "edges": result if result else [], "debug_info": None})
+    return templates.TemplateResponse("home.html", {"request": request, "data": result if result else [], "debug_info": None})
 
 
