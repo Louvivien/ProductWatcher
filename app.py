@@ -10,6 +10,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.firefox.options import Options
+
 
 import time
 import numpy as np
@@ -405,9 +407,9 @@ def browse_sneakers_dropdown(driver):
 #    time.sleep(1)
 
     # hover over sneakers menu
-    sneaker_dropdown = driver.find_element("xpath","//a[contains(@data-testid,'submenu-sneakers')]")
-    action.move_to_element(sneaker_dropdown).perform()
-    print("sneaker_dropdown")
+    # sneaker_dropdown = driver.find_element("xpath","//a[contains(@data-testid,'submenu-sneakers')]")
+    # action.move_to_element(sneaker_dropdown).perform()
+    # print("sneaker_dropdown")
 
 """
 open_link
@@ -476,12 +478,16 @@ def check_for_robot(driver):
 Main function
 Calls get_brands to obtain elements
 """
-def main():
+# def main():
     #profile = webdriver.FirefoxProfile()
     #profile.set_preference("general.useragent.override"
     #    , "Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0")
     #profile.set_preference("javascript.enabled", True)
-    driver = webdriver.Firefox()
+
+def main():
+    options = Options()
+    options.headless = True
+    driver = webdriver.Firefox(options=options)
     action = ActionChains(driver)
 
     url = 'https://stockx.com/'
