@@ -1,3 +1,7 @@
+# blocked when deployed
+
+
+
 from flask import Flask, render_template, request
 import aiohttp
 import asyncio
