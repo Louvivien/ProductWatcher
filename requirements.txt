@@ -1,8 +1,5 @@
 Flask
 requests
-re
-json
 flask_bootstrap
 curlify
-logging
 gunicorn
