@@ -1,52 +1,66 @@
-# Product Watcher
+# Price Watcher
 
-Product Watcher is a Flask application that allows you to monitor the prices of specific products.
+Price Watcher is a FastAPI application that scrapes product data from StockX.
 
-## Features
+## Getting Started
 
-- Displays a list of products that you are watching.
-- Allows you to add new products to the watch list.
-- Displays detailed statistics for each product when selected.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-## Installation
+### Prerequisites
 
-1. Clone this repository:
+- Python 3.8 or higher
+- Docker (optional)
 
-```bash
-git clone https://github.com/Louvivien/ProductWatcher.git
-```
+### Installing
 
-2. Navigate to the project directory:
+1. Clone the repository:
 
-```bash
-cd product-watcher
-```
+    ```bash
+    git clone https://github.com/Louvivien/ProductWatcher.git
+    cd price-watcher
+    ```
 
-3. Install the required Python packages:
+2. Install the required Python packages:
 
-```bash
-pip install -r requirements.txt
-```
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3. Run the application:
+
+    ```bash
+    uvicorn app:app --reload
+    ```
+
+    The application will be available at `http://localhost:8000`.
+
+### Running with Docker
+
+1. Build the Docker image:
+
+    ```bash
+    docker build -t price-watcher .
+    ```
+
+2. Run the Docker container:
+
+    ```bash
+    docker run -p 80:80 price-watcher
+    ```
+
+    The application will be available at `http://localhost`.
 
 ## Usage
 
-1. Start the Flask application:
-
-```bash
-python app.py
-```
-
-2. Open your web browser and navigate to `http://localhost:5000`.
-
-3. You will see a list of products that you are watching. You can add new products to the list by entering the product name in the input field and clicking the "Add Product" button.
-
-4. Click the "See detailed stats" button next to a product to view detailed statistics for that product.
+- Visit `http://localhost:8000` (or `http://localhost` if running with Docker) to see the list of products.
+- Click on a product to see detailed statistics.
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
-```
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+
