@@ -6,6 +6,8 @@ selenium
 markupsafe
 jinja2
 gunicorn
+aiohttp
+
 
 
 
