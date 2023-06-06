@@ -1,66 +1,51 @@
 # Price Watcher
 
-Price Watcher is a FastAPI application that scrapes product data from StockX.
+Price Watcher is a web application that displays product data in a table format. It uses Flask for server-side operations and jQuery DataTables for client-side table rendering.
 
-## Getting Started
+## Setup
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-### Prerequisites
-
-- Python 3.8 or higher
-- Docker (optional)
-
-### Installing
-
-1. Clone the repository:
-
-    ```bash
-    git clone https://github.com/Louvivien/ProductWatcher.git
-    cd price-watcher
-    ```
+1. Install Python 3.6 or later.
 
 2. Install the required Python packages:
 
     ```bash
-    pip install -r requirements.txt
+    pip install flask
     ```
 
-3. Run the application:
+3. Clone this repository:
 
     ```bash
-    uvicorn app:app --reload
+    git clone https://github.com/Louvivien/ProductWatcher.git
+    cd pricewatcher
     ```
 
-    The application will be available at `http://localhost:8000`.
-
-### Running with Docker
-
-1. Build the Docker image:
+4. Run the Flask server:
 
     ```bash
-    docker build -t price-watcher .
+    python app.py
     ```
 
-2. Run the Docker container:
-
-    ```bash
-    docker run -p 80:80 price-watcher
-    ```
-
-    The application will be available at `http://localhost`.
+5. Open your web browser and navigate to `http://localhost:5000`.
 
 ## Usage
 
-- Visit `http://localhost:8000` (or `http://localhost` if running with Docker) to see the list of products.
-- Click on a product to see detailed statistics.
+The application displays a table of product data. Each row in the table represents a product, with columns for image, title, color, retail price, average deadstock price, sold, highest bid, lowest ask, and a link to view the product on StockX.
+
+The data is loaded from a JSON file when the Flask server starts. To update the data, replace the JSON file and restart the server.
+
+## Troubleshooting
+
+If the table is not displaying any data, check the following:
+
+- Make sure the JSON file is correctly formatted and contains the expected data.
+- Make sure the Flask server is running and accessible.
+- Check the JavaScript console in your web browser for any error messages.
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
+[MIT](https://choosealicense.com/licenses/mit/)
 
