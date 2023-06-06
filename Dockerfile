@@ -13,8 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install Firefox
 RUN apt-get update && apt-get install -y firefox-esr
 
-# Install geckodriver required by Selenium
-RUN apt-get install wget && \
+# Install wget and geckodriver required by Selenium
+RUN apt-get update && apt-get install -y wget && \
     wget https://github.com/mozilla/geckodriver/releases/download/v0.29.1/geckodriver-v0.29.1-linux64.tar.gz && \
     tar -xvzf geckodriver-v0.29.1-linux64.tar.gz && \
     chmod +x geckodriver && \
