@@ -1,6 +1,3 @@
-fastapi
-uvicorn
-httpx[http2]
-jinja2
-parsel
-nested-lookup
+selenium==3.141.0
+numpy==1.21.0
+requests==2.25.1
