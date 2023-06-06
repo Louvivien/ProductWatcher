@@ -52,8 +52,9 @@ products = [
 def search_stockx(product_name):
     logging.info('Loading undetected Chrome')
 
-    driver = uc.Chrome(enable_cdp_events=True, headless=True)
+    driver = uc.Chrome()
     options = Options()
+    options.add_argument("--window-size=800,600")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-blink-features")
@@ -67,12 +68,8 @@ def search_stockx(product_name):
 
     product_name = product_name.replace(' ', '%20')
     driver.get('https://stockx.com/fr-fr/search?s=' + product_name)
-    time.sleep(2)
     
-    try:
-        WebDriverWait(driver,15).until(EC.title_contains('StockX'))
-    except TimeoutException:
-        pass
+    wait = WebDriverWait(driver, 10)
     
 
 
