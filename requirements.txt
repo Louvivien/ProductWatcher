@@ -7,6 +7,8 @@ markupsafe
 jinja2
 gunicorn
 aiohttp
+beautifulsoup4
+
 
 
 
