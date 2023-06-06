@@ -6,7 +6,7 @@ from flask_bootstrap import Bootstrap
 import curlify
 import logging
 import sys
-
+import time
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import TimeoutException
@@ -67,6 +67,7 @@ def search_stockx(product_name):
 
     product_name = product_name.replace(' ', '%20')
     driver.get('https://stockx.com/fr-fr/search?s=' + product_name)
+    time.sleep(2)
     
     try:
         WebDriverWait(driver,15).until(EC.title_contains('StockX'))
