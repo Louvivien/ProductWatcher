@@ -56,7 +56,9 @@ def search_stockx(product_name):
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    options.add_argument("--headless")  # if you want to run it headless
+    options.add_argument("--headless")  
+    options.add_argument("--disable-dev-shm-usages")  
+
 
     driver.set_page_load_timeout(30)
     logging.info('Loaded Undetected chrome')
