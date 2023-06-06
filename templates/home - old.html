@@ -1,39 +1,46 @@
 
-{% extends "bootstrap/base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Watcher</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+    <script>
+        var $j = jQuery.noConflict();
+        $j(document).ready(function () {
+            $j('#myTable').DataTable();
+        });
+        </script>
+        <script>
+            var edges = {{ edges|tojson }};
+            console.log(edges);
+        </script>
+    
+    <script>
+    document.getElementById('debug-button').addEventListener('click', function() {
+        var debugDiv = document.getElementById('debug');
+        if (debugDiv.style.display === 'none') {
+            debugDiv.style.display = 'block';
+        } else {
+            debugDiv.style.display = 'none';
+        }
+    });
+    </script>
+
+</head>
+<body>
 
 
-{% block title %}
-Price Watcher
 
 
-{% endblock %}
 
 
 {% block navbar %}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
-<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
-<script>
-    var $j = jQuery.noConflict();
-    $j(document).ready(function () {
-        $j('#myTable').DataTable();
-    });
-    </script>
-    <script>
-        var edges = {{ data|tojson }};
-        console.log(edges);
-    </script>
 
-<script>
-document.getElementById('debug-button').addEventListener('click', function() {
-    var debugDiv = document.getElementById('debug');
-    if (debugDiv.style.display === 'none') {
-        debugDiv.style.display = 'block';
-    } else {
-        debugDiv.style.display = 'none';
-    }
-});
-</script>
 
 
 
@@ -113,3 +120,6 @@ document.getElementById('debug-button').addEventListener('click', function() {
 {% endif %}
 
 {% endblock %}
+
+</body>
+</html>s

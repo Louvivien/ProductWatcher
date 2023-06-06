@@ -76,9 +76,10 @@ def search_stockx(product_name):
         response = None  
 
         try:
-            response = requests.get('https://stockx.com/fr-fr/search?s=' + product_name, headers=headers,timeout=10)
+            response = requests.get('https://stockx.com/api/browse?_search=' + product_name, headers=headers,timeout=10)
 
             curl_command = curlify.to_curl(response.request)
+            logging.info("curl_command: %s", curl_command)
             logging.info("Response content: %s", response.content)
 
             if "captcha-error" in response.text or "<h1>Access Denied</h1>" in response.text or "Enable JavaScript and cookies" in response.text:
@@ -105,27 +106,27 @@ def search_stockx(product_name):
 
         
         
-        # Find the script tag with the id '__NEXT_DATA__'
-        match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', response.text, re.DOTALL)
+        # # Find the script tag with the id '__NEXT_DATA__'
+        # match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', response.text, re.DOTALL)
 
-        edges = None
-        if match:
-            data_str = match.group(1)
-            data = json.loads(data_str)
+        # edges = None
+        # if match:
+        #     data_str = match.group(1)
+        data = json.loads(response.content)
+        queries = data['Products']
 
-            # Navigate to the 'results' key
-            queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
+        #     # Navigate to the 'results' key
+        #     queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
 
-            # Access the 5th query directly
-            query = queries[4]['state']['data']['browse']['results']
-            edges = query['edges']  # return the list of edges
+        #     # Access the 5th query directly
+        #     query = queries[4]['state']['data']['browse']['results']
+        #     edges = query['edges']  # return the list of edges
+        logging.info("queries : %s", queries)
 
-        logging.info("edges : %s", edges)
-
-        if not edges:
-            return None, curlify.to_curl(response.request)
-        else:
-            return edges, None
+        # if not edges:
+        #     return None, curlify.to_curl(response.request)
+        # else:
+        return queries, None
 
 
 @app.route('/')
@@ -142,10 +143,10 @@ def product_list():
 def product_detail(product_name):
     result = search_stockx(product_name)
     if result is None:
-        return render_template('error.html', message="All requests failed due to proxy errors.", edges=[])  # pass an empty list for edges
+        return render_template('error.html', message="All requests failed due to proxy errors.", data=[])  
     else:
-        edges, debug_info = result
-        return render_template('home.html', edges=edges if edges else [], debug_info=debug_info)
+        queries, debug_info = result
+        return render_template('home.html', data=queries, debug_info=debug_info)
 
 
 if __name__ == '__main__':
