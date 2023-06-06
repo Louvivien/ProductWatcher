@@ -51,6 +51,8 @@ async def search_stockx(product_name):
         product_name = product_name.replace(' ', '%20')
         response = await Grab(session, stockxurl + product_name)
         soup = BeautifulSoup(response, 'html.parser')
+        logging.info("soup : %s", soup)
+
 
         # Find the script tag with the id '__NEXT_DATA__'
         script_tag = soup.find('script', {'id': '__NEXT_DATA__'})
