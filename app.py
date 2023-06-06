@@ -52,11 +52,10 @@ products = [
 def search_stockx(product_name):
     logging.info('Loading undetected Chrome')
 
-    driver = uc.Chrome(headless=True)
+    driver = uc.Chrome(enable_cdp_events=True, headless=True, version_main=112)
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    options.add_argument("--headless")  
     options.add_argument("--disable-blink-features")
     options.add_argument("--disable-blink-features=AutomationControlled")
 
