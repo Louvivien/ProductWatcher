@@ -43,6 +43,136 @@ products = [
 
 
 
+def search_vestiaire(product_name):
+    url = 'https://search.vestiairecollective.com/v1/product/search'
+    headers = {
+  'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
+  'x-correlation-id': 'ac0d9fb0-2082-4b8e-a4fc-5ae43124c437',
+  'sec-ch-ua-mobile': '?0',
+  'x-datadog-origin': 'rum',
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+  'x-datadog-sampling-priority': '1',
+  'Content-Type': 'application/json',
+  'Accept': 'application/json, text/plain, */*',
+  'Referer': 'https://fr.vestiairecollective.com/',
+  'x-usertoken': 'anonymous-f3d761e0-98c7-48f0-a6f2-85bac75b9125',
+  'x-datadog-parent-id': '8660110310529178523',
+  'x-datadog-trace-id': '2824068943479274331',
+  'sec-ch-ua-platform': '"macOS"',
+  'Cookie': '__cf_bm=bjIcuIchzNacvWkSlOvUExxulmCAbvPsaRKX3nQfPiQ-1686133140-0-ASdq1dUNzx5rtqX9mPYoe3Mi7Z4xsmneXOoO8dDV2qnQZyboxtujXVWjGx9z/nVc7XlJ/F1Pq57KUeJ2PLTn6Pw=; _cfuvid=MwnWu_bAJ1wW7wax40HU1RMcKlSS1vEcvcP.b5TRClI-1686131820523-0-604800000; __cflb=04dToTDVtDoa5B61C23N844SspREcYmcBrFVgbKUvT'
+}
+    data = {
+  "pagination": {
+    "offset": 0,
+    "limit": 48
+  },
+  "fields": [
+    "name",
+    "description",
+    "brand",
+    "model",
+    "country",
+    "price",
+    "discount",
+    "link",
+    "sold",
+    "likes",
+    "editorPicks",
+    "shouldBeGone",
+    "seller",
+    "directShipping",
+    "local",
+    "pictures",
+    "colors",
+    "size",
+    "stock",
+    "universeId"
+  ],
+  "facets": {
+    "fields": [
+      "brand",
+      "universe",
+      "country",
+      "stock",
+      "color",
+      "categoryLvl0",
+      "priceRange",
+      "price",
+      "condition",
+      "region",
+      "editorPicks",
+      "watchMechanism",
+      "discount",
+      "sold",
+      "directShippingEligible",
+      "directShippingCountries",
+      "localCountries",
+      "sellerBadge",
+      "isOfficialStore",
+      "materialLvl0",
+      "size0",
+      "size1",
+      "size2",
+      "size3",
+      "size4",
+      "size5",
+      "size6",
+      "size7",
+      "size8",
+      "size9",
+      "size10",
+      "size11",
+      "size12",
+      "size13",
+      "size14",
+      "size15",
+      "size16",
+      "size17",
+      "size18",
+      "size19",
+      "size20",
+      "size21",
+      "size22",
+      "size23",
+      "dealEligible"
+    ],
+    "stats": [
+      "price"
+    ]
+  },
+  "q": product_name,
+  "sortBy": "relevance",
+  "filters": {
+    "sold": [
+      "1"
+    ]
+  },
+  "locale": {
+    "country": "FR",
+    "currency": "EUR",
+    "language": "fr",
+    "sizeType": "FR"
+  },
+  "mySizes": None
+}
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+
+        data = json.loads(response.content)
+        queries = data['items']
+
+        #     # Navigate to the 'results' key
+        #     queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
+
+        #     # Access the 5th query directly
+        #     query = queries[4]['state']['data']['browse']['results']
+        #     edges = query['edges']  # return the list of edges
+        logging.info("vestiaire : %s", queries)
+
+
+        return queries, None
+    else:
+        return None
 
 
 
@@ -75,9 +205,9 @@ def search_stockx(product_name):
         try:
             response = requests.get('https://stockx.com/api/browse?_search=' + product_name, headers=headers,timeout=10)
 
-            curl_command = curlify.to_curl(response.request)
-            logging.info("curl_command: %s", curl_command)
-            logging.info("Response content: %s", response.content)
+            # curl_command = curlify.to_curl(response.request)
+            # logging.info("curl_command: %s", curl_command)
+            # logging.info("Response content: %s", response.content)
 
             if "captcha-error" in response.text or "<h1>Access Denied</h1>" in response.text or "Enable JavaScript and cookies" in response.text:
                 logging.info("Captcha error or Access Denied detected, switching proxy...")
@@ -111,6 +241,7 @@ def search_stockx(product_name):
         #     data_str = match.group(1)
         data = json.loads(response.content)
         queries = data['Products']
+        # queries = queries[1]
 
         #     # Navigate to the 'results' key
         #     queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
@@ -118,15 +249,14 @@ def search_stockx(product_name):
         #     # Access the 5th query directly
         #     query = queries[4]['state']['data']['browse']['results']
         #     edges = query['edges']  # return the list of edges
-        logging.info("queries : %s", queries)
+        logging.info("stockx : %s", queries)
 
         # if not edges:
         #     return None, curlify.to_curl(response.request)
         # else:
         return queries, None
 
-
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def product_list():
     if request.method == 'POST':
         new_product = request.form.get('new_product')
@@ -135,15 +265,31 @@ def product_list():
 
     return render_template('product_list.html', products=products)
 
-
 @app.route('/product/<product_name>')
 def product_detail(product_name):
-    result = search_stockx(product_name)
-    if result is None:
+    stockx_result = search_stockx(product_name)
+    if stockx_result is None:
         return render_template('error.html', message="All requests failed due to proxy errors.", data=[])  
     else:
-        queries, debug_info = result
-        return render_template('home.html', data=queries, debug_info=debug_info)
+        queries, debug_info = stockx_result
+    vestiaire_result = search_vestiaire(product_name)
+    return render_template('home.html', stockx_data=queries, vestiaire_data=vestiaire_result[0], debug_info=debug_info)
+
+# @app.route('/product/<product_name>')
+# def product_detail(product_name):
+#     stockx_result = search_stockx(product_name)
+#     vestiaire_result = search_vestiaire(product_name)
+#     return render_template('home.html', stockx_data=stockx_result, vestiaire_data=vestiaire_result)
+
+
+# @app.route('/product/<product_name>')
+# def product_detail(product_name):
+#     result = search_stockx(product_name)
+#     if result is None:
+#         return render_template('error.html', message="All requests failed due to proxy errors.", data=[])  
+#     else:
+#         queries, debug_info = result
+#         return render_template('home.html', data=queries, debug_info=debug_info)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,244 @@
+{
+    "facets": {
+        "fields": {
+            "brand": [
+                {
+                    "id": "50",
+                    "name": "Chanel",
+                    "count": 1
+                },
+                {
+                    "id": "14",
+                    "name": "Hermès",
+                    "count": 647
+                }
+            ],
+           
+        },
+        "stats": {
+            "price": {
+                "min": 3858,
+                "max": 473171
+            }
+        }
+    },
+    "facetsOrder": [
+        "localCountries",
+        "sold",
+        "directShippingCountries",
+        "color",
+        "condition",
+        "stock",
+        "brand",
+        "categoryLvl0",
+        "isOfficialStore",
+        "dealEligible",
+        "country",
+        "materialLvl0",
+        "universe",
+        "priceRange",
+        "sellerBadge",
+        "directShippingEligible",
+        "editorPicks",
+        "discount",
+        "price",
+        "size3"
+    ],
+    "items": [
+        {
+            "id": 32769110,
+            "brand": {
+                "id": 14,
+                "name": "Hermès"
+            },
+            "name": "Sac bandoulière Evelyne en cuir",
+            "description": "Borsa Hermés a tracolla nera (senza scatola)",
+            "country": "IT",
+            "discount": {
+                "originalPrice": {
+                    "cents": 250000,
+                    "currency": "EUR"
+                },
+                "ranges": null,
+                "percent": 6
+            },
+            "colors": {
+                "originalId": 14,
+                "all": [
+                    {
+                        "id": 14,
+                        "name": "Noir"
+                    }
+                ]
+            },
+            "localEligible": true,
+            "directShippingEligible": false,
+            "editorPicks": {
+                "vintage": false,
+                "weLove": true,
+                "hot": false,
+                "dealEligible": false,
+                "exceptionalPieces": false
+            },
+            "likes": 34,
+            "link": "/sacs-femme/sacs-a-main/hermes/sac-a-main-hermes-evelyne-en-cuir-noir-32769110.shtml",
+            "model": {
+                "id": 12,
+                "name": "Evelyne"
+            },
+            "pictures": [
+                "/produit/32769110-1_5.jpg"
+            ],
+            "price": {
+                "cents": 235000,
+                "currency": "EUR"
+            },
+            "seller": {
+                "id": 18848174,
+                "firstname": "gemma",
+                "badge": "Recommandé",
+                "picture": "",
+                "isOfficialStore": false
+            },
+            "sold": true,
+            "stock": false,
+            "shouldBeGone": false,
+            "universeId": 1
+        },
+        {
+            "id": 33942417,
+            "brand": {
+                "id": 14,
+                "name": "Hermès"
+            },
+            "name": "Sac bandoulière Evelyne en cuir",
+            "description": "Jamais porté, avec boîte et dustbag, Accastillage doré, estampille U. Cuir Heritage, barenia Faubourg, à l'ouverture de la boîte, on sentait l'odeur particulière et agréable du cuir. Un des meilleurs cuirs d'Hermès.",
+            "country": "LU",
+            "discount": {
+                "originalPrice": {
+                    "cents": 398500,
+                    "currency": "EUR"
+                },
+                "ranges": null,
+                "percent": 11
+            },
+            "colors": {
+                "originalId": 8,
+                "all": [
+                    {
+                        "id": 8,
+                        "name": "Marron"
+                    }
+                ]
+            },
+            "localEligible": true,
+            "directShippingEligible": false,
+            "editorPicks": {
+                "vintage": false,
+                "weLove": true,
+                "hot": false,
+                "dealEligible": false,
+                "exceptionalPieces": false
+            },
+            "likes": 9,
+            "link": "/sacs-femme/sacs-a-main/hermes/sac-a-main-hermes-evelyne-en-cuir-marron-33942417.shtml",
+            "model": {
+                "id": 12,
+                "name": "Evelyne"
+            },
+            "pictures": [
+                "/produit/33942417-1_4.jpg"
+            ],
+            "price": {
+                "cents": 355000,
+                "currency": "EUR"
+            },
+            "seller": {
+                "id": 20772854,
+                "firstname": "Yanjun",
+                "badge": "Expert",
+                "picture": "",
+                "isOfficialStore": false
+            },
+            "sold": true,
+            "stock": false,
+            "shouldBeGone": false,
+            "universeId": 1
+        },
+        {
+            "id": 33490350,
+            "brand": {
+                "id": 14,
+                "name": "Hermès"
+            },
+            "name": "Sac bandoulière Evelyne en cuir",
+            "description": "Vintage Hermes Barenia EVELYNE 29 de 2001, timbre carré E. avec quelques taches normales et une boucle latérale cassée, à réparer dans la boutique Hermès/entreprise de réparation de sacs à main. J'offre une sangle sans marque pour votre utilisation. Belle patine sur le sac. Pas de sac à poussière.",
+            "country": "HK",
+            "discount": {
+                "originalPrice": {
+                    "cents": 147589,
+                    "currency": "EUR"
+                },
+                "ranges": null,
+                "percent": 2
+            },
+            "colors": {
+                "originalId": 222,
+                "all": [
+                    {
+                        "id": 2,
+                        "name": "Beige"
+                    },
+                    {
+                        "id": 8,
+                        "name": "Marron"
+                    },
+                    {
+                        "id": 222,
+                        "name": "Camel"
+                    }
+                ]
+            },
+            "localEligible": false,
+            "directShippingEligible": false,
+            "editorPicks": {
+                "vintage": false,
+                "weLove": false,
+                "hot": false,
+                "dealEligible": false,
+                "exceptionalPieces": false
+            },
+            "likes": 31,
+            "link": "/sacs-femme/sacs-a-main/hermes/sac-a-main-hermes-evelyne-en-cuir-camel-33490350.shtml",
+            "model": {
+                "id": 12,
+                "name": "Evelyne"
+            },
+            "pictures": [
+                "/produit/33490350-1_2.jpg"
+            ],
+            "price": {
+                "cents": 144919,
+                "currency": "EUR"
+            },
+            "seller": {
+                "id": 1273897,
+                "firstname": "Kiki",
+                "badge": "Expert",
+                "picture": "/cdn-cgi/image/f=auto/profil/1273897-7bdbfca6378e834b126c69f0549daec2.jpg",
+                "isOfficialStore": false
+            },
+            "sold": true,
+            "stock": false,
+            "shouldBeGone": false,
+            "universeId": 1
+        }
+    ],
+    "paginationStats": {
+        "totalHits": 648,
+        "limit": 48,
+        "offset": 0,
+        "totalPages": 14
+    },
+    "mySizes": null
+}
