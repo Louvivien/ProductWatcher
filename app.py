@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request
-import requests
+# blocked when deployed
+
+
 from flask import Flask, render_template, request
 import requests
 import re
@@ -8,6 +9,10 @@ from flask_bootstrap import Bootstrap
 import curlify
 import logging
 import sys
+import socket
+import urllib3
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 
 
@@ -44,11 +49,93 @@ products = [
     'Louis Vuitton Twist Chain'
 ]
 
+# Define the retry strategy
+retry_strategy = Retry(
+    total=10,
+    backoff_factor=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+    method_whitelist=["HEAD", "GET", "OPTIONS"]
+)
+
+adapter = HTTPAdapter(max_retries=retry_strategy)
+http = urllib3.PoolManager(retries=retry_strategy)
 
 
 
+def get_proxies():
+    url = 'https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=FR&ssl=FR&anonymity=FR&_ga=2.134393777.1587810449.1684520809-1182041995.1684520809'
+    headers = {
+        'authority': 'api.proxyscrape.com',
+        'accept': 'text/plain, */*; q=0.01',
+        'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+        'cache-control': 'no-cache',
+        'origin': 'https://proxyscrape.com',
+        'pragma': 'no-cache',
+        'referer': 'https://proxyscrape.com',
+        'sec-ch-ua': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-site',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    }
+    response = requests.get(url, headers=headers)
+    logging.info("response content: %s", response.content)
+    proxies = [{'ip': line.split(':')[0].strip(), 'port': line.split(':')[1].strip()} for line in response.text.split('\n') if line]
+    return proxies
+
+proxies = get_proxies()
 
 
+def is_proxy_working(proxy_ip, proxy_port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(5)  
+    try:
+        logging.info(f"Attempting to connect to proxy {proxy_ip}:{proxy_port}...")
+        sock.connect((proxy_ip, int(proxy_port)))
+        sock.close()
+        logging.info(f"Successfully connected to proxy {proxy_ip}:{proxy_port}")
+        return True
+    except Exception as e:
+        logging.info(f"Failed to connect to proxy {proxy_ip}:{proxy_port}")
+        return False
+
+working_proxy = None
+for proxy in proxies:
+    if is_proxy_working(proxy["ip"], proxy["port"]):
+        working_proxy = proxy
+        break
+
+if working_proxy is None:
+    raise Exception("No working proxy found.")
+else:
+    logging.info(f"Working proxy found: {working_proxy['ip']}:{working_proxy['port']}")
+
+    
+def switch_proxy():
+    '''
+    Switches to a different proxy.
+
+    This function iterates over the list of proxies and tries to connect to each one.
+    If a connection is successful, it sets the working proxy to the current one and breaks the loop.
+    If no working proxy is found, it raises an exception.
+
+    Returns:
+        None
+    '''
+    proxies = get_proxies()
+
+    global working_proxy
+    for proxy in proxies:
+        if proxy != working_proxy and is_proxy_working(proxy["ip"], proxy["port"]):
+            working_proxy = proxy
+            break
+
+    if working_proxy is None:
+        raise Exception("No working proxy found.")
+    else:
+        logging.info(f"Switched to a new working proxy: {working_proxy['ip']}:{working_proxy['port']}")
 
 def search_stockx(product_name):
     headers = {
@@ -70,28 +157,37 @@ def search_stockx(product_name):
         }
 
 
+    # Set up the proxy
+    proxies = {
+        'http': f"http://{working_proxy['ip']}:{working_proxy['port'].strip()}",
+        'https': f"http://{working_proxy['ip']}:{working_proxy['port'].strip()}",
+    }
 
     for _ in range(10):
         product_name = product_name.replace(' ', '%20')
         response = None  
 
         try:
-            response = requests.get('https://stockx.com/api/browse?_search=' + product_name, headers=headers,timeout=10)
+            response = requests.get('https://stockx.com/fr-fr/search?s=' + product_name, headers=headers, proxies=proxies, verify=False, timeout=10)
 
             curl_command = curlify.to_curl(response.request)
-            logging.info("curl_command: %s", curl_command)
+            proxy_string = f"-x http://{working_proxy['ip']}:{working_proxy['port'].strip()}"
+            curl_command_with_proxy = f"{curl_command} {proxy_string}"
+            logging.info("Curl command with proxy: %s", curl_command_with_proxy)
             logging.info("Response content: %s", response.content)
 
             if "captcha-error" in response.text or "<h1>Access Denied</h1>" in response.text or "Enable JavaScript and cookies" in response.text:
                 logging.info("Captcha error or Access Denied detected, switching proxy...")
-
+                switch_proxy()
+                continue
         except requests.exceptions.HTTPError as errh:
             logging.error("Http Error:", errh)
         except requests.exceptions.ProxyError:
             logging.error("Proxy error occurred, switching proxy...")
             logging.error("Failed request details: %s", curlify.to_curl(response.request) if response else "No response received")
             logging.error("Response content: %s", response.content if response else "No response received")
-
+            switch_proxy()
+            continue
         except requests.exceptions.ConnectionError as errc:
             logging.error("Error Connecting: %s", errc)
             logging.error("Failed request details: %s", curlify.to_curl(response.request) if response else "No response received")
@@ -103,30 +199,33 @@ def search_stockx(product_name):
         if response is None:
             return None, "All requests failed due to proxy errors."
         
+        # rest of your code here
 
         
         
-        # # Find the script tag with the id '__NEXT_DATA__'
-        # match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', response.text, re.DOTALL)
+        # Find the script tag with the id '__NEXT_DATA__'
+        match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', response.text, re.DOTALL)
 
-        # edges = None
-        # if match:
-        #     data_str = match.group(1)
-        data = json.loads(response.content)
-        queries = data['Products']
+        edges = None
+        if match:
+            data_str = match.group(1)
+            data = json.loads(data_str)
 
-        #     # Navigate to the 'results' key
-        #     queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
+            # Navigate to the 'results' key
+            queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
 
-        #     # Access the 5th query directly
-        #     query = queries[4]['state']['data']['browse']['results']
-        #     edges = query['edges']  # return the list of edges
-        logging.info("queries : %s", queries)
+            # Access the 5th query directly
+            query = queries[4]['state']['data']['browse']['results']
+            edges = query['edges']  # return the list of edges
 
-        # if not edges:
-        #     return None, curlify.to_curl(response.request)
-        # else:
-        return queries, None
+        logging.info("edges : %s", edges)
+
+        if not edges:
+            return None, curlify.to_curl(response.request)
+        else:
+            return edges, None
+
+
 
 
 @app.route('/')
@@ -143,10 +242,10 @@ def product_list():
 def product_detail(product_name):
     result = search_stockx(product_name)
     if result is None:
-        return render_template('error.html', message="All requests failed due to proxy errors.", data=[])  
+        return render_template('error.html', message="All requests failed due to proxy errors.", edges=[])  # pass an empty list for edges
     else:
-        queries, debug_info = result
-        return render_template('home.html', data=queries, debug_info=debug_info)
+        edges, debug_info = result
+        return render_template('home.html', edges=edges if edges else [], debug_info=debug_info)
 
 
 if __name__ == '__main__':
