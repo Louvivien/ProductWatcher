@@ -1,5 +1,6 @@
-Flask
-requests
-Flask-Bootstrap
-curlify
 gunicorn
+flask
+requests
+json5
+flask-bootstrap
+curlify
