@@ -7,6 +7,5 @@ flask
 requests
 flask-bootstrap
 curlify
-bson
 pandas
 pycountry
