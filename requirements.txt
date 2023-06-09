@@ -4,3 +4,11 @@ requests
 json5
 flask-bootstrap
 curlify
+
+
+
+# scraper
+requests
+pymongo
+python-dotenv
+fake_useragent

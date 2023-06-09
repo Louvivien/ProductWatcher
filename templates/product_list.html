@@ -11,7 +11,8 @@ Product Watcher
     <br></br>
 
     <form method="POST">
-        <input type="text" name="new_product" placeholder="Enter new product">
+        <input type="text" name="new_brand" placeholder="Enter new brand">
+        <input type="text" name="new_model" placeholder="Enter new model">
         <input type="submit" value="Add Product">
     </form>
 
@@ -27,8 +28,13 @@ Product Watcher
         <tbody>
             {% for product in products %}
             <tr>
-                <td>{{ product }}</td>
-                <td><a href="{{ url_for('product_detail', product_name=product) }}" class="btn btn-primary">See detailed stats</a></td>
+                <td>{{ product.brand }} {{ product.model }}</td>
+                <td>
+                    <a href="{{ url_for('product_detail', brand=product.brand, model=product.model) }}" class="btn btn-primary">See detailed stats</a>
+                    <a href="{{ url_for('sales_stats', brand=product.brand, model=product.model) }}" class="btn btn-primary">See sales stats</a>
+                    <a href="{{ url_for('dashboard1', brand=product.brand, model=product.model) }}" class="btn btn-primary">See dashboard1</a>
+                    <a href="{{ url_for('dashboard2', brand=product.brand, model=product.model) }}" class="btn btn-primary">See dashboard2</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

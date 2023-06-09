@@ -1,0 +1,42 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Dashboard 1
+{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Price Watcher</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Dashboard 1</h1>
+
+    <div>{{ plot1|safe }}</div>
+    <div>{{ plot2|safe }}</div>
+    <div>{{ plot3|safe }}</div>
+    <div>{{ plot4|safe }}</div>
+    <div>{{ plot5|safe }}</div>
+</div>
+
+{% if debug_info %}
+<div id="debug" style="display: none;">
+    <pre>{{ debug_info }}</pre>
+</div>
+
+<button id="debug-button">Show Debug Info</button>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,200 @@
+
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Sales Stats
+{% endblock %}
+
+{% block navbar %}
+<!-- Include the DataTables CSS and JS libraries -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+
+<script>
+    var $j = jQuery.noConflict();
+    $j(document).ready(function () {
+        var table = $j('#allProductsTable').DataTable({
+            "pageLength": 200,
+            "lengthMenu": [[100, 200, -1], [100, 200, "All"]]
+        });
+
+        $j('#title-search').on('keyup', function () {
+            table.columns(1).search(this.value).draw();
+        });
+
+        // Populate the color checkboxes
+        var colors = table.column(2).data().unique();
+        colors.each(function (color) {
+            $j('#color-search').append('<input type="checkbox" value="' + color + '">' + color + '<br>');
+        });
+
+        // Add event listener to the color checkboxes
+        $j('#color-search input').on('change', function () {
+            var search = $j('#color-search input:checked').map(function () {
+                return this.value;
+            }).get().join('|');
+            table.column(2).search(search, true, false).draw();
+        });
+
+
+
+    // Add event listener to the timeToSell range inputs
+    $j('#timeToSell-search input').on('change', function () {
+            var min = parseInt($j('#timeToSell-min').val(), 10);
+            var max = parseInt($j('#timeToSell-max').val(), 10);
+            table.draw();
+        });
+
+        $j.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                var min = parseInt($j('#timeToSell-min').val(), 10);
+                var max = parseInt($j('#timeToSell-max').val(), 10);
+                var timeToSell = parseFloat(data[5]) || 0; // use data for the timeToSell column
+
+                if ((isNaN(min) && isNaN(max)) ||
+                    (isNaN(min) && timeToSell <= max) ||
+                    (min <= timeToSell && isNaN(max)) ||
+                    (min <= timeToSell && timeToSell <= max)) {
+                    return true;
+                }
+                return false;
+            }
+        );
+
+        $j('#allProductsTable th').hover(
+            function () {
+                $j(this).find('input, div').css('display', 'inline-block');
+            }, 
+            function () {
+                $j(this).find('input, div').css('display', 'none');
+            }
+        );
+    });
+</script>
+
+<style>
+    #allProductsTable th input, 
+    #allProductsTable th div {
+        display: none;
+    }
+</style>
+
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Price Watcher</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- First Section -->
+    <div>
+        <h2>Sales Stats</h2>
+        <p>Average time to sell: {{ average_time_to_sell }}</p>
+        <p>Best selling color: {{ best_selling_color }}</p>
+        <p>Average price: {{ average_price }}</p>
+    </div>
+
+    <h2>Top 5 Liked Products</h2>
+    <table class="table table-striped">
+        <tr>
+            <th>Product ID</th>
+            <th>Name</th>
+            <th>Color</th>
+            <th>Price</th>
+            <th>Likes</th>
+            <th>Time to Sell</th>
+            <th>Link</th>
+        </tr>
+        {% for product in top_5_liked_products %}
+        <tr>
+            <td>{{ product.id }}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else 'N/A' }}</td>
+            <td>{{ product.price.cents/100 if product.price and product.price.cents else 'N/A' }} EUR</td>
+            <td>{{ product.likes }}</td>
+            <td>{{ product.timeToSell }}</td>
+            <td><a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary">View on VC</a></td>
+
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- Second Section -->
+    <h2>All Products</h2>
+    <table id="allProductsTable" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Name</th>
+                <th>Color</th>
+                <th>Price</th>
+                <th>Likes</th>
+                <th>Time to Sell</th>
+                <th>Link</th>
+            </tr>
+            <tr>
+                <th>
+                    <div id="id-search">
+                        <input type="text" placeholder="Search ID">
+                    </div>
+                </th>
+                <th>
+                    <div id="name-search">
+                        <input type="text" placeholder="Search Name">
+                    </div>
+                </th>
+                <th>
+                    <div id="color-search">
+                        <!-- Color checkboxes will be populated here -->
+                    </div>
+                </th>
+                <th>
+                    <div id="price-search">
+                        <input type="text" placeholder="Search Price">
+                    </div>
+                </th>
+                <th>
+                    <div id="likes-search">
+                        <input type="text" placeholder="Search Likes">
+                    </div>
+                </th>
+                    <th>
+                        <div id="timeToSell-search">
+                            <input type="number" id="timeToSell-min" placeholder="Min Time to Sell">
+                            <input type="number" id="timeToSell-max" placeholder="Max Time to Sell">
+                        </div>
+                    </th>
+                <th>
+                    <div id="link-search">
+                        <input type="text" placeholder="Search Link">
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in all_products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else 'N/A' }}</td>
+                <td>{{ product.price.cents/100 if product.price and product.price.cents else 'N/A' }} EUR</td>
+                <td>{{ product.likes }}</td>
+                <td>{{ product.timeToSell }}</td>
+                <td><a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary">View on VC</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

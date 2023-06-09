@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import requests
 import json
 from flask_bootstrap import Bootstrap
@@ -6,7 +6,31 @@ import curlify
 import logging
 import sys
 
+from bson.code import Code
+from operator import itemgetter
+from dotenv import load_dotenv
+import os
 
+from pymongo import MongoClient
+
+import plotly.express as px
+import pandas as pd
+
+import pycountry
+
+
+
+
+
+# Load .env file
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
+# MongoDB setup
+MONGO_URI = os.getenv('MONGO_URI')
+MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
+client = MongoClient(MONGO_URI.replace("<password>", MONGO_PASSWORD))
+db = client.productwatcher
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -23,27 +47,27 @@ handler.setFormatter(formatter)
 
 # Define the list of products
 products = [
-    'Hermes Evelyn',
-    'Hermes Kelly',
-    'Hermes Birkin',
-    'Hermes Pikotin',
-    'Chanel Flap',
-    'Chanel Double Flap',
-    'Chanel Boy',
-    'Chanel 19',
-    'Chanel 2.55',
-    'Chanel mini Flap',
-    'Dior Lady Dior',
-    'Dior Diorama',
-    'Bottega Veneta Cassette',
-    'Chanel V Stitch',
-    'Louis Vuitton Capucines',
-    'Louis Vuitton Twist Chain'
+    {'brand': 'Hermes', 'model': 'Evelyn'},
+    {'brand': 'Hermes', 'model': 'Kelly'},
+    {'brand': 'Hermes', 'model': 'Birkin'},
+    {'brand': 'Hermes', 'model': 'Picotin'},
+    {'brand': 'Chanel', 'model': 'Flap'},
+    {'brand': 'Chanel', 'model': 'Double Flap'},
+    {'brand': 'Chanel', 'model': 'Boy'},
+    {'brand': 'Chanel', 'model': '19'},
+    {'brand': 'Chanel', 'model': '2.55'},
+    {'brand': 'Chanel', 'model': 'mini Flap'},
+    {'brand': 'Dior', 'model': 'Lady Dior'},
+    {'brand': 'Dior', 'model': 'Diorama'},
+    {'brand': 'Bottega Veneta', 'model': 'Cassette'},
+    {'brand': 'Chanel', 'model': 'V Stitch'},
+    {'brand': 'Louis Vuitton', 'model': 'Capucines'},
+    {'brand': 'Louis Vuitton', 'model': 'Twist Chain'}
 ]
 
 
 
-def search_vestiaire(product_name):
+def search_vestiaire(brand, model):
     url = 'https://search.vestiairecollective.com/v1/product/search'
     headers = {
   'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
@@ -140,7 +164,7 @@ def search_vestiaire(product_name):
       "price"
     ]
   },
-  "q": product_name,
+  "q": brand + " " + model,
   "sortBy": "relevance",
   "filters": {
     "sold": [
@@ -177,7 +201,8 @@ def search_vestiaire(product_name):
 
 
 
-def search_stockx(product_name):
+def search_stockx(brand, model):
+    product_name = f"{brand} {model}"  
     headers = {
             'authority': 'stockx.com',
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -265,31 +290,114 @@ def product_list():
 
     return render_template('product_list.html', products=products)
 
-@app.route('/product/<product_name>')
-def product_detail(product_name):
-    stockx_result = search_stockx(product_name)
+@app.route('/product_detail/<brand>/<model>', methods=['GET'])
+def product_detail(brand, model):
+    stockx_result = search_stockx(brand, model)
     if stockx_result is None:
         return render_template('error.html', message="All requests failed due to proxy errors.", data=[])  
     else:
         queries, debug_info = stockx_result
-    vestiaire_result = search_vestiaire(product_name)
+    vestiaire_result = search_vestiaire(brand, model)
     return render_template('home.html', stockx_data=queries, vestiaire_data=vestiaire_result[0], debug_info=debug_info)
 
-# @app.route('/product/<product_name>')
-# def product_detail(product_name):
-#     stockx_result = search_stockx(product_name)
-#     vestiaire_result = search_vestiaire(product_name)
-#     return render_template('home.html', stockx_data=stockx_result, vestiaire_data=vestiaire_result)
+
+@app.route('/sales_stats/<brand>/<model>', methods=['GET'])
+def sales_stats(brand, model):
+    collection = db[brand + " " + model]
+    all_products = list(collection.find())  # Get all products
+    sold_items = [item for item in all_products if item.get('sold')]
+
+    # calculate average price
+    total_price = 0
+    for item in sold_items:
+        price = item.get('price')
+        if isinstance(price, dict) and 'cents' in price and isinstance(price['cents'], (int, float)):
+            total_price += price['cents']
+        else:
+            app.logger.warning(f"Unexpected price type for item {item['_id']}: {type(price)} with value {price}")
+
+    average_price = round(total_price / len(sold_items) / 100, 2) if sold_items else 0  # divide by 100 to convert cents to euros
+
+    # calculate best selling color
+    color_counts = {}
+    for item in sold_items:
+        color = item.get('colors')
+        if isinstance(color, dict) and 'all' in color and isinstance(color['all'], list) and color['all']:
+            color_name = color['all'][0].get('name')
+            if color_name in color_counts:
+                color_counts[color_name] += 1
+            else:
+                color_counts[color_name] = 1
+    best_selling_color = max(color_counts.items(), key=itemgetter(1))[0]
+
+    # get top 5 liked products
+    top_5_liked_products = sorted(sold_items, key=lambda x: x['likes'], reverse=True)[:5]
+
+    # calculate average time to sell
+    total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
+    average_time_to_sell = round(total_time_to_sell / len(sold_items))
+
+    return render_template('sales_stats.html', average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
 
 
-# @app.route('/product/<product_name>')
-# def product_detail(product_name):
-#     result = search_stockx(product_name)
-#     if result is None:
-#         return render_template('error.html', message="All requests failed due to proxy errors.", data=[])  
-#     else:
-#         queries, debug_info = result
-#         return render_template('home.html', data=queries, debug_info=debug_info)
+@app.route('/dashboard1/<brand>/<model>', methods=['GET'])
+def dashboard1(brand, model):
+    collection = db[brand + " " + model]  # replace with your collection name
+    all_products = list(collection.find())  # Get all products
+
+    # Convert the list of dictionaries to a pandas DataFrame
+    df = pd.DataFrame(all_products)
+
+    # Flatten the nested fields in the DataFrame
+    df['price_euros'] = df['price'].apply(lambda x: x['cents'] / 100)  # convert cents to euros
+    df['brand_name'] = df['brand'].apply(lambda x: x['name'])
+    df['creation_date'] = pd.to_datetime(df['creationDate'], unit='ms')  # convert timestamp to datetime
+
+    # Convert ISO-2 country codes to ISO-3
+    df['country_iso3'] = df['country'].apply(lambda x: pycountry.countries.get(alpha_2=x).alpha_3)
+
+    # Create the plots
+    fig1 = px.histogram(df, x="price_euros", nbins=20, title="Price Distribution")
+    fig2 = px.scatter(df, x="price_euros", y="likes", title="Price vs Likes")
+    fig3 = px.pie(df, names="brand_name", title="Products by Brand")
+    fig4 = px.line(df, x="creation_date", y="price_euros", title="Price Trend Over Time")
+    fig5 = px.scatter_geo(df, locations="country_iso3", color="price_euros", title="Geographic Distribution of Products")
+
+    # Convert the plots to HTML and return
+    plot1 = fig1.to_html(full_html=False)
+    plot2 = fig2.to_html(full_html=False)
+    plot3 = fig3.to_html(full_html=False)
+    plot4 = fig4.to_html(full_html=False)
+    plot5 = fig5.to_html(full_html=False)
+
+    return render_template('dashboard1.html', plot1=plot1, plot2=plot2, plot3=plot3, plot4=plot4, plot5=plot5)
+
+
+
+@app.route('/dashboard2/<brand>/<model>', methods=['GET'])
+def dashboard2(brand, model):
+    collection = db[brand + " " + model]  # replace with your collection name
+    all_products = list(collection.find())  # Get all products
+
+    # Convert the list of dictionaries to a pandas DataFrame
+    df = pd.DataFrame(all_products)
+
+    # Flatten the nested fields in the DataFrame
+    df['price_euros'] = df['price'].apply(lambda x: x['cents'] / 100)  # convert cents to euros
+    df['brand_name'] = df['brand'].apply(lambda x: x['name'])
+    df['creation_date'] = pd.to_datetime(df['creationDate'], unit='ms')  # convert timestamp to datetime
+
+    # Convert ISO-2 country codes to ISO-3
+    df['country_iso3'] = df['country'].apply(lambda x: pycountry.countries.get(alpha_2=x).alpha_3)
+
+    # Create the data for the charts
+    data1 = df['price_euros'].tolist()
+    data2 = df[['price_euros', 'likes']].values.tolist()
+    data3 = df['brand_name'].value_counts().reset_index().values.tolist()
+    data4 = df[['creation_date', 'price_euros']].values.tolist()
+    data5 = df['country_iso3'].value_counts().reset_index().values.tolist()
+
+    return render_template('dashboard2.html', data1=data1, data2=data2, data3=data3, data4=data4, data5=data5)
 
 
 if __name__ == '__main__':

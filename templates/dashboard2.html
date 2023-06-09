@@ -1,0 +1,109 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Dashboard 2
+{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Price Watcher</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Dashboard 2</h1>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
+    <div id="chart1" style="width: 600px;height:400px;"></div>
+    <div id="chart2" style="width: 600px;height:400px;"></div>
+    <div id="chart3" style="width: 600px;height:400px;"></div>
+    <div id="chart4" style="width: 600px;height:400px;"></div>
+    <div id="chart5" style="width: 600px;height:400px;"></div>
+
+    <script>
+        var chart1 = echarts.init(document.getElementById('chart1'));
+        var chart2 = echarts.init(document.getElementById('chart2'));
+        var chart3 = echarts.init(document.getElementById('chart3'));
+        var chart4 = echarts.init(document.getElementById('chart4'));
+        var chart5 = echarts.init(document.getElementById('chart5'));
+
+        var option1 = {
+            title: {text: 'Price Distribution'},
+            tooltip: {},
+            xAxis: {type: 'category'},
+            yAxis: {type: 'value'},
+            series: [{type: 'bar', data: {{ data1 | tojson | safe }}}]
+        };
+
+        var option2 = {
+            title: {text: 'Price vs Likes'},
+            tooltip: {},
+            xAxis: {type: 'value'},
+            yAxis: {type: 'value'},
+            series: [{type: 'scatter', data: {{ data2 | tojson | safe }}}]
+        };
+
+        var option3 = {
+            title: {text: 'Brand Distribution'},
+            tooltip: {},
+            xAxis: {type: 'category'},
+            yAxis: {type: 'value'},
+            series: [{type: 'bar', data: {{ data3 | tojson | safe }}}]
+        };
+
+        var option4 = {
+            title: {text: 'Price Trend Over Time'},
+            tooltip: {},
+            xAxis: {type: 'time'},
+            yAxis: {type: 'value'},
+            series: [{type: 'line', data: {{ data4 | tojson | safe }}}]
+        };
+
+        var option5 = {
+            title: {text: 'Geographic Distribution'},
+            tooltip: {},
+            visualMap: {
+                min: 0,
+                max: 100,
+                left: 'left',
+                top: 'bottom',
+                text: ['High', 'Low'],
+                calculable: true
+            },
+            series: [{
+                type: 'map',
+                map: 'world',
+                roam: true,
+                data: {{ data5 | tojson | safe }}
+            }]
+        };
+
+        chart1.setOption(option1);
+        chart2.setOption(option2);
+        chart3.setOption(option3);
+        chart4.setOption(option4);
+        chart5.setOption(option5);
+    </script>
+</div>
+
+{% if debug_info %}
+<div id="debug" style="display: none;">
+    <pre>{{ debug_info }}</pre>
+</div>
+
+<button id="debug-button">Show Debug Info</button>
+{% endif %}
+
+{% endblock %}
