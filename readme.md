@@ -13,7 +13,7 @@
     <a href="https://github.com/Louvivien/ProductWatcher"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Louvivien/ProductWatcher">View Demo</a>
+    <a href="https://productwatcher.fly.dev/">View Demo</a>
     ·
     <a href="https://github.com/Louvivien/ProductWatcher/issues">Report Bug</a>
     ·
