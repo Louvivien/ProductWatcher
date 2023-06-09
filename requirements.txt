@@ -3,6 +3,7 @@ pymongo
 json
 python-dotenv
 os
+plotly
 time
 random
 logging
@@ -15,6 +16,5 @@ flask-bootstrap
 curlify
 bson
 operator
-plotly
 pandas
 pycountry
