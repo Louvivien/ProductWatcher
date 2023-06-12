@@ -189,18 +189,21 @@ Sales Stats
             </tr>
         </thead>
         <tbody>
-            {% for product in all_products %}
-            <tr>
-                <td>{{ product.id }}</td>
-                <td>{{ product.name }}</td>
-                <td>{{ product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else 'N/A' }}</td>
-                <td>{{ product.price.cents/100 if product.price and product.price.cents else 'N/A' }} EUR</td>
-                <td>{{ product.likes }}</td>
-                <td>{{ product.timeToSell }}</td>
-                <td><a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary">View on VC</a></td>
-            </tr>
+            {% for stats in all_stats %}
+                {% for product in stats.all_products %}
+                    <tr>
+                        <td>{{ product.id|default('') }}</td>
+                        <td>{{ product.name|default('') }}</td>
+                        <td>{{ (product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else '')|default('') }}</td>
+                        <td>{{ ((product.price.cents/100) if product.price and product.price.cents else '')|default('') }} EUR</td>
+                        <td>{{ product.likes|default('') }}</td>
+                        <td>{{ product.timeToSell|default('') }}</td>
+                        <td><a href="{{ ('https://fr.vestiairecollective.com/' + product.link if product.link else '')|default('') }}" class="btn btn-primary">View on VC</a></td>
+                    </tr>
+                {% endfor %}
             {% endfor %}
         </tbody>
+        
     </table>
 </div>
 

@@ -18,6 +18,11 @@ Product Watcher
 
     <br></br>
 
+    <!-- Add a button to see sales stats for all models -->
+    <a href="{{ url_for('sales_stats_allmodels') }}" class="btn btn-primary">See All Models Sales Stats</a>
+
+    <br></br>
+
     <table class="table">
         <thead>
             <tr>
@@ -30,14 +35,17 @@ Product Watcher
             <tr>
                 <td>{{ product.brand }} {{ product.model }}</td>
                 <td>
-                    <a href="{{ url_for('product_detail', brand=product.brand, model=product.model) }}" class="btn btn-primary">See detailed stats</a>
-                    <a href="{{ url_for('sales_stats', brand=product.brand, model=product.model) }}" class="btn btn-primary">See sales stats</a>
-                    <a href="{{ url_for('dashboard1', brand=product.brand, model=product.model) }}" class="btn btn-primary">See dashboard1</a>
-                    <a href="{{ url_for('dashboard2', brand=product.brand, model=product.model) }}" class="btn btn-primary">See dashboard2</a>
+                    <a href="{{ url_for('product_detail', brand=product.brand, model=product.model) }}" class="btn btn-primary">See offers</a>
+                    <a href="{{ url_for('sales_stats', brand=product.brand, model=product.model) }}" class="btn btn-primary">See sales</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
 {% endblock %}
+
+
+                    <!-- <a href="{{ url_for('dashboard1', brand=product.brand, model=product.model) }}" class="btn btn-primary">See dashboard1</a> -->
+                    <!-- <a href="{{ url_for('dashboard2', brand=product.brand, model=product.model) }}" class="btn btn-primary">See dashboard2</a> -->

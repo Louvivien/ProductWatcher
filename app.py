@@ -338,65 +338,118 @@ def sales_stats(brand, model):
 
     return render_template('sales_stats.html', average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
 
+@app.route('/sales_stats/allmodels', methods=['GET'])
+def sales_stats_allmodels():
+    collections = client.productwatcher.list_collection_names()  # Get all collection names
+    all_stats = []
 
-@app.route('/dashboard1/<brand>/<model>', methods=['GET'])
-def dashboard1(brand, model):
-    collection = db[brand + " " + model]  # replace with your collection name
-    all_products = list(collection.find())  # Get all products
+    for collection_name in collections:
+        collection = db[collection_name]
+        print(collection_name)
+        all_products = list(collection.find())  # Get all products
+        sold_items = [item for item in all_products if item.get('sold')]
 
-    # Convert the list of dictionaries to a pandas DataFrame
-    df = pd.DataFrame(all_products)
+        # # calculate average price
+        # total_price = 0
+        # for item in sold_items:
+        #     price = item.get('price')
+        #     if isinstance(price, dict) and 'cents' in price and isinstance(price['cents'], (int, float)):
+        #         total_price += price['cents']
+        #     else:
+        #         app.logger.warning(f"Unexpected price type for item {item['_id']}: {type(price)} with value {price}")
 
-    # Flatten the nested fields in the DataFrame
-    df['price_euros'] = df['price'].apply(lambda x: x['cents'] / 100)  # convert cents to euros
-    df['brand_name'] = df['brand'].apply(lambda x: x['name'])
-    df['creation_date'] = pd.to_datetime(df['creationDate'], unit='ms')  # convert timestamp to datetime
+        # average_price = round(total_price / len(sold_items) / 100, 2) if sold_items else 0  # divide by 100 to convert cents to euros
 
-    # Convert ISO-2 country codes to ISO-3
-    df['country_iso3'] = df['country'].apply(lambda x: pycountry.countries.get(alpha_2=x).alpha_3)
+        # # calculate best selling color
+        # color_counts = {}
+        # for item in sold_items:
+        #     color = item.get('colors')
+        #     if isinstance(color, dict) and 'all' in color and isinstance(color['all'], list) and color['all']:
+        #         color_name = color['all'][0].get('name')
+        #         if color_name in color_counts:
+        #             color_counts[color_name] += 1
+        #         else:
+        #             color_counts[color_name] = 1
+        # best_selling_color = max(color_counts.items(), key=itemgetter(1))[0]
 
-    # Create the plots
-    fig1 = px.histogram(df, x="price_euros", nbins=20, title="Price Distribution")
-    fig2 = px.scatter(df, x="price_euros", y="likes", title="Price vs Likes")
-    fig3 = px.pie(df, names="brand_name", title="Products by Brand")
-    fig4 = px.line(df, x="creation_date", y="price_euros", title="Price Trend Over Time")
-    fig5 = px.scatter_geo(df, locations="country_iso3", color="price_euros", title="Geographic Distribution of Products")
+        # # get top 5 liked products
+        # top_5_liked_products = sorted(sold_items, key=lambda x: x['likes'], reverse=True)[:5]
 
-    # Convert the plots to HTML and return
-    plot1 = fig1.to_html(full_html=False)
-    plot2 = fig2.to_html(full_html=False)
-    plot3 = fig3.to_html(full_html=False)
-    plot4 = fig4.to_html(full_html=False)
-    plot5 = fig5.to_html(full_html=False)
+        # # calculate average time to sell
+        # total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
+        # average_time_to_sell = round(total_time_to_sell / len(sold_items))
 
-    return render_template('dashboard1.html', plot1=plot1, plot2=plot2, plot3=plot3, plot4=plot4, plot5=plot5)
+        all_stats.append({
+            'collection_name': collection_name,
+            # 'average_time_to_sell': average_time_to_sell,
+            # 'best_selling_color': best_selling_color,
+            # 'average_price': average_price,
+            # 'top_5_liked_products': top_5_liked_products,
+            'all_products': all_products,
+            'currency': "EUR"
+        })
+
+    return render_template('sales_stats_allmodels.html', all_stats=all_stats)
+
+
+# @app.route('/dashboard1/<brand>/<model>', methods=['GET'])
+# def dashboard1(brand, model):
+#     collection = db[brand + " " + model]  # replace with your collection name
+#     all_products = list(collection.find())  # Get all products
+
+#     # Convert the list of dictionaries to a pandas DataFrame
+#     df = pd.DataFrame(all_products)
+
+#     # Flatten the nested fields in the DataFrame
+#     df['price_euros'] = df['price'].apply(lambda x: x['cents'] / 100)  # convert cents to euros
+#     df['brand_name'] = df['brand'].apply(lambda x: x['name'])
+#     df['creation_date'] = pd.to_datetime(df['creationDate'], unit='ms')  # convert timestamp to datetime
+
+#     # Convert ISO-2 country codes to ISO-3
+#     df['country_iso3'] = df['country'].apply(lambda x: pycountry.countries.get(alpha_2=x).alpha_3)
+
+#     # Create the plots
+#     fig1 = px.histogram(df, x="price_euros", nbins=20, title="Price Distribution")
+#     fig2 = px.scatter(df, x="price_euros", y="likes", title="Price vs Likes")
+#     fig3 = px.pie(df, names="brand_name", title="Products by Brand")
+#     fig4 = px.line(df, x="creation_date", y="price_euros", title="Price Trend Over Time")
+#     fig5 = px.scatter_geo(df, locations="country_iso3", color="price_euros", title="Geographic Distribution of Products")
+
+#     # Convert the plots to HTML and return
+#     plot1 = fig1.to_html(full_html=False)
+#     plot2 = fig2.to_html(full_html=False)
+#     plot3 = fig3.to_html(full_html=False)
+#     plot4 = fig4.to_html(full_html=False)
+#     plot5 = fig5.to_html(full_html=False)
+
+#     return render_template('dashboard1.html', plot1=plot1, plot2=plot2, plot3=plot3, plot4=plot4, plot5=plot5)
 
 
 
-@app.route('/dashboard2/<brand>/<model>', methods=['GET'])
-def dashboard2(brand, model):
-    collection = db[brand + " " + model]  # replace with your collection name
-    all_products = list(collection.find())  # Get all products
+# @app.route('/dashboard2/<brand>/<model>', methods=['GET'])
+# def dashboard2(brand, model):
+#     collection = db[brand + " " + model]  # replace with your collection name
+#     all_products = list(collection.find())  # Get all products
 
-    # Convert the list of dictionaries to a pandas DataFrame
-    df = pd.DataFrame(all_products)
+#     # Convert the list of dictionaries to a pandas DataFrame
+#     df = pd.DataFrame(all_products)
 
-    # Flatten the nested fields in the DataFrame
-    df['price_euros'] = df['price'].apply(lambda x: x['cents'] / 100)  # convert cents to euros
-    df['brand_name'] = df['brand'].apply(lambda x: x['name'])
-    df['creation_date'] = pd.to_datetime(df['creationDate'], unit='ms')  # convert timestamp to datetime
+#     # Flatten the nested fields in the DataFrame
+#     df['price_euros'] = df['price'].apply(lambda x: x['cents'] / 100)  # convert cents to euros
+#     df['brand_name'] = df['brand'].apply(lambda x: x['name'])
+#     df['creation_date'] = pd.to_datetime(df['creationDate'], unit='ms')  # convert timestamp to datetime
 
-    # Convert ISO-2 country codes to ISO-3
-    df['country_iso3'] = df['country'].apply(lambda x: pycountry.countries.get(alpha_2=x).alpha_3)
+#     # Convert ISO-2 country codes to ISO-3
+#     df['country_iso3'] = df['country'].apply(lambda x: pycountry.countries.get(alpha_2=x).alpha_3)
 
-    # Create the data for the charts
-    data1 = df['price_euros'].tolist()
-    data2 = df[['price_euros', 'likes']].values.tolist()
-    data3 = df['brand_name'].value_counts().reset_index().values.tolist()
-    data4 = df[['creation_date', 'price_euros']].values.tolist()
-    data5 = df['country_iso3'].value_counts().reset_index().values.tolist()
+#     # Create the data for the charts
+#     data1 = df['price_euros'].tolist()
+#     data2 = df[['price_euros', 'likes']].values.tolist()
+#     data3 = df['brand_name'].value_counts().reset_index().values.tolist()
+#     data4 = df[['creation_date', 'price_euros']].values.tolist()
+#     data5 = df['country_iso3'].value_counts().reset_index().values.tolist()
 
-    return render_template('dashboard2.html', data1=data1, data2=data2, data3=data3, data4=data4, data5=data5)
+#     return render_template('dashboard2.html', data1=data1, data2=data2, data3=data3, data4=data4, data5=data5)
 
 
 if __name__ == '__main__':
