@@ -31,6 +31,7 @@ MONGO_URI = os.getenv('MONGO_URI')
 MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
 client = MongoClient(MONGO_URI.replace("<password>", MONGO_PASSWORD))
 db = client.productwatcher
+handbags = db.handbags  
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -192,7 +193,9 @@ def search_vestiaire(brand, model):
         #     edges = query['edges']  # return the list of edges
         logging.info("vestiaire : %s", queries)
 
-
+        # for query in queries:
+        #     query['collection'] = brand + " " + model
+        #     handbags.insert_one(query)
         return queries, None
     else:
         return None
@@ -253,7 +256,12 @@ def search_stockx(brand, model):
 
         if response is None:
             return None, "All requests failed due to proxy errors."
-        
+        # else:
+        #     queries, debug_info = stockx_result
+        #     for query in queries:
+        #         query['collection'] = brand + " " + model
+        #         handbags.insert_one(query)
+        #     return queries, None
 
         
         
@@ -302,8 +310,7 @@ def product_detail(brand, model):
 
 @app.route('/sales_stats/<brand>/<model>', methods=['GET'])
 def sales_stats(brand, model):
-    collection = db[brand + " " + model]
-    all_products = list(collection.find())  # Get all products
+    all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
     sold_items = [item for item in all_products if item.get('sold')]
 
     # calculate average price
@@ -394,8 +401,8 @@ def sales_stats_allmodels():
 
 # @app.route('/dashboard1/<brand>/<model>', methods=['GET'])
 # def dashboard1(brand, model):
-#     collection = db[brand + " " + model]  # replace with your collection name
-#     all_products = list(collection.find())  # Get all products
+    # all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
+
 
 #     # Convert the list of dictionaries to a pandas DataFrame
 #     df = pd.DataFrame(all_products)
@@ -428,8 +435,8 @@ def sales_stats_allmodels():
 
 # @app.route('/dashboard2/<brand>/<model>', methods=['GET'])
 # def dashboard2(brand, model):
-#     collection = db[brand + " " + model]  # replace with your collection name
-#     all_products = list(collection.find())  # Get all products
+    # all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
+
 
 #     # Convert the list of dictionaries to a pandas DataFrame
 #     df = pd.DataFrame(all_products)

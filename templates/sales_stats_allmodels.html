@@ -40,7 +40,7 @@ Sales Stats
     var $j = jQuery.noConflict();
     $j(document).ready(function () {
         var table = $j('#allProductsTable').DataTable({
-            "pageLength": 200,
+            "pageLength": 100,
             "lengthMenu": [[100, 200, -1], [100, 200, "All"]]
         });
 
@@ -87,6 +87,46 @@ Sales Stats
             }
         );
 
+            // Add event listener to the likes range inputs
+            $j('#likes-search input').on('change', function () {
+                var min = parseInt($j('#likes-min').val(), 10);
+                var max = parseInt($j('#likes-max').val(), 10);
+                table.draw();
+            });
+
+            // Add event listener to the price range inputs
+            $j('#price-search input').on('change', function () {
+                var min = parseInt($j('#price-min').val(), 10);
+                var max = parseInt($j('#price-max').val(), 10);
+                table.draw();
+            });
+
+            $j.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    var minLikes = parseInt($j('#likes-min').val(), 10);
+                    var maxLikes = parseInt($j('#likes-max').val(), 10);
+                    var likes = parseFloat(data[4]) || 0; // use data for the likes column
+
+                    var minPrice = parseInt($j('#price-min').val(), 10);
+                    var maxPrice = parseInt($j('#price-max').val(), 10);
+                    var price = parseFloat(data[3]) || 0; // use data for the price column
+
+                    if ((isNaN(minLikes) && isNaN(maxLikes)) ||
+                        (isNaN(minLikes) && likes <= maxLikes) ||
+                        (minLikes <= likes && isNaN(maxLikes)) ||
+                        (minLikes <= likes && likes <= maxLikes)) {
+                        if ((isNaN(minPrice) && isNaN(maxPrice)) ||
+                            (isNaN(minPrice) && price <= maxPrice) ||
+                            (minPrice <= price && isNaN(maxPrice)) ||
+                            (minPrice <= price && price <= maxPrice)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            );
+
+
         $j('#allProductsTable th').hover(
             function () {
                 $j(this).find('input, div').css('display', 'inline-block');
@@ -96,6 +136,31 @@ Sales Stats
             }
         );
     });
+
+
+    // document.addEventListener("DOMContentLoaded", function() {
+    //     var lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+
+    //     if ("IntersectionObserver" in window) {
+    //         let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+    //         entries.forEach(function(entry) {
+    //             if (entry.isIntersecting) {
+    //             let lazyImage = entry.target;
+    //             lazyImage.src = lazyImage.dataset.src;
+    //             lazyImage.classList.remove("lazy");
+    //             lazyImageObserver.unobserve(lazyImage);
+    //             }
+    //         });
+    //         });
+
+    //         lazyImages.forEach(function(lazyImage) {
+    //         lazyImageObserver.observe(lazyImage);
+    //         });
+    //     } else {
+    //         // Possibly fall back to a more compatible method here
+    //     }
+    //     });
+
 </script>
 
 <style>
@@ -141,7 +206,10 @@ Sales Stats
     <table id="allProductsTable" class="table table-striped">
         <thead>
             <tr>
+                <!-- <th>Image</th> -->
                 <th>Product ID</th>
+                <th>Brand</th>
+                <th>Model</th>
                 <th>Name</th>
                 <th>Color</th>
                 <th>Price</th>
@@ -155,24 +223,38 @@ Sales Stats
                         <input type="text" placeholder="Search ID">
                     </div>
                 </th>
-                <th>
+
+                    <th>
+                        <div id="brand-search">
+                            <input type="text" placeholder="Search Brand">
+                        </div>
+                    <th>
+                        <th>
+
+                        <div id="model-search">
+                            <input type="text" placeholder="Search Model">
+                        </div>
+
+                        <th>
+
                     <div id="name-search">
                         <input type="text" placeholder="Search Name">
                     </div>
                 </th>
                 <th>
                     <div id="color-search">
-                        <!-- Color checkboxes will be populated here -->
                     </div>
                 </th>
                 <th>
                     <div id="price-search">
-                        <input type="text" placeholder="Search Price">
+                        <input type="number" id="price-min" placeholder="Min Price">
+                        <input type="number" id="price-max" placeholder="Max Price">
                     </div>
                 </th>
                 <th>
                     <div id="likes-search">
-                        <input type="text" placeholder="Search Likes">
+                        <input type="number" id="likes-min" placeholder="Min Likes">
+                        <input type="number" id="likes-max" placeholder="Max Likes">
                     </div>
                 </th>
                     <th>
@@ -192,7 +274,11 @@ Sales Stats
             {% for stats in all_stats %}
                 {% for product in stats.all_products %}
                     <tr>
+                        <!-- {% set product_id = product.link.split('/')[-1].split('-')[-1].split('.')[0] %}
+                        <td><img src="{{ 'https://images.vestiairecollective.com/produit/' + product_id + '-1_3.jpg' }}" style="width: 50px"></td> -->
                         <td>{{ product.id|default('') }}</td>
+                        <td>{{ product.brand.name|default('') if 'brand' in product else '' }}</td>
+                        <td>{{ product.model.name|default('') if 'model' in product else '' }}</td>
                         <td>{{ product.name|default('') }}</td>
                         <td>{{ (product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else '')|default('') }}</td>
                         <td>{{ ((product.price.cents/100) if product.price and product.price.cents else '')|default('') }} EUR</td>

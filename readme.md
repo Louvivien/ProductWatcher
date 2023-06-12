@@ -64,6 +64,15 @@ If the table is not displaying any data, check the following:
 - Make sure the Flask server is running and accessible.
 - Check the JavaScript console in your web browser for any error messages.
 
+## Ongoing
+
+Run the scraper when adding a new product to watch
+
+Make several components from app.py
+
+Load sold items page by page with ajax request/server call
+
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

@@ -1,3 +1,6 @@
+# //update with the collection name instead of universeid
+
+
 from pymongo import MongoClient
 import json
 from dotenv import load_dotenv
@@ -116,7 +119,7 @@ def get_sold_products(brand, model):
             data = {
                 "pagination": {"offset": offset, "limit": 100},
                 "fields": ["name", "description", "brand", "model", "country", "price", "discount", "link", "sold", "likes",
-                           "seller", "directShipping", "local", "pictures", "colors", "size", "stock", "universeId"],
+                           "seller", "directShipping", "local", "pictures", "colors", "size", "stock", brand + " " + model],
                 "facets": {
                     "fields": ["brand", "universe", "country", "stock", "color", "categoryLvl0", "priceRange", "price",
                                "condition", "region", "watchMechanism", "discount", "sold", "localCountries",
@@ -154,7 +157,6 @@ def get_sold_products(brand, model):
         return sold_products
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)
-
 
 # Function to get additional product details
 def get_product_details(product_id, retries=3):
@@ -211,9 +213,7 @@ def main(brand, model):
         # Get models
         logging.info(f"Getting models...")
         models = get_models(brand, model)
-        # Create collection
-        logging.info(f"Creating collection...")
-        collection = db[brand + " " + model]
+        collection = db["handbags"]
 
         # Get sold products
         logging.info(f"Getting sold products...")

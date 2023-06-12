@@ -14,9 +14,20 @@ Sales Stats
 <!-- Include the MongoDB Charts Embedding SDK -->
 <script src="https://unpkg.com/@mongodb-js/charts-embed-dom@3.1.0/dist/charts-embed-dom.umd.min.js"></script>
 
+
 <script>
-    // Now you can use the ChartsEmbedSDK as a global variable
     async function renderDashboard() {
+
+    // Extract brand and model from the URL
+      const pathArray = window.location.pathname.split('/');
+      const brand = decodeURIComponent(pathArray[2]);
+      const model = decodeURIComponent(pathArray[3]);
+
+      // Set the filter
+      const collectionName = brand + " " + model;
+      console.log("collectionName: " + collectionName);
+
+
       const sdk = new ChartsEmbedSDK({
         baseUrl: 'https://charts.mongodb.com/charts-project-0-kuacs', // Replace with your base URL
       });
@@ -24,7 +35,10 @@ Sales Stats
       const dashboard = sdk.createDashboard({
         dashboardId: '6483b793-7171-4c2e-8dea-122ef63e26a0', // Replace with your dashboard ID
         // other options
+        filter: {'collection': collectionName }
       });
+
+
     
       await dashboard.render(document.getElementById('dashboard'));
     }
@@ -33,14 +47,16 @@ Sales Stats
     window.onload = function() {
       renderDashboard();
     };
-    </script>
+</script>
+
+
     
 
 <script>
     var $j = jQuery.noConflict();
     $j(document).ready(function () {
         var table = $j('#allProductsTable').DataTable({
-            "pageLength": 200,
+            "pageLength": 100,
             "lengthMenu": [[100, 200, -1], [100, 200, "All"]]
         });
 
@@ -87,6 +103,46 @@ Sales Stats
             }
         );
 
+        // Add event listener to the likes range inputs
+        $j('#likes-search input').on('change', function () {
+                var min = parseInt($j('#likes-min').val(), 10);
+                var max = parseInt($j('#likes-max').val(), 10);
+                table.draw();
+            });
+
+            // Add event listener to the price range inputs
+            $j('#price-search input').on('change', function () {
+                var min = parseInt($j('#price-min').val(), 10);
+                var max = parseInt($j('#price-max').val(), 10);
+                table.draw();
+            });
+
+            $j.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    var minLikes = parseInt($j('#likes-min').val(), 10);
+                    var maxLikes = parseInt($j('#likes-max').val(), 10);
+                    var likes = parseFloat(data[4]) || 0; // use data for the likes column
+
+                    var minPrice = parseInt($j('#price-min').val(), 10);
+                    var maxPrice = parseInt($j('#price-max').val(), 10);
+                    var price = parseFloat(data[3]) || 0; // use data for the price column
+
+                    if ((isNaN(minLikes) && isNaN(maxLikes)) ||
+                        (isNaN(minLikes) && likes <= maxLikes) ||
+                        (minLikes <= likes && isNaN(maxLikes)) ||
+                        (minLikes <= likes && likes <= maxLikes)) {
+                        if ((isNaN(minPrice) && isNaN(maxPrice)) ||
+                            (isNaN(minPrice) && price <= maxPrice) ||
+                            (minPrice <= price && isNaN(maxPrice)) ||
+                            (minPrice <= price && price <= maxPrice)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            );
+
+
         $j('#allProductsTable th').hover(
             function () {
                 $j(this).find('input, div').css('display', 'inline-block');
@@ -96,6 +152,31 @@ Sales Stats
             }
         );
     });
+
+            document.addEventListener("DOMContentLoaded", function() {
+        var lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+
+        if ("IntersectionObserver" in window) {
+            let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                let lazyImage = entry.target;
+                lazyImage.src = lazyImage.dataset.src;
+                lazyImage.classList.remove("lazy");
+                lazyImageObserver.unobserve(lazyImage);
+                }
+            });
+            });
+
+            lazyImages.forEach(function(lazyImage) {
+            lazyImageObserver.observe(lazyImage);
+            });
+        } else {
+            // Possibly fall back to a more compatible method here
+        }
+        });
+
+
 </script>
 
 <style>
@@ -103,6 +184,8 @@ Sales Stats
     #allProductsTable th div {
         display: none;
     }
+
+
 </style>
 
 <div class="navbar navbar-inverse" role="navigation">
@@ -131,7 +214,7 @@ Sales Stats
     <div id="salesStats" class="collapse">
         <div class="container">
             <!-- Add this div where you want the dashboard to appear -->
-            <div id="dashboard" style="height: 800px; width: 100%;"></div>
+            <div id="dashboard" style="height: 1350px; width: 100%;"></div>
 
         </div>
     </div>
@@ -141,6 +224,7 @@ Sales Stats
     <table id="allProductsTable" class="table table-striped">
         <thead>
             <tr>
+                <th>Image</th>
                 <th>Product ID</th>
                 <th>Name</th>
                 <th>Color</th>
@@ -150,6 +234,9 @@ Sales Stats
                 <th>Link</th>
             </tr>
             <tr>
+                <th>
+
+                </th>
                 <th>
                     <div id="id-search">
                         <input type="text" placeholder="Search ID">
@@ -167,12 +254,14 @@ Sales Stats
                 </th>
                 <th>
                     <div id="price-search">
-                        <input type="text" placeholder="Search Price">
+                        <input type="number" id="price-min" placeholder="Min Price">
+                        <input type="number" id="price-max" placeholder="Max Price">
                     </div>
                 </th>
                 <th>
                     <div id="likes-search">
-                        <input type="text" placeholder="Search Likes">
+                        <input type="number" id="likes-min" placeholder="Min Likes">
+                        <input type="number" id="likes-max" placeholder="Max Likes">
                     </div>
                 </th>
                     <th>
@@ -191,6 +280,8 @@ Sales Stats
         <tbody>
             {% for product in all_products %}
             <tr>
+                {% set product_id = product.link.split('/')[-1].split('-')[-1].split('.')[0] %}
+                <td><img data-src="{{ 'https://images.vestiairecollective.com/produit/' + product_id + '-1_3.jpg' }}" class="lazy" style="width: 50px"></td>
                 <td>{{ product.id }}</td>
                 <td>{{ product.name }}</td>
                 <td>{{ product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else 'N/A' }}</td>
