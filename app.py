@@ -343,7 +343,7 @@ def sales_stats(brand, model):
     total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
     average_time_to_sell = round(total_time_to_sell / len(sold_items))
 
-    return render_template('sales_stats.html', average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
+    return render_template('sales_stats.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
 
 @app.route('/sales_stats/allmodels', methods=['GET'])
 def sales_stats_allmodels():
