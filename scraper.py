@@ -240,4 +240,4 @@ def main(brand, model):
         logging.error("Exception occurred", exc_info=True)
 
 # Run the script
-main("Chanel", "Boy")
+main("Louis Vuitton", "Twist Chain")

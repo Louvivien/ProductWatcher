@@ -218,7 +218,7 @@ Price Watcher
             <tr>
                 <td><img src="https://images.vestiairecollective.com{{ item.pictures[0] }}"  style="width: 50px;"></td>
                 <td>{{ item.brand.name }} {{ item.name }}</td>
-                <td>{{ item.colors.all[0].name }}</td>
+                <td>{{ item.colors.all[0].name if item.colors.all else '' }}</td>
                 <td>{{ ((item.discount.originalPrice.cents / 100)|int) if item.discount is defined else '' }}</td>
                 <td></td>
                 <td>{{ 1 if item.sold else 0 }}</td>

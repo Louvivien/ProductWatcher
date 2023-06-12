@@ -166,11 +166,8 @@ def search_vestiaire(brand, model):
   },
   "q": brand + " " + model,
   "sortBy": "relevance",
-  "filters": {
-    "sold": [
-      "1"
-    ]
-  },
+  "filters": { },
+ 
   "locale": {
     "country": "FR",
     "currency": "EUR",
@@ -179,9 +176,11 @@ def search_vestiaire(brand, model):
   },
   "mySizes": None
 }
+
+  
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
-
+        print(response.content)
         data = json.loads(response.content)
         queries = data['items']
 
