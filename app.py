@@ -437,6 +437,7 @@ def sales_stats_data():
 
         for product in all_products:
             product_data = {
+                "image": 'https://images.vestiairecollective.com/produit/' + str(product.get('id', '')) + '-1_3.jpg',
                 "id": product.get('id', ''),
                 "brand": product.get('brand', {}).get('name', '') if 'brand' in product else '',
                 "model": product.get('model', {}).get('name', '') if 'model' in product else '',

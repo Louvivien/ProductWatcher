@@ -62,6 +62,17 @@ Sales Stats
         }
     },
         "columns": [
+            { 
+            "data": "image",
+            "render": function(data, type, row, meta){
+                if(type === 'display'){
+                    data = '<img src="' + data + '" alt="Product Image" height="50" width="50">';
+                }
+                return data;
+            },
+            "orderable": false, // Disable sorting for this column
+            "searchable": false // Disable searching for this column
+        },
             { "data": "id" },
             { "data": "brand" },
             { "data": "model" },
@@ -189,7 +200,6 @@ Sales Stats
     });
 
 
-
 </script>
 
 <style>
@@ -240,7 +250,7 @@ Sales Stats
 
 
             <tr>
-
+                <th>Image</th>
                 <th>Product ID</th>
                 <th>Brand</th>
                 <th>Model</th>
@@ -256,7 +266,9 @@ Sales Stats
 
             <tr>
 
-
+                <th>
+                    <!-- Image -->
+                </th>
 
                 <th>
                     <div id="id-search">
@@ -332,6 +344,9 @@ Sales Stats
             {% for stats in all_stats %}
                 {% for product in stats.all_products %}
                     <tr>
+                        <td>
+                            <img src="{{ 'https://images.vestiairecollective.com/produit/' + (product.id|string) + '-1_3.jpg' }}" alt="Product Image" height="50" width="50" loading="lazy">
+                        </td>
                         <td>{{ product.id|default('') }}</td>
                         <td>{{ product.brand.name|default('') if 'brand' in product else '' }}</td>
                         <td>{{ product.model.name|default('') if 'model' in product else '' }}</td>
