@@ -414,13 +414,16 @@ def sales_stats_data():
 
 @app.route('/sales_stats/allmodels', methods=['GET'])
 def sales_stats_allmodels():
+    page = request.args.get('page', default = 1, type = int)
+    per_page = request.args.get('per_page', default = 10, type = int)
+
     collections = client.productwatcher.list_collection_names()  # Get all collection names
     all_stats = []
 
     for collection_name in collections:
         collection = db[collection_name]
-        print(collection_name)
-        all_products = list(collection.find())  # Get all products
+        all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))  # Get all products with pagination
+
         sold_items = [item for item in all_products if item.get('sold')]
 
         # # calculate average price
