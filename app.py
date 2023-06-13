@@ -1,4 +1,8 @@
 from flask import Flask, render_template, request, jsonify
+from flask import Response
+from datetime import date, datetime
+
+
 import requests
 import json
 from flask_bootstrap import Bootstrap
@@ -18,6 +22,8 @@ import pandas as pd
 
 import pycountry
 
+from bson import ObjectId
+
 
 
 
@@ -33,7 +39,24 @@ client = MongoClient(MONGO_URI.replace("<password>", MONGO_PASSWORD))
 db = client.productwatcher
 handbags = db.handbags  
 
+# This convert ObjectId / necessary for this route '/sales_stats/data'
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        elif isinstance(o, datetime):
+            return o.isoformat()
+        elif isinstance(o, date):
+            return o.isoformat()
+        return json.JSONEncoder.default(self, o)
+
+def jsonify(*args, **kwargs):
+    return Response(json.dumps(dict(*args, **kwargs), cls=JSONEncoder), mimetype='application/json')
+
+
 app = Flask(__name__)
+app.json_encoder = JSONEncoder
 Bootstrap(app)
 
 # Set up logging
@@ -44,6 +67,9 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
+
+
+
 
 
 # Define the list of products
@@ -344,6 +370,47 @@ def sales_stats(brand, model):
     average_time_to_sell = round(total_time_to_sell / len(sold_items))
 
     return render_template('sales_stats.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
+
+@app.route('/sales_stats/data', methods=['GET'])
+def sales_stats_data():
+    page = request.args.get('page', default = 1, type = int)
+    per_page = request.args.get('per_page', default = 10, type = int)
+
+    collections = client.productwatcher.list_collection_names()
+    all_products_data = []
+
+    for collection_name in collections:
+        collection = db[collection_name]
+        all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))
+
+        for product in all_products:
+            product_data = {
+                "id": product.get('id', ''),
+                "brand": product.get('brand', {}).get('name', '') if 'brand' in product else '',
+                "model": product.get('model', {}).get('name', '') if 'model' in product else '',
+                "name": product.get('name', ''),
+                "color": product.get('colors', {}).get('all', [{}])[0].get('name', '') if product.get('colors') and product.get('colors').get('all') else '',
+                "price": product.get('price', {}).get('cents', 0)/100 if product.get('price') and product.get('price').get('cents') else '',
+                "likes": product.get('likes', ''),
+                "timeToSell": product.get('timeToSell', ''),
+                "link": 'https://fr.vestiairecollective.com/' + product.get('link', '') if product.get('link') else ''
+            }
+            all_products_data.append(product_data)
+
+
+    records_total = collection.count_documents({})
+    records_filtered = collection.count_documents({})
+
+    response = {
+        "draw": int(request.args.get('draw', default = 1)),
+        "recordsTotal": records_total,
+        "recordsFiltered": records_filtered,
+        "data": all_products_data
+    }
+
+    return jsonify(response)
+
+
 
 @app.route('/sales_stats/allmodels', methods=['GET'])
 def sales_stats_allmodels():

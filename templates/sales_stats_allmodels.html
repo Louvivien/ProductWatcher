@@ -31,7 +31,7 @@ Sales Stats
     
     // Call renderDashboard after the window has loaded
     window.onload = function() {
-      renderDashboard();
+        renderDashboard();
     };
     </script>
     
@@ -39,10 +39,51 @@ Sales Stats
 <script>
     var $j = jQuery.noConflict();
     $j(document).ready(function () {
+        
+        
         var table = $j('#allProductsTable').DataTable({
-            "pageLength": 100,
-            "lengthMenu": [[100, 200, -1], [100, 200, "All"]]
-        });
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/sales_stats/data",
+            "type": "GET",
+            "data": function (d) {
+                d.page = d.start / d.length + 1;
+                d.per_page = d.length;
+            }
+        },
+        "columns": [
+            { "data": "id" },
+            { "data": "brand" },
+            { "data": "model" },
+            { "data": "name" },
+            { "data": "color" },
+            { "data": "price" },
+            { "data": "likes" },
+            { "data": "timeToSell" },
+            {
+                "data": "link",
+                "render": function(data, type, row, meta){
+                    if(type === 'display'){
+                        data = '<a href="' + data + '" class="btn btn-primary">View on VC</a>';
+                    }
+                    return data;
+                }
+            }
+        ],
+        "pageLength": 50,
+        "lengthMenu": [[50, 100, 200, -1], [50, 100, 200, "All"]]
+    });
+
+        
+        
+        // var table = $j('#allProductsTable').DataTable({
+        //     "pageLength": 100,
+        //     "lengthMenu": [[100, 200, -1], [100, 200, "All"]]
+        // });
+
+
+
 
         $j('#title-search').on('keyup', function () {
             table.columns(1).search(this.value).draw();
@@ -208,8 +249,10 @@ Sales Stats
     <h3>All Products</h3>
     <table id="allProductsTable" class="table table-striped">
         <thead>
+
+
             <tr>
-                <!-- <th>Image</th> -->
+
                 <th>Product ID</th>
                 <th>Brand</th>
                 <th>Model</th>
@@ -219,58 +262,79 @@ Sales Stats
                 <th>Likes</th>
                 <th>Time to Sell</th>
                 <th>Link</th>
+
             </tr>
+
+
             <tr>
+
+
+
                 <th>
                     <div id="id-search">
                         <input type="text" placeholder="Search ID">
                     </div>
                 </th>
 
-                    <th>
-                        <div id="brand-search">
-                            <input type="text" placeholder="Search Brand">
-                        </div>
-                    <th>
-                        <th>
 
-                        <div id="model-search">
-                            <input type="text" placeholder="Search Model">
-                        </div>
+                <th>
+                    <div id="brand-search">
+                        <input type="text" placeholder="Search Brand">
+                    </div>
+                </th>
 
-                        <th>
 
+                <th>
+                    <div id="model-search">
+                        <input type="text" placeholder="Search Model">
+                    </div>
+                </th>
+
+
+                <th>
                     <div id="name-search">
                         <input type="text" placeholder="Search Name">
                     </div>
                 </th>
+
+
                 <th>
                     <div id="color-search">
                     </div>
                 </th>
+
+
                 <th>
                     <div id="price-search">
                         <input type="number" id="price-min" placeholder="Min Price">
                         <input type="number" id="price-max" placeholder="Max Price">
                     </div>
                 </th>
+
+
                 <th>
                     <div id="likes-search">
                         <input type="number" id="likes-min" placeholder="Min Likes">
                         <input type="number" id="likes-max" placeholder="Max Likes">
                     </div>
                 </th>
+
+
                     <th>
                         <div id="timeToSell-search">
                             <input type="number" id="timeToSell-min" placeholder="Min Time to Sell">
                             <input type="number" id="timeToSell-max" placeholder="Max Time to Sell">
                         </div>
                     </th>
+
+
                 <th>
                     <div id="link-search">
                         <input type="text" placeholder="Search Link">
                     </div>
                 </th>
+
+
             </tr>
         </thead>
         <tbody>
@@ -287,7 +351,13 @@ Sales Stats
                         <td>{{ ((product.price.cents/100) if product.price and product.price.cents else '')|default('') }} EUR</td>
                         <td>{{ product.likes|default('') }}</td>
                         <td>{{ product.timeToSell|default('') }}</td>
-                        <td><a href="{{ ('https://fr.vestiairecollective.com/' + product.link if product.link else '')|default('') }}" class="btn btn-primary">View on VC</a></td>
+                        <td>
+                            {% if product.link %}
+                                <a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary">View on VC</a>
+                            {% else %}
+                                <a href="#">""</a>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
             {% endfor %}
