@@ -48,10 +48,19 @@ Sales Stats
             "url": "/sales_stats/data",
             "type": "GET",
             "data": function (d) {
-                d.page = d.start / d.length + 1;
-                d.per_page = d.length;
-            }
-        },
+            d.page = d.start / d.length + 1;
+            d.per_page = d.length;
+            d.timeToSell_min = $j('#timeToSell-min').val();
+            d.timeToSell_max = $j('#timeToSell-max').val();
+            d.likes_min = $j('#likes-min').val();
+            d.likes_max = $j('#likes-max').val();
+            d.price_min = $j('#price-min').val();
+            d.price_max = $j('#price-max').val();
+            d.checkbox_values = $j('#color-search input:checked').map(function () {
+                return this.value;
+            }).get().join('|');
+        }
+    },
         "columns": [
             { "data": "id" },
             { "data": "brand" },
@@ -71,6 +80,7 @@ Sales Stats
                 }
             }
         ],
+        "order": [[ 1, "desc" ]],  
         "pageLength": 50,
         "lengthMenu": [[50, 100, 200, -1], [50, 100, 200, "All"]]
     });
@@ -179,28 +189,6 @@ Sales Stats
     });
 
 
-    // document.addEventListener("DOMContentLoaded", function() {
-    //     var lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
-
-    //     if ("IntersectionObserver" in window) {
-    //         let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
-    //         entries.forEach(function(entry) {
-    //             if (entry.isIntersecting) {
-    //             let lazyImage = entry.target;
-    //             lazyImage.src = lazyImage.dataset.src;
-    //             lazyImage.classList.remove("lazy");
-    //             lazyImageObserver.unobserve(lazyImage);
-    //             }
-    //         });
-    //         });
-
-    //         lazyImages.forEach(function(lazyImage) {
-    //         lazyImageObserver.observe(lazyImage);
-    //         });
-    //     } else {
-    //         // Possibly fall back to a more compatible method here
-    //     }
-    //     });
 
 </script>
 
@@ -300,6 +288,9 @@ Sales Stats
 
                 <th>
                     <div id="color-search">
+                        {% for color in colors %}
+                            <input type="checkbox" value="{{ color }}">{{ color }}<br>
+                        {% endfor %}
                     </div>
                 </th>
 
@@ -341,8 +332,6 @@ Sales Stats
             {% for stats in all_stats %}
                 {% for product in stats.all_products %}
                     <tr>
-                        <!-- {% set product_id = product.link.split('/')[-1].split('-')[-1].split('.')[0] %}
-                        <td><img src="{{ 'https://images.vestiairecollective.com/produit/' + product_id + '-1_3.jpg' }}" style="width: 50px"></td> -->
                         <td>{{ product.id|default('') }}</td>
                         <td>{{ product.brand.name|default('') if 'brand' in product else '' }}</td>
                         <td>{{ product.model.name|default('') if 'model' in product else '' }}</td>
@@ -368,35 +357,3 @@ Sales Stats
 
 {% endblock %}
 
-<!-- to do real stats manually -->
-<!-- <div>
-    <h2>Sales Stats</h2>
-    <p>Average time to sell: {{ average_time_to_sell }}</p>
-    <p>Best selling color: {{ best_selling_color }}</p>
-    <p>Average price: {{ average_price }}</p>
-</div>
-
-<h2>Top 5 Liked Products</h2>
-<table class="table table-striped">
-    <tr>
-        <th>Product ID</th>
-        <th>Name</th>
-        <th>Color</th>
-        <th>Price</th>
-        <th>Likes</th>
-        <th>Time to Sell</th>
-        <th>Link</th>
-    </tr>
-    {% for product in top_5_liked_products %}
-    <tr>
-        <td>{{ product.id }}</td>
-        <td>{{ product.name }}</td>
-        <td>{{ product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else 'N/A' }}</td>
-        <td>{{ product.price.cents/100 if product.price and product.price.cents else 'N/A' }} EUR</td>
-        <td>{{ product.likes }}</td>
-        <td>{{ product.timeToSell }}</td>
-        <td><a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary">View on VC</a></td>
-
-    </tr>
-    {% endfor %}
-</table> -->

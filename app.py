@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from flask import Response
 from datetime import date, datetime
 
+import pymongo  # Add this line
 
 import requests
 import json
@@ -375,13 +376,64 @@ def sales_stats(brand, model):
 def sales_stats_data():
     page = request.args.get('page', default = 1, type = int)
     per_page = request.args.get('per_page', default = 10, type = int)
+    search_value = request.args.get('search[value]', default = '', type = str)
+    timeToSell_min = request.args.get('timeToSell_min', default = None, type = int)
+    timeToSell_max = request.args.get('timeToSell_max', default = None, type = int)
+    likes_min = request.args.get('likes_min', default = None, type = int)
+    likes_max = request.args.get('likes_max', default = None, type = int)
+    price_min = request.args.get('price_min', default = None, type = int)
+    price_max = request.args.get('price_max', default = None, type = int)
+
+  # Get order parameters from request
+    order_column = request.args.get('order[0][column]', default = None, type = int)
+    order_dir = request.args.get('order[0][dir]', default = None, type = str)
+
+    # Define a list of column names in the same order as in the DataTables initialization
+    column_names = ['id', 'brand', 'model', 'name', 'color', 'price', 'likes', 'timeToSell', 'link']
+
+    # Get checkbox value from request
+    checkbox_values = request.args.get('checkbox_values', default = None, type = str)
+
 
     collections = client.productwatcher.list_collection_names()
     all_products_data = []
 
     for collection_name in collections:
         collection = db[collection_name]
-        all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))
+
+
+        # Build the MongoDB query
+        query = {}
+
+        if search_value:
+            query['$or'] = [
+                {'id': {'$regex': search_value, '$options': 'i'}},
+                {'brand.name': {'$regex': search_value, '$options': 'i'}},
+                {'model.name': {'$regex': search_value, '$options': 'i'}},
+                {'name': {'$regex': search_value, '$options': 'i'}},
+                {'link': {'$regex': search_value, '$options': 'i'}}
+            ]
+
+        # Add checkbox filter to MongoDB query if it exists
+        if checkbox_values is not None and checkbox_values != '':
+            color_names = checkbox_values.split('|')
+            query['colors.all.name'] = {'$in': color_names}
+
+        if timeToSell_min is not None and timeToSell_max is not None:
+            query['timeToSell'] = {'$gte': timeToSell_min, '$lte': timeToSell_max}
+
+        if likes_min is not None and likes_max is not None:
+            query['likes'] = {'$gte': likes_min, '$lte': likes_max}
+
+        if price_min is not None and price_max is not None:
+            query['price.cents'] = {'$gte': price_min*100, '$lte': price_max*100}
+
+        # Add order parameters to MongoDB query if they exist
+        if order_column is not None and order_dir is not None:
+            sort = [(column_names[order_column], pymongo.ASCENDING if order_dir == 'asc' else pymongo.DESCENDING)]
+
+
+        all_products = list(collection.find(query).sort(sort).skip((page - 1) * per_page).limit(per_page))
 
         for product in all_products:
             product_data = {
@@ -419,10 +471,16 @@ def sales_stats_allmodels():
 
     collections = client.productwatcher.list_collection_names()  # Get all collection names
     all_stats = []
+    all_colors = set()
 
     for collection_name in collections:
         collection = db[collection_name]
         all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))  # Get all products with pagination
+
+        # Get all unique colors in the current collection
+        colors = collection.distinct('colors.all.name')
+        all_colors.update(colors)
+
 
         sold_items = [item for item in all_products if item.get('sold')]
 
@@ -466,7 +524,7 @@ def sales_stats_allmodels():
             'currency': "EUR"
         })
 
-    return render_template('sales_stats_allmodels.html', all_stats=all_stats)
+    return render_template('sales_stats_allmodels.html', all_stats=all_stats, colors=all_colors)
 
 
 # @app.route('/dashboard1/<brand>/<model>', methods=['GET'])
