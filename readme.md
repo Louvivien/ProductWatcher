@@ -70,7 +70,6 @@ Run the scraper when adding a new product to watch
 
 Make several components from app.py
 
-Load sold items page by page with ajax request/server call
 
 
 ## Contributing
