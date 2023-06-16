@@ -394,5 +394,6 @@ else:  # Neural network
 profit_all = predicted_price_all - buying_price
 profit_red = predicted_price_red - buying_price
 
+print("")
 print("Closest model to average price for all models:", best_model_all, "with a difference of", round(diff_allmodels[best_model_all], 2), "€, a price of", predicted_price_all, "€ and a profit of", profit_all, "€")
 print("Closest model to average price for red bags:", best_model_red, "with a difference of", round(diff_color[best_model_red], 2), "€, a price of", predicted_price_red, "€ and a profit of", profit_red, "€")

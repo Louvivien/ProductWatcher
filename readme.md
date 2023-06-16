@@ -70,6 +70,9 @@ Run the scraper when adding a new product to watch
 
 Make several components from app.py
 
+Ability to read images like in this project:
+https://minigpt-4.github.io/
+
 
 
 ## Contributing
