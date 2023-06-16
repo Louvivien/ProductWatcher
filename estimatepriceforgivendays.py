@@ -158,7 +158,7 @@ def get_optimal_price_color_tree(days):
 
 ##################### Random Forest regression 
 
-# Set a seed for the random number generator
+# Set a seed for the random number generator to decrease randomness
 seed(1)
 
 # Shuffle the data
@@ -186,7 +186,7 @@ def get_optimal_price_color_rf(days):
 ##################### Neural network
 
 # Neural network
-# Set a seed for the random number generator
+# Set a seed for the random number generator to decrease randomness
 seed(1)
 tf.random.set_seed(2)
 
@@ -207,7 +207,7 @@ epochs = 200
 # Add a validation split 
 validation_split = 0.2  
 
-# Initialize the weights to small random numbers
+# Initialize the weights to small random numbers to decrease randomness
 init = tf.keras.initializers.RandomNormal(seed=1)
 
 # Neural network regression on all Capucine bags
