@@ -65,7 +65,7 @@ Sales Stats
         });
 
         // Populate the color checkboxes
-        var colors = table.column(2).data().unique();
+        var colors = table.column(3).data().unique();
         colors.each(function (color) {
             $j('#color-search').append('<input type="checkbox" value="' + color + '">' + color + '<br>');
         });
@@ -75,7 +75,7 @@ Sales Stats
             var search = $j('#color-search input:checked').map(function () {
                 return this.value;
             }).get().join('|');
-            table.column(2).search(search, true, false).draw();
+            table.column(3).search(search, true, false).draw();
         });
 
 
