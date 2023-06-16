@@ -28,12 +28,12 @@ warnings.filterwarnings(action='ignore', category=UserWarning)
 
 
 # Load .env file
-print("Loading environment variables...")
+# print("Loading environment variables...")
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
 # MongoDB setup
-print("Setting up MongoDB connection...")
+# print("Setting up MongoDB connection...")
 MONGO_URI = os.getenv('MONGO_URI')
 MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
 client = MongoClient(MONGO_URI.replace("<password>", MONGO_PASSWORD))
@@ -113,13 +113,13 @@ except Exception as e:
 ##################### Linear regression 
 
 # Perform the linear regression analysis for all model bags
-print("Performing linear regression analysis for all "+ Model +" bags...")
+# print("Performing linear regression analysis for all "+ Model +" bags...")
 model1 = LinearRegression()
 model1.fit(df[['timeToSell']], df['price'])
 
 if color_data_exists:
     # Perform the linear regression analysis for model bags in the color   
-    print("Performing linear regression analysis for "+ Color +" "+ Model +" bags...")
+    # print("Performing linear regression analysis for "+ Color +" "+ Model +" bags...")
     model2 = LinearRegression()
     model2.fit(dp[['timeToSell']], dp['price'])
 
@@ -136,7 +136,7 @@ def get_optimal_price_color(days):
 ##################### Polynomial regression 
 
 # Polynomial regression on all model bags
-print("Performing polynomial regression analysis for all "+ Model +" bags...")
+# print("Performing polynomial regression analysis for all "+ Model +" bags...")
 poly = PolynomialFeatures(degree=2)
 X_poly = poly.fit_transform(df[['timeToSell']])
 model3 = LinearRegression()
@@ -144,7 +144,7 @@ model3.fit(X_poly, df['price'])
 
 if color_data_exists:
     # Polynomial regression on model bags in the color
-    print("Performing polynomial regression analysis for "+ Color +" "+ Model +" bags...")
+    # print("Performing polynomial regression analysis for "+ Color +" "+ Model +" bags...")
     X_poly_red = poly.fit_transform(dp[['timeToSell']])
     model4 = LinearRegression()
     model4.fit(X_poly_red, dp['price'])
@@ -168,7 +168,7 @@ param_grid = {
 }
 
 # Decision tree regression on all model bags with max_depth and min_samples_split parameters
-print("Performing decision tree regression analysis for all "+ Model +" bags...")
+# print("Performing decision tree regression analysis for all "+ Model +" bags...")
 dt = DecisionTreeRegressor()
 grid_search = GridSearchCV(estimator=dt, param_grid=param_grid, cv=5)
 grid_search.fit(df[['timeToSell']], df['price'])
@@ -178,7 +178,7 @@ model5.fit(df[['timeToSell']], df['price'])
 
 if color_data_exists:
     # Decision tree regression on model bags in the color with max_depth and min_samples_split parameters
-    print("Performing decision tree regression analysis for "+ Color +" "+ Model +" bags...")
+    # print("Performing decision tree regression analysis for "+ Color +" "+ Model +" bags...")
     grid_search.fit(dp[['timeToSell']], dp['price'])
     best_params = grid_search.best_params_
     model6 = DecisionTreeRegressor(max_depth=best_params['max_depth'], min_samples_split=best_params['min_samples_split'])
@@ -204,13 +204,13 @@ if color_data_exists:
     dp = dp.sample(frac=1, random_state=1)
 
 # Random Forest regression on all model bags with max_depth and min_samples_split parameters
-print("Performing Random Forest regression analysis for all "+ Model +" bags...")
+# print("Performing Random Forest regression analysis for all "+ Model +" bags...")
 model7 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
 model7.fit(df[['timeToSell']], df['price'])
 
 if color_data_exists:
     # Random Forest regression on model bags in the color with max_depth and min_samples_split parameters
-    print("Performing Random Forest regression analysis for "+ Color +" "+ Model +" bags...")
+    # print("Performing Random Forest regression analysis for "+ Color +" "+ Model +" bags...")
     model8 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
     model8.fit(dp[['timeToSell']], dp['price'])
 
@@ -255,7 +255,7 @@ validation_split = 0.2
 init = tf.keras.initializers.RandomNormal(seed=1)
 
 # Neural network regression on all model bags
-print("Performing neural network regression analysis for all "+ Model +" bags...")
+# print("Performing neural network regression analysis for all "+ Model +" bags...")
 
 model9 = Sequential()
 model9.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  # Add L2 regularization  
@@ -274,7 +274,7 @@ history = model9.fit(X_scaled, df['price'], epochs=epochs, verbose=0, validation
 
 if color_data_exists:
     # Neural network regression on all model bags in the color
-    print("Performing neural network regression analysis for "+ Color +" "+ Model +" bags...")
+    # print("Performing neural network regression analysis for "+ Color +" "+ Model +" bags...")
     model10 = Sequential()  
     model10.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  
     model10.add(Dropout(0.3))   
@@ -324,29 +324,29 @@ print("")
 print("###############       Recommended prices for all models and profits:")
 print("")
 
-# linear regression
+# linear regression - all models
 print("Linear regression - all models:", int(round(get_optimal_price_allmodels(days)[0])), "€ | +", profit_allmodels_lr, "€")
-if color_data_exists:
-    print("Linear regression - " + Color + ":", int(round(get_optimal_price_color(days)[0])), "€ | +", profit_color_lr, "€")
-
-# polynomial regression
+# polynomial regression - all models
 print("Polynomial regression - all models:", int(round(get_optimal_price_allmodels_poly(days)[0])), "€ | +", profit_allmodels_poly, "€")
-if color_data_exists:
-    print("Polynomial regression - " + Color + ":", int(round(get_optimal_price_color_poly(days)[0])), "€ | +", profit_color_poly, "€")
-
-# decision tree regression
+# decision tree regression - all models
 print("Decision tree regression - all models:", int(round(get_optimal_price_allmodels_tree(days)[0])), "€ | +", profit_allmodels_tree, "€")
-if color_data_exists:
-    print("Decision tree regression - " + Color + ":", int(round(get_optimal_price_color_tree(days)[0])), "€ | +", profit_color_tree, "€")
-
-# random forest regression
+# random forest regression - all models
 print("Random forest regression - all models:", int(round(get_optimal_price_allmodels_rf(days)[0])), "€ | +", profit_allmodels_rf, "€")
-if color_data_exists:
-    print("Random forest regression - " + Color + ":", int(round(get_optimal_price_color_rf(days)[0])), "€ | +", profit_color_rf, "€")
-
-# neural network regression
+# neural network regression - all models
 print("Neural network regression - all models:", int(round(get_optimal_price_allmodels_nn(days)[0][0])), "€ | +", profit_allmodels_nn, "€")
+
+print("")
+
 if color_data_exists:
+    # linear regression - color
+    print("Linear regression - " + Color + ":", int(round(get_optimal_price_color(days)[0])), "€ | +", profit_color_lr, "€")
+    # polynomial regression - color
+    print("Polynomial regression - " + Color + ":", int(round(get_optimal_price_color_poly(days)[0])), "€ | +", profit_color_poly, "€")
+    # decision tree regression - color
+    print("Decision tree regression - " + Color + ":", int(round(get_optimal_price_color_tree(days)[0])), "€ | +", profit_color_tree, "€")
+    # random forest regression - color
+    print("Random forest regression - " + Color + ":", int(round(get_optimal_price_color_rf(days)[0])), "€ | +", profit_color_rf, "€")
+    # neural network regression - color
     print("Neural network regression - " + Color + ":", int(round(get_optimal_price_color_nn(days)[0][0])), "€ | +", profit_color_nn, "€")
 
 
@@ -383,23 +383,18 @@ if color_data_exists:
 
 
 print("MAE - Linear regression - all models:", round(mae_allmodels_lr), "€")
+print("MAE - Polynomial regression - all models:", round(mae_allmodels_poly, 2), "€")
+print("MAE - Decision tree regression - all models:", round(mae_allmodels_tree), "€")
+print("MAE - Random forest regression - all models:", round(mae_allmodels_rf), "€")
+print("MAE - Neural network regression - all models:", round(mae_allmodels_nn), "€")
+
+print("")
+
 if color_data_exists:
     print("MAE - Linear regression - " + Color + ":", round(mae_color_lr), "€")
-
-print("MAE - Polynomial regression - all models:", round(mae_allmodels_poly, 2), "€")
-if color_data_exists:
     print("MAE - Polynomial regression - " + Color + ":", round(mae_color_poly), "€")
-
-print("MAE - Decision tree regression - all models:", round(mae_allmodels_tree), "€")
-if color_data_exists:
     print("MAE - Decision tree regression - " + Color + ":", round(mae_color_tree), "€")
-
-print("MAE - Random forest regression - all models:", round(mae_allmodels_rf), "€")
-if color_data_exists:
     print("MAE - Random forest regression - " + Color + ":", round(mae_color_rf), "€")
-
-print("MAE - Neural network regression - all models:", round(mae_allmodels_nn), "€")
-if color_data_exists:
     print("MAE - Neural network regression - " + Color + ":", round(mae_color_nn), "€")
 
 

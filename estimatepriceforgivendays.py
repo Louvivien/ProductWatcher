@@ -31,12 +31,12 @@ warnings.filterwarnings(action='ignore', category=UserWarning)
 
 
 # Load .env file
-print("Loading environment variables...")
+# print("Loading environment variables...")
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
 # MongoDB setup
-print("Setting up MongoDB connection...")
+# print("Setting up MongoDB connection...")
 MONGO_URI = os.getenv('MONGO_URI')
 MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
 client = MongoClient(MONGO_URI.replace("<password>", MONGO_PASSWORD))
@@ -79,12 +79,12 @@ dp['timeToSell'] = dp['timeToSell'].apply(int)
 ##################### Linear regression 
 
 # Perform the linear regression analysis for all Capucine bags
-print("Performing linear regression analysis for all Capucine bags...")
+# print("Performing linear regression analysis for all Capucine bags...")
 model1 = LinearRegression()
 model1.fit(df[['timeToSell']], df['price'])
 
 # Perform the linear regression analysis for red Capucine bags    
-print("Performing linear regression analysis for red Capucine bags...")
+# print("Performing linear regression analysis for red Capucine bags...")
 model2 = LinearRegression()
 model2.fit(dp[['timeToSell']], dp['price'])
 
@@ -101,14 +101,14 @@ def get_optimal_price_color(days):
 ##################### Polynomial regression 
 
 # Polynomial regression on all Capucine bags
-print("Performing polynomial regression analysis for all Capucine bags...")
+# print("Performing polynomial regression analysis for all Capucine bags...")
 poly = PolynomialFeatures(degree=2)
 X_poly = poly.fit_transform(df[['timeToSell']])
 model3 = LinearRegression()
 model3.fit(X_poly, df['price'])
 
 # Polynomial regression on red Capucine bags
-print("Performing polynomial regression analysis for red Capucine bags...")
+# print("Performing polynomial regression analysis for red Capucine bags...")
 X_poly_red = poly.fit_transform(dp[['timeToSell']])
 model4 = LinearRegression()
 model4.fit(X_poly_red, dp['price'])
@@ -132,7 +132,7 @@ param_grid = {
 }
 
 # Decision tree regression on all Capucine bags with max_depth and min_samples_split parameters
-print("Performing decision tree regression analysis for all Capucine bags...")
+# print("Performing decision tree regression analysis for all Capucine bags...")
 dt = DecisionTreeRegressor()
 grid_search = GridSearchCV(estimator=dt, param_grid=param_grid, cv=5)
 grid_search.fit(df[['timeToSell']], df['price'])
@@ -141,7 +141,7 @@ model5 = DecisionTreeRegressor(max_depth=best_params['max_depth'], min_samples_s
 model5.fit(df[['timeToSell']], df['price'])
 
 # Decision tree regression on red Capucine bags with max_depth and min_samples_split parameters
-print("Performing decision tree regression analysis for red Capucine bags...")
+# print("Performing decision tree regression analysis for red Capucine bags...")
 grid_search.fit(dp[['timeToSell']], dp['price'])
 best_params = grid_search.best_params_
 model6 = DecisionTreeRegressor(max_depth=best_params['max_depth'], min_samples_split=best_params['min_samples_split'])
@@ -166,12 +166,12 @@ df = df.sample(frac=1, random_state=1)
 dp = dp.sample(frac=1, random_state=1)
 
 # Random Forest regression on all Capucine bags with max_depth and min_samples_split parameters
-print("Performing Random Forest regression analysis for all Capucine bags...")
+# print("Performing Random Forest regression analysis for all Capucine bags...")
 model7 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
 model7.fit(df[['timeToSell']], df['price'])
 
 # Random Forest regression on red Capucine bags with max_depth and min_samples_split parameters
-print("Performing Random Forest regression analysis for red Capucine bags...")
+# print("Performing Random Forest regression analysis for red Capucine bags...")
 model8 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
 model8.fit(dp[['timeToSell']], dp['price'])
 
@@ -211,7 +211,7 @@ validation_split = 0.2
 init = tf.keras.initializers.RandomNormal(seed=1)
 
 # Neural network regression on all Capucine bags
-print("Performing neural network regression analysis for all Capucine bags...")
+# print("Performing neural network regression analysis for all Capucine bags...")
 
 model9 = Sequential()
 model9.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  # Add L2 regularization  
@@ -224,7 +224,7 @@ model9.compile(loss='mean_squared_error', optimizer='adam')
 history = model9.fit(X_scaled, df['price'], epochs=epochs, verbose=0, validation_split=validation_split)  
 
 # Neural network regression on Capucine red bags
-print("Performing neural network regression analysis for Capucine red bags...")
+# print("Performing neural network regression analysis for Capucine red bags...")
 
 model10 = Sequential()  
 model10.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  
@@ -275,24 +275,28 @@ print("")
 print("###############       Recommended prices for all models and profits:")
 print("")
 
-# linear regression
+# linear regression - all models
 print("Linear regression - all models:", int(round(get_optimal_price_allmodels(days)[0])), "€ | +", profit_allmodels_lr, "€")
-print("Linear regression - red:", int(round(get_optimal_price_color(days)[0])), "€ | +", profit_color_lr, "€")
-
-# polynomial regression
+# polynomial regression - all models
 print("Polynomial regression - all models:", int(round(get_optimal_price_allmodels_poly(days)[0])), "€ | +", profit_allmodels_poly, "€")
-print("Polynomial regression - red:", int(round(get_optimal_price_color_poly(days)[0])), "€ | +", profit_color_poly, "€")
-
-# decision tree regression
+# decision tree regression - all models
 print("Decision tree regression - all models:", int(round(get_optimal_price_allmodels_tree(days)[0])), "€ | +", profit_allmodels_tree, "€")
-print("Decision tree regression - red:", int(round(get_optimal_price_color_tree(days)[0])), "€ | +", profit_color_tree, "€")
-
-# random forest regression
+# random forest regression - all models
 print("Random forest regression - all models:", int(round(get_optimal_price_allmodels_rf(days)[0])), "€ | +", profit_allmodels_rf, "€")
-print("Random forest regression - red:", int(round(get_optimal_price_color_rf(days)[0])), "€ | +", profit_color_rf, "€")
-
-# neural network regression
+# neural network regression - all models
 print("Neural network regression - all models:", int(round(get_optimal_price_allmodels_nn(days)[0][0])), "€ | +", profit_allmodels_nn, "€")
+
+print("")
+
+# linear regression - red
+print("Linear regression - red:", int(round(get_optimal_price_color(days)[0])), "€ | +", profit_color_lr, "€")
+# polynomial regression - red
+print("Polynomial regression - red:", int(round(get_optimal_price_color_poly(days)[0])), "€ | +", profit_color_poly, "€")
+# decision tree regression - red
+print("Decision tree regression - red:", int(round(get_optimal_price_color_tree(days)[0])), "€ | +", profit_color_tree, "€")
+# random forest regression - red
+print("Random forest regression - red:", int(round(get_optimal_price_color_rf(days)[0])), "€ | +", profit_color_rf, "€")
+# neural network regression - red
 print("Neural network regression - red:", int(round(get_optimal_price_color_nn(days)[0][0])), "€ | +", profit_color_nn, "€")
 
 
@@ -330,18 +334,17 @@ mae_color_nn = mean_absolute_error(dp['price']*100, model10.predict(scaler_red.t
 
 
 print("MAE - Linear regression - all models:", round(mae_allmodels_lr), "€")
-print("MAE - Linear regression - red:", round(mae_color_lr), "€")
-
 print("MAE - Polynomial regression - all models:", round(mae_allmodels_poly, 2), "€")
-print("MAE - Polynomial regression - red:", round(mae_color_poly), "€")
-
 print("MAE - Decision tree regression - all models:", round(mae_allmodels_tree), "€")
-print("MAE - Decision tree regression - red:", round(mae_color_tree), "€")
-
 print("MAE - Random forest regression - all models:", round(mae_allmodels_rf), "€")
-print("MAE - Random forest regression - red:", round(mae_color_rf), "€")
-
 print("MAE - Neural network regression - all models:", round(mae_allmodels_nn), "€")
+
+print("")
+
+print("MAE - Linear regression - red:", round(mae_color_lr), "€")
+print("MAE - Polynomial regression - red:", round(mae_color_poly), "€")
+print("MAE - Decision tree regression - red:", round(mae_color_tree), "€")
+print("MAE - Random forest regression - red:", round(mae_color_rf), "€")
 print("MAE - Neural network regression - red:", round(mae_color_nn), "€")
 
 
