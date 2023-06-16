@@ -11,10 +11,9 @@ from keras.models import Sequential
 from keras.layers import Dense
 import matplotlib.pyplot as plt
 from tensorflow.keras.regularizers import l2
-
-# Import necessary libraries
 from sklearn.preprocessing import MinMaxScaler
 from keras.layers import Dropout
+from sklearn.model_selection import GridSearchCV
 
 import warnings
 from sklearn.exceptions import DataConversionWarning
@@ -110,17 +109,28 @@ def get_optimal_price_color_poly(days):
 
 
 
-
 ##################### Decision tree regression 
+
+# Define the parameter grid
+param_grid = {
+    'max_depth': [5, 10, 15, 20],
+    'min_samples_split': [10, 20, 30, 40]
+}
 
 # Decision tree regression on all Capucine bags with max_depth and min_samples_split parameters
 print("Performing decision tree regression analysis for all Capucine bags...")
-model5 = DecisionTreeRegressor(max_depth=10, min_samples_split=20)
+dt = DecisionTreeRegressor()
+grid_search = GridSearchCV(estimator=dt, param_grid=param_grid, cv=5)
+grid_search.fit(df[['timeToSell']], df['price'])
+best_params = grid_search.best_params_
+model5 = DecisionTreeRegressor(max_depth=best_params['max_depth'], min_samples_split=best_params['min_samples_split'])
 model5.fit(df[['timeToSell']], df['price'])
 
 # Decision tree regression on red Capucine bags with max_depth and min_samples_split parameters
 print("Performing decision tree regression analysis for red Capucine bags...")
-model6 = DecisionTreeRegressor(max_depth=10, min_samples_split=20)
+grid_search.fit(dp[['timeToSell']], dp['price'])
+best_params = grid_search.best_params_
+model6 = DecisionTreeRegressor(max_depth=best_params['max_depth'], min_samples_split=best_params['min_samples_split'])
 model6.fit(dp[['timeToSell']], dp['price'])
 
 # Define functions to get the optimal price for all models and red only using decision tree regression
@@ -129,7 +139,6 @@ def get_optimal_price_allmodels_tree(days):
 
 def get_optimal_price_color_tree(days):
     return model6.predict([[days]])
-
 
 
 
