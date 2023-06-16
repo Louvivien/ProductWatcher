@@ -6,19 +6,29 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
+from numpy.random import seed
+
 from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
 from keras.layers import Dense
 import matplotlib.pyplot as plt
 from tensorflow.keras.regularizers import l2
+import tensorflow as tf
 from sklearn.preprocessing import MinMaxScaler
 from keras.layers import Dropout
+from keras.initializers import Constant
+
 from sklearn.model_selection import GridSearchCV
+
 
 import warnings
 from sklearn.exceptions import DataConversionWarning
 warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 warnings.filterwarnings(action='ignore', category=UserWarning)
+
+
+##################### Setup
+
 
 # Load .env file
 print("Loading environment variables...")
@@ -37,13 +47,17 @@ handbags = db.handbags
 days = int(input("Enter the maximum number of days you are willing to sell the product: "))
 buying_price = int(input("Enter the buying price in €: "))
 
-# Fetch all the Louis Vuitton Capucine bags
+# Fetch all the Louis Vuitton Capucines bags
 print("Fetching all Louis Vuitton Capucine bags...")
 lv_capucine_bags = handbags.find({"brand.name": "Louis Vuitton", "model.name": "Capucines"})
+bags_count = handbags.count_documents({"brand.name": "Louis Vuitton", "model.name": "Capucines"})
+print("Number of bags fetched: ", bags_count)
 
-# Fetch all the Louis Vuitton Capucine red bags
+# Fetch all the Louis Vuitton Capucines red bags
 print("Fetching all red Louis Vuitton Capucine bags...")
 lv_capucine_red_bags = handbags.find({"brand.name": "Louis Vuitton", "model.name": "Capucines", "colors.all.name": "Red"})
+bags_count = handbags.count_documents({"brand.name": "Louis Vuitton", "model.name": "Capucines", "colors.all.name": "Red"})
+print("Number of red bags fetched: ", bags_count)
 
 # Convert the data to a pandas DataFrame
 df = pd.DataFrame(list(lv_capucine_bags))
@@ -144,15 +158,21 @@ def get_optimal_price_color_tree(days):
 
 ##################### Random Forest regression 
 
+# Set a seed for the random number generator
+seed(1)
+
+# Shuffle the data
+df = df.sample(frac=1, random_state=1)
+dp = dp.sample(frac=1, random_state=1)
 
 # Random Forest regression on all Capucine bags with max_depth and min_samples_split parameters
 print("Performing Random Forest regression analysis for all Capucine bags...")
-model7 = RandomForestRegressor(max_depth=10, min_samples_split=20)
+model7 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
 model7.fit(df[['timeToSell']], df['price'])
 
 # Random Forest regression on red Capucine bags with max_depth and min_samples_split parameters
 print("Performing Random Forest regression analysis for red Capucine bags...")
-model8 = RandomForestRegressor(max_depth=10, min_samples_split=20)
+model8 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
 model8.fit(dp[['timeToSell']], dp['price'])
 
 # Define functions to get the optimal price for all models and red only using Random Forest regression
@@ -163,11 +183,13 @@ def get_optimal_price_color_rf(days):
     return model8.predict([[days]])
 
 
-
-
 ##################### Neural network
 
 # Neural network
+# Set a seed for the random number generator
+seed(1)
+tf.random.set_seed(2)
+
 # Scale data without fitting column names  
 scaler_all = MinMaxScaler()
 X_scaled = scaler_all.fit_transform(df[['timeToSell']])
@@ -185,38 +207,34 @@ epochs = 200
 # Add a validation split 
 validation_split = 0.2  
 
+# Initialize the weights to small random numbers
+init = tf.keras.initializers.RandomNormal(seed=1)
+
 # Neural network regression on all Capucine bags
 print("Performing neural network regression analysis for all Capucine bags...")
 
 model9 = Sequential()
-model9.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01)))  # Add L2 regularization  
+model9.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  # Add L2 regularization  
 model9.add(Dropout(0.3))  # Increase dropout
-model9.add(Dense(30, activation='relu')) 
+model9.add(Dense(30, activation='relu', kernel_initializer=init)) 
 model9.add(Dropout(0.3))  
-model9.add(Dense(1))
+model9.add(Dense(1, kernel_initializer=init))
 
 model9.compile(loss='mean_squared_error', optimizer='adam')  
 history = model9.fit(X_scaled, df['price'], epochs=epochs, verbose=0, validation_split=validation_split)  
 
-# # Print updated training history 
-# print("Training history for all Capucine bags:")  
-# print("Loss:", history.history['loss'])
-# print("Validation Loss:", history.history['val_loss'])
+# Neural network regression on Capucine red bags
+print("Performing neural network regression analysis for Capucine red bags...")
 
-# Same changes for the model on red Capucine bags
 model10 = Sequential()  
-model10.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01)))  
+model10.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  
 model10.add(Dropout(0.3))   
-model10.add(Dense(30, activation='relu'))
+model10.add(Dense(30, activation='relu', kernel_initializer=init))
 model10.add(Dropout(0.3))   
-model10.add(Dense(1))  
+model10.add(Dense(1, kernel_initializer=init))  
 
 model10.compile(loss='mean_squared_error', optimizer='adam')
 history_red = model10.fit(X_scaled_red, dp['price'], epochs=epochs, verbose=0, validation_split=validation_split)   
-
-# print("Training history for red Capucine bags:")   
-# print("Loss:", history_red.history['loss'])
-# print("Validation Loss:", history_red.history['val_loss'])  
 
 # Define functions to get the optimal price for all models and red only using neural network regression  
 def get_optimal_price_allmodels_nn(days):
