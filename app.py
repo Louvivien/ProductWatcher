@@ -28,6 +28,8 @@ from bson import ObjectId
 from load_offers import search_vestiaire, search_stockx
 # from flask_cors import CORS
 import threading
+import gc
+
 
 
 
@@ -283,58 +285,80 @@ def estimate(brand, model, color, buying_price, days):
 def get_status(request_id):
     # Return the status of the request
     return jsonify({"status": status_dict.get(request_id, "Not found")})
+import gc
 
 def process_request(request_id, brand, model, color, buying_price, days):
     try:
-
-        # Import the estimate_price function here, when it's actually needed
         from estimatepriceforgivendays_anyproduct import (set_up, train_linear_model, train_forest_model, train_polynomial_model, train_decision_model, train_neural_model, calculate_profits, results, evaluate, best)
 
-        # Call the functions
         status_dict[request_id] = "Setting up"
         set_up_result = set_up(brand, model, color)
         handbags, color_data_exists, bags_count, bags_color_count, df, dp = set_up_result
+
+        del set_up_result
+        gc.collect()
 
         status_dict[request_id] = "Training linear model"
         train_linear_model_result = train_linear_model(model, color, color_data_exists, df, dp)
         get_optimal_price_allmodels, get_optimal_price_color, model1, model2 = train_linear_model_result
 
+        del train_linear_model_result
+        gc.collect()
 
         status_dict[request_id] = "Training polynomial model"
         train_polynomial_model_result = train_polynomial_model(model, color, color_data_exists, df, dp)
         get_optimal_price_allmodels_poly, get_optimal_price_color_poly, model3, model4, poly = train_polynomial_model_result
 
+        del train_polynomial_model_result
+        gc.collect()
+
         status_dict[request_id] = "Training decision tree model"
         train_decision_model_result = train_decision_model(model, color, color_data_exists, df, dp)
         get_optimal_price_allmodels_tree, get_optimal_price_color_tree, model5, model6 = train_decision_model_result
 
+        del train_decision_model_result
+        gc.collect()
 
         status_dict[request_id] = "Training forest model"
         train_forest_model_result = train_forest_model(model, color, color_data_exists, df, dp)
         get_optimal_price_allmodels_rf, get_optimal_price_color_rf, model7, model8 = train_forest_model_result
 
+        del train_forest_model_result
+        gc.collect()
 
         status_dict[request_id] = "Training neural model"
         train_neural_model_result = train_neural_model(color_data_exists, df, dp)
         get_optimal_price_allmodels_nn, get_optimal_price_color_nn, model9, model10, scaler_all, scaler_red = train_neural_model_result
 
+        del train_neural_model_result
+        gc.collect()
 
         status_dict[request_id] = "Calculating profits"
         calculate_profits_result = calculate_profits(buying_price, days, color_data_exists, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn)
         profit_allmodels_lr, profit_allmodels_poly, profit_allmodels_tree, profit_allmodels_rf, profit_allmodels_nn, profit_color_lr, profit_color_poly, profit_color_tree, profit_color_rf, profit_color_nn = calculate_profits_result
 
+        del calculate_profits_result
+        gc.collect()
+
         status_dict[request_id] = "Getting results"
         results_result = results(color, days, color_data_exists, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn, profit_allmodels_lr, profit_allmodels_poly, profit_allmodels_tree, profit_allmodels_rf, profit_allmodels_nn, profit_color_lr, profit_color_poly, profit_color_tree, profit_color_rf, profit_color_nn)
+
+        del results_result
+        gc.collect()
 
         status_dict[request_id] = "Evaluating"
         evaluate_result = evaluate(color, days, color_data_exists, df, dp, model1, model2, model3, model4, model5, model6, model7, model8, model9, model10, scaler_all, scaler_red, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn, poly)
         diff_allmodels, diff_color, avg_price_all, avg_price_color = evaluate_result
 
+        del evaluate_result
+        gc.collect()
 
         status_dict[request_id] = "Getting best model"
         best_result = best(color, buying_price, days, color_data_exists, diff_allmodels, diff_color, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn, bags_count, bags_color_count, avg_price_all,avg_price_color)
         best_result['color'] = color
 
+        del best_result
+        gc.collect()
 
         # Update the status to complete and store the result
         status_dict[request_id] = {"status": "Complete", "result": best_result}
@@ -346,6 +370,7 @@ def process_request(request_id, brand, model, color, buying_price, days):
         # If an error occurs, update the status to "Error" and store the error message
         status_dict[request_id] = {"status": "Error", "error": str(e)}
         print(f"Error occurred for request {request_id}: {e}")
+
 
 
 

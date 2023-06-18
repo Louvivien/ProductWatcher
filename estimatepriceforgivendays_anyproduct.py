@@ -222,7 +222,7 @@ def train_polynomial_model( Model, Color, color_data_exists, df, dp):
 
     return (get_optimal_price_allmodels_poly, get_optimal_price_color_poly, model3, model4, poly)
 
-def train_decision_model( Model, Color, color_data_exists, df, dp, *args, **kwargs):
+def train_decision_model( Model, Color, color_data_exists, df, dp):
 
     ##################### Decision tree regression 
 
@@ -266,7 +266,7 @@ def train_decision_model( Model, Color, color_data_exists, df, dp, *args, **kwar
 
     return (get_optimal_price_allmodels_tree, get_optimal_price_color_tree, model5, model6)
 
-def train_forest_model( Model, Color, color_data_exists, df, dp, *args, **kwargs):
+def train_forest_model( Model, Color, color_data_exists, df, dp):
     ##################### Random Forest regression 
 
     # Set a seed for the random number generator to decrease randomness
@@ -283,7 +283,7 @@ def train_forest_model( Model, Color, color_data_exists, df, dp, *args, **kwargs
     model7.fit(df[['timeToSell']], df['price'])
     del df  # Free up memory
     gc.collect()  # Explicit garbage collection
-    
+
     if color_data_exists:
         # Random Forest regression on model bags in the color with max_depth and min_samples_split parameters
         logging.info("Performing Random Forest regression analysis for "+ Color +" "+ Model +" bags...")
