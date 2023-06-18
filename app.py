@@ -357,12 +357,14 @@ def process_request(request_id, brand, model, color, buying_price, days):
         best_result = best(color, buying_price, days, color_data_exists, diff_allmodels, diff_color, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn, bags_count, bags_color_count, avg_price_all,avg_price_color)
         best_result['color'] = color
 
-        del best_result
-        gc.collect()
+  
 
         # Update the status to complete and store the result
         status_dict[request_id] = {"status": "Complete", "result": best_result}
 
+        del best_result
+        gc.collect()
+        
         # Log the final status
         print(f"Final status for request {request_id}: {status_dict[request_id]}")
 
