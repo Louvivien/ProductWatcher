@@ -269,7 +269,6 @@ def estimate(brand, model, color, buying_price, days):
     return jsonify(result)
 
 
-@app.route('/estimate_price/', methods=['GET'])
 
 
 
