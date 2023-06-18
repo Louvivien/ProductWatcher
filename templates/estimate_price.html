@@ -1,0 +1,94 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Estimate Price
+{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Price Watcher</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Estimate Price</h1>
+
+    <form id="estimate-form" class="form-group">
+        <input type="text" id="brand" placeholder="Brand" required class="form-control">
+        <input type="text" id="model" placeholder="Model" required class="form-control">
+        <input type="text" id="color" placeholder="Color" required class="form-control">
+        <input type="number" id="buying_price" placeholder="Buying Price" required class="form-control">
+        <input type="number" id="days" placeholder="Days" required class="form-control">
+        <button type="button" onclick="estimatePrice()" class="btn btn-primary">Estimate</button>
+    </form>
+
+    <div id="loader" class="spinner-border text-primary" role="status" style="display: none;">
+        <span class="sr-only">Loading...</span>
+    </div>
+
+    <div id="result"></div>
+</div>
+
+{% if debug_info %}
+<div id="debug" style="display: none;">
+    <pre>{{ debug_info }}</pre>
+</div>
+
+<button id="debug-button" class="btn btn-secondary">Show Debug Info</button>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+function estimatePrice() {
+    var brand = document.getElementById('brand').value;
+    var model = document.getElementById('model').value;
+    var color = document.getElementById('color').value;
+    var buying_price = document.getElementById('buying_price').value;
+    var days = document.getElementById('days').value;
+
+    var loader = document.getElementById('loader');
+    loader.style.display = 'block';
+    loader.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+
+    fetch('/estimate_price/' + brand + '/' + model + '/' + color + '/' + buying_price + '/' + days)
+    .then(response => response.json())
+    .then(data => {
+        setTimeout(function() {
+            loader.style.display = 'none';
+        }, 2000); 
+
+        var resultDiv = document.getElementById('result');
+        
+
+        resultDiv.innerHTML = `
+            <p>Number of sold bags in the database for this bag: ${data.bags_count} </p>
+            ${data.color_data_exists ? `<p>Number of sold bags in the database for this color: ${data.bags_color_count} </p>` : ''}
+            <br></br>
+            <p>Average price - all models: ${data.avg_price_all} €</p>
+            <p>Closest model to average price for all models: ${data.best_model_all} with a difference of ${data.diff_allmodels} €, a price of ${data.predicted_price_all} € and a profit of ${data.profit_all} €</p>
+            <br></br>
+            ${data.color_data_exists ? `<p>Average price - ${color}: ${data.avg_price_color} €</p>` : ''}
+            ${data.color_data_exists ? `<p>Closest model to average price for ${color} bags: ${data.best_model_color} with a difference of ${data.diff_color_models} €, a price of ${data.predicted_price_color} € and a profit of ${data.profit_color} €</p>` : ''}
+            <br></br>
+            <p>Recommended price is ${Math.max(data.predicted_price_color, data.predicted_price_all)} €</p>
+        `;
+    })
+    .catch(error => {
+        loader.style.display = 'none';
+        console.error('Error:', error);
+    });
+}
+</script>
+{% endblock %}
