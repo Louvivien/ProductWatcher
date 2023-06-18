@@ -21,7 +21,7 @@ Estimate Price
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container" style="height: auto;">
     <h1>Estimate Price</h1>
 
     <form id="estimate-form" class="form-group">
@@ -33,18 +33,22 @@ Estimate Price
         <button type="button" onclick="estimatePrice()" class="btn btn-primary">Estimate</button>
     </form>
 
-    <div id="loader" class="spinner-border text-primary" role="status" style="display: none;">
-        <span class="sr-only">Loading...</span>
-    </div>
+<br></br>
 
-    <div id="result"></div>
+    <div id="result" style="height: auto;">
+        <div id="loader" class="spinner-border text-primary" role="status" style="display: none;">
+            <span>Loading...</span>
+        </div>
+    </div>
 </div>
 
-
+</div>
 
 {% endblock %}
 {% block scripts %}
 <script>
+var loader = document.getElementById('loader');
+
 function estimatePrice() {
     var brand = document.getElementById('brand').value;
     var model = document.getElementById('model').value;
@@ -52,37 +56,65 @@ function estimatePrice() {
     var buying_price = document.getElementById('buying_price').value;
     var days = document.getElementById('days').value;
 
-    var loader = document.getElementById('loader');
     loader.style.display = 'block';
-    loader.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
 
     fetch('/estimate_price/' + brand + '/' + model + '/' + color + '/' + buying_price + '/' + days)
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP error ' + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
-        setTimeout(function() {
-            loader.style.display = 'none';
-        }, 2000); 
-
-        var resultDiv = document.getElementById('result');
-        
-
-        resultDiv.innerHTML = `
-            <p>Number of sold bags in the database for this bag: ${data.bags_count} </p>
-            ${data.color_data_exists ? `<p>Number of sold bags in the database for this color: ${data.bags_color_count} </p>` : ''}
-            <br></br>
-            <p>Average price - all models: ${data.avg_price_all} €</p>
-            <p>Closest model to average price for all models: ${data.best_model_all} with a difference of ${data.diff_allmodels} €, a price of ${data.predicted_price_all} € and a profit of ${data.profit_all} €</p>
-            <br></br>
-            ${data.color_data_exists ? `<p>Average price - ${color}: ${data.avg_price_color} €</p>` : ''}
-            ${data.color_data_exists ? `<p>Closest model to average price for ${color} bags: ${data.best_model_color} with a difference of ${data.diff_color_models} €, a price of ${data.predicted_price_color} € and a profit of ${data.profit_color} €</p>` : ''}
-            <br></br>
-            <p>Recommended price is ${Math.max(data.predicted_price_color, data.predicted_price_all)} €</p>
-        `;
+        var requestId = data.request_id;
+        checkStatus(requestId);
     })
     .catch(error => {
         loader.style.display = 'none';
         console.error('Error:', error);
     });
+}
+function checkStatus(requestId) {
+    fetch('/status/' + requestId)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP error ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(data.status);
+        if (data.status.status === "Complete") {
+            loader.style.display = 'none';
+            displayResults(data.status.result);
+        } else {
+            setTimeout(function() {
+                checkStatus(requestId);
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        loader.style.display = 'none';
+        console.error('Error:', error);
+    });
+}
+
+
+
+function displayResults(data) {
+    var resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = `
+        <p>Number of sold bags in the database for this bag: ${data.bags_count} </p>
+        ${data.color_data_exists ? `<p>Number of sold bags in the database for this color: ${data.bags_color_count} </p>` : ''}
+        <br></br>
+        <p>Average price - all models: ${data.avg_price_all        } €</p>
+        <p>Closest model to average price for all models: ${data.best_model_all} with a difference of ${data.diff_allmodels} €, a price of ${data.predicted_price_all} € and a profit of ${data.profit_all} €</p>
+        <br></br>
+        ${data.color_data_exists ? `<p>Average price - ${data.color}: ${data.avg_price_color} €</p>` : ''}
+        ${data.color_data_exists ? `<p>Closest model to average price for ${data.color} bags: ${data.best_model_color} with a difference of ${data.diff_color_models} €, a price of ${data.predicted_price_color} € and a profit of ${data.profit_color} €</p>` : ''}
+        <br></br>
+        <p>Recommended price is ${Math.max(data.predicted_price_color, data.predicted_price_all)} €</p>
+    `;
 }
 </script>
 {% endblock %}

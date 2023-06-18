@@ -134,16 +134,13 @@ def set_up(Brand, Model, Color):
     return (handbags, color_data_exists, bags_count, bags_color_count, df, dp)
 
 
-def train_linear_model(Model, Color, color_data_exists, df, dp):
+def train_linear_model( Model, Color, color_data_exists, df, dp):
     
-
     ##################### Linear regression 
 
     # Perform the linear regression analysis for all model bags
     print("Performing linear regression analysis for all "+ Model +" bags...")
     model1 = LinearRegression()
-
-
     model1.fit(df[['timeToSell']], df['price'])
 
     if color_data_exists:
@@ -195,9 +192,9 @@ def train_polynomial_model( Model, Color, color_data_exists, df, dp):
         print(f"Polynomial Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
         return model4.predict(poly.transform([[days]]))
 
-    return (get_optimal_price_allmodels_poly, get_optimal_price_color_poly, model3, model4, poly)
+    return (get_optimal_price_allmodels_poly, get_optimal_price_color_poly, model3, model4)
 
-def train_decision_model( Model, Color, color_data_exists, df, dp, *args, **kwargs):
+def train_decision_model( Model, Color, color_data_exists, df, dp):
 
     ##################### Decision tree regression 
 
@@ -237,7 +234,7 @@ def train_decision_model( Model, Color, color_data_exists, df, dp, *args, **kwar
 
     return (get_optimal_price_allmodels_tree, get_optimal_price_color_tree, model5, model6)
 
-def train_forest_model( Model, Color, color_data_exists, df, dp, *args, **kwargs):
+def train_forest_model( Model, Color, color_data_exists, df, dp):
     ##################### Random Forest regression 
 
     # Set a seed for the random number generator to decrease randomness
@@ -288,9 +285,6 @@ def train_neural_model( color_data_exists, df, dp):
 
     # Scale data without fitting column names  
     scaler_all = MinMaxScaler()
-    # print("df type: ",type(df))
-    # print("df : ",df)
-    # print("df[['timeToSell']]: ",df[['timeToSell']],)
     X_scaled = scaler_all.fit_transform(df[['timeToSell']])
 
     scaler_red = MinMaxScaler() 
@@ -376,7 +370,7 @@ def calculate_profits(buying_price, days, color_data_exists, get_optimal_price_a
     return (profit_allmodels_lr, profit_allmodels_poly, profit_allmodels_tree, profit_allmodels_rf, profit_allmodels_nn, profit_color_lr, profit_color_poly, profit_color_tree, profit_color_rf, profit_color_nn)
 
 
-def results(Color, days, color_data_exists, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn, profit_allmodels_lr, profit_allmodels_poly, profit_allmodels_tree, profit_allmodels_rf, profit_allmodels_nn, profit_color_lr, profit_color_poly, profit_color_tree, profit_color_rf, profit_color_nn):
+def results(Color, days, color_data_exists, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn, profit_allmodels_lr, profit_allmodels_poly, profit_allmodels_tree, profit_allmodels_rf, profit_allmodels_nn, profit_color_lr, profit_color_poly, profit_color_tree, profit_color_rf, profit_color_nn ):
 
     ##################### Results
 
@@ -413,7 +407,7 @@ def results(Color, days, color_data_exists, get_optimal_price_allmodels, get_opt
 
 
 
-def evaluate(Color, days, color_data_exists, df, dp, model1, model2, model3, model4, model5, model6, model7, model8, model9, model10, scaler_all, scaler_red, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn, poly):
+def evaluate(Color, days, color_data_exists, df, dp, model1, model2, model3, model4, model5, model6, model7, model8, model9, model10, scaler_all, scaler_red, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn,diff_allmodels, avg_price_color):
 
     ##################### Evaluation
 
@@ -499,10 +493,10 @@ def evaluate(Color, days, color_data_exists, df, dp, model1, model2, model3, mod
             'Neural network': diff_color_nn
         }
 
-    return (diff_allmodels, diff_color, avg_price_all, avg_price_color)
+    return (diff_allmodels, diff_color, avg_price_all, )
 
 
-def best(Color, buying_price, days, color_data_exists, diff_allmodels, diff_color, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn, bags_count, bags_color_count, avg_price_all,avg_price_color):
+def best(Color, buying_price, days, color_data_exists, diff_allmodels, diff_color, get_optimal_price_allmodels, get_optimal_price_allmodels_poly, get_optimal_price_allmodels_tree, get_optimal_price_allmodels_rf, get_optimal_price_allmodels_nn, get_optimal_price_color, get_optimal_price_color_poly, get_optimal_price_color_tree, get_optimal_price_color_rf, get_optimal_price_color_nn, bags_count, bags_color_count, avg_price_all,avg_price_color ):
 
     # Find the model with the smallest difference with average prices
     best_model_all = min(diff_allmodels, key=diff_allmodels.get)
@@ -547,7 +541,8 @@ def best(Color, buying_price, days, color_data_exists, diff_allmodels, diff_colo
    
 
     tracemalloc.stop()
-    
+
+
 
 # Return the results as a dictionary
     return {
