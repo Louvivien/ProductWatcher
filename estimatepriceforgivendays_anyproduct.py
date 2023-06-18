@@ -12,6 +12,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 import matplotlib.pyplot as plt
 from tensorflow.keras.regularizers import l2
+from tensorflow.keras.callbacks import ModelCheckpoint
 import tensorflow as tf
 from keras import backend as K
 from sklearn.preprocessing import MinMaxScaler
@@ -249,8 +250,6 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     scaler_red = MinMaxScaler() 
     X_scaled_red = scaler_red.fit_transform(dp[['timeToSell']])  
 
-
-
     # Convert price from cents to euros
     df['price'] = df['price'] / 100
     dp['price'] = dp['price'] / 100
@@ -267,9 +266,10 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     # Initialize the weights to small random numbers to decrease randomness
     init = tf.keras.initializers.RandomNormal(seed=1)
 
-    # Neural network regression on all model bags
-    # print("Performing neural network regression analysis for all "+ Model +" bags...")
+    # Create a callback to save the model weights after each epoch
+    checkpoint = ModelCheckpoint('model_weights.h5', save_weights_only=True)
 
+    # Neural network regression on all model bags
     model9 = Sequential()
     model9.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  # Add L2 regularization  
     model9.add(Dropout(0.3))  # Increase dropout
@@ -278,17 +278,10 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     model9.add(Dense(1, kernel_initializer=init))
 
     model9.compile(loss='mean_squared_error', optimizer='adam')  
-    history = model9.fit(X_scaled, df['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split)  
-
-
-    # # Print updated training history 
-    # print("Training history for all model bags:")  
-    # print("Loss:", history.history['loss'])
-    # print("Validation Loss:", history.history['val_loss'])
+    history = model9.fit(X_scaled, df['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split, callbacks=[checkpoint])  
 
     if color_data_exists:
         # Neural network regression on all model bags in the color
-        # print("Performing neural network regression analysis for "+ Color +" "+ Model +" bags...")
         model10 = Sequential()  
         model10.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  
         model10.add(Dropout(0.3))   
@@ -297,11 +290,7 @@ def estimate_price(Brand, Model, Color, buying_price, days):
         model10.add(Dense(1, kernel_initializer=init))  
 
         model10.compile(loss='mean_squared_error', optimizer='adam')
-        history_red = model10.fit(X_scaled_red, dp['price'], epochs=epochs, verbose=0, validation_split=validation_split)   
-
-        # print("Training history for model bags in the color:")   
-        # print("Loss:", history_red.history['loss'])
-        # print("Validation Loss:", history_red.history['val_loss'])  
+        history_red = model10.fit(X_scaled_red, dp['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split, callbacks=[checkpoint])   
 
     # Define functions to get the optimal price for all models and color only using neural network regression  
     def get_optimal_price_allmodels_nn(days):
