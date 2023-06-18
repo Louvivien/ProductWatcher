@@ -80,9 +80,6 @@ def estimate_price(Brand, Model, Color, buying_price, days):
             print("No data in the database for this item")
             exit()
 
-
-
-
         # Fetch all the sold bags for the brand, the model and the color
         print("Fetching all "+ Brand  +" "+  Model  +" "+  Color +" "+ "bags...")
         bags_color = handbags.find({"brand.name": {"$regex": Brand, "$options": 'i'}, "model.name": {"$regex": Model, "$options": 'i'}, "colors.all.name": {"$regex": Color, "$options": 'i'}})
@@ -133,10 +130,6 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     except Exception as e:
         print("An error occurred while getting the data:", str(e))
         exit()
-
-
-
-
 
 
     ##################### Linear regression 
@@ -194,8 +187,6 @@ def estimate_price(Brand, Model, Color, buying_price, days):
         return model4.predict(poly.transform([[days]]))
 
 
-
-
     ##################### Decision tree regression 
 
     # Define the parameter grid
@@ -232,8 +223,6 @@ def estimate_price(Brand, Model, Color, buying_price, days):
         print(f"Decision Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
         return model6.predict([[days]])
 
-
-
     ##################### Random Forest regression 
 
     # Set a seed for the random number generator to decrease randomness
@@ -269,77 +258,73 @@ def estimate_price(Brand, Model, Color, buying_price, days):
         else:
             print("Color data does not exist.")
 
-
-
     ##################### Neural network
 
-    # Neural network
+    # # Neural network
 
-    # Set a seed for the random number generator to decrease randomness
-    seed(1)
-    tf.random.set_seed(2)
+    # # Set a seed for the random number generator to decrease randomness
+    # seed(1)
+    # tf.random.set_seed(2)
 
-    # Scale data without fitting column names  
-    scaler_all = MinMaxScaler()
-    X_scaled = scaler_all.fit_transform(df[['timeToSell']])
+    # # Scale data without fitting column names  
+    # scaler_all = MinMaxScaler()
+    # X_scaled = scaler_all.fit_transform(df[['timeToSell']])
 
-    scaler_red = MinMaxScaler() 
-    X_scaled_red = scaler_red.fit_transform(dp[['timeToSell']])  
+    # scaler_red = MinMaxScaler() 
+    # X_scaled_red = scaler_red.fit_transform(dp[['timeToSell']])  
 
-    # Convert price from cents to euros
-    df['price'] = df['price'] / 100
-    dp['price'] = dp['price'] / 100
+    # # Convert price from cents to euros
+    # df['price'] = df['price'] / 100
+    # dp['price'] = dp['price'] / 100
 
-    # Increase the number of epochs
-    epochs = 200  
+    # # Increase the number of epochs
+    # epochs = 200  
 
-    # Add a validation split 
-    validation_split = 0.2  
+    # # Add a validation split 
+    # validation_split = 0.2  
 
-    # Set a smaller batch size
-    batch_size = 15  # Adjust this value as needed
+    # # Set a smaller batch size
+    # batch_size = 15  # Adjust this value as needed
 
-    # Initialize the weights to small random numbers to decrease randomness
-    init = tf.keras.initializers.RandomNormal(seed=1)
+    # # Initialize the weights to small random numbers to decrease randomness
+    # init = tf.keras.initializers.RandomNormal(seed=1)
 
-    # Create a callback to save the model weights after each epoch
-    checkpoint = ModelCheckpoint('model_weights.h5', save_weights_only=True)
+    # # Create a callback to save the model weights after each epoch
+    # checkpoint = ModelCheckpoint('model_weights.h5', save_weights_only=True)
 
-    # Neural network regression on all model bags
-    model9 = Sequential()
-    model9.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  # Add L2 regularization  
-    model9.add(Dropout(0.3))  # Increase dropout
-    model9.add(Dense(30, activation='relu', kernel_initializer=init)) 
-    model9.add(Dropout(0.3))  
-    model9.add(Dense(1, kernel_initializer=init))
+    # # Neural network regression on all model bags
+    # model9 = Sequential()
+    # model9.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  # Add L2 regularization  
+    # model9.add(Dropout(0.3))  # Increase dropout
+    # model9.add(Dense(30, activation='relu', kernel_initializer=init)) 
+    # model9.add(Dropout(0.3))  
+    # model9.add(Dense(1, kernel_initializer=init))
 
-    model9.compile(loss='mean_squared_error', optimizer='adam')  
-    history = model9.fit(X_scaled, df['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split, callbacks=[checkpoint])  
+    # model9.compile(loss='mean_squared_error', optimizer='adam')  
+    # history = model9.fit(X_scaled, df['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split, callbacks=[checkpoint])  
 
-    if color_data_exists:
-        # Neural network regression on all model bags in the color
-        model10 = Sequential()  
-        model10.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  
-        model10.add(Dropout(0.3))   
-        model10.add(Dense(30, activation='relu', kernel_initializer=init))
-        model10.add(Dropout(0.3))   
-        model10.add(Dense(1, kernel_initializer=init))  
+    # if color_data_exists:
+    #     # Neural network regression on all model bags in the color
+    #     model10 = Sequential()  
+    #     model10.add(Dense(50, input_dim=1, activation='relu', kernel_regularizer=l2(0.01), kernel_initializer=init))  
+    #     model10.add(Dropout(0.3))   
+    #     model10.add(Dense(30, activation='relu', kernel_initializer=init))
+    #     model10.add(Dropout(0.3))   
+    #     model10.add(Dense(1, kernel_initializer=init))  
 
-        model10.compile(loss='mean_squared_error', optimizer='adam')
-        history_red = model10.fit(X_scaled_red, dp['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split, callbacks=[checkpoint])   
+    #     model10.compile(loss='mean_squared_error', optimizer='adam')
+    #     history_red = model10.fit(X_scaled_red, dp['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split, callbacks=[checkpoint])   
 
-    # Define functions to get the optimal price for all models and color only using neural network regression  
-    def get_optimal_price_allmodels_nn(days):
-        current, peak = tracemalloc.get_traced_memory()
-        print(f"Neural Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
-        return model9.predict(scaler_all.transform([[days]])) * 100  # Convert back to cents
+    # # Define functions to get the optimal price for all models and color only using neural network regression  
+    # def get_optimal_price_allmodels_nn(days):
+    #     current, peak = tracemalloc.get_traced_memory()
+    #     print(f"Neural Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+    #     return model9.predict(scaler_all.transform([[days]])) * 100  # Convert back to cents
 
-    def get_optimal_price_color_nn(days):
-        current, peak = tracemalloc.get_traced_memory()
-        print(f"Neural Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
-        return model10.predict(scaler_red.transform([[days]])) * 100  # Convert back to cents
-
-
+    # def get_optimal_price_color_nn(days):
+    #     current, peak = tracemalloc.get_traced_memory()
+    #     print(f"Neural Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+    #     return model10.predict(scaler_red.transform([[days]])) * 100  # Convert back to cents
 
 
     # Profits 
@@ -349,14 +334,14 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     profit_allmodels_poly = int(round(get_optimal_price_allmodels_poly(days)[0])) - buying_price
     profit_allmodels_tree = int(round(get_optimal_price_allmodels_tree(days)[0])) - buying_price
     profit_allmodels_rf = int(round(get_optimal_price_allmodels_rf(days)[0])) - buying_price
-    profit_allmodels_nn = int(round(get_optimal_price_allmodels_nn(days)[0][0])) - buying_price
+    # profit_allmodels_nn = int(round(get_optimal_price_allmodels_nn(days)[0][0])) - buying_price
 
     if color_data_exists:
         profit_color_lr = int(round(get_optimal_price_color(days)[0])) - buying_price
         profit_color_poly = int(round(get_optimal_price_color_poly(days)[0])) - buying_price
         profit_color_tree = int(round(get_optimal_price_color_tree(days)[0])) - buying_price
         profit_color_rf = int(round(get_optimal_price_color_rf(days)[0])) - buying_price    
-        profit_color_nn = int(round(get_optimal_price_color_nn(days)[0][0])) - buying_price
+        # profit_color_nn = int(round(get_optimal_price_color_nn(days)[0][0])) - buying_price
 
     current, peak = tracemalloc.get_traced_memory()
     print(f"Profits Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
@@ -378,7 +363,7 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     # random forest regression - all models
     print("Random forest regression - all models:", int(round(get_optimal_price_allmodels_rf(days)[0])), "€ | +", profit_allmodels_rf, "€")
     # neural network regression - all models
-    print("Neural network regression - all models:", int(round(get_optimal_price_allmodels_nn(days)[0][0])), "€ | +", profit_allmodels_nn, "€")
+    # print("Neural network regression - all models:", int(round(get_optimal_price_allmodels_nn(days)[0][0])), "€ | +", profit_allmodels_nn, "€")
 
     print("")
 
@@ -392,7 +377,7 @@ def estimate_price(Brand, Model, Color, buying_price, days):
         # random forest regression - color
         print("Random forest regression - " + Color + ":", int(round(get_optimal_price_color_rf(days)[0])), "€ | +", profit_color_rf, "€")
         # neural network regression - color
-        print("Neural network regression - " + Color + ":", int(round(get_optimal_price_color_nn(days)[0][0])), "€ | +", profit_color_nn, "€")
+        # print("Neural network regression - " + Color + ":", int(round(get_optimal_price_color_nn(days)[0][0])), "€ | +", profit_color_nn, "€")
 
 
 
@@ -420,13 +405,13 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     mae_allmodels_poly = mean_absolute_error(df['price']*100, model3.predict(poly.transform(df[['timeToSell']])))
     mae_allmodels_tree = mean_absolute_error(df['price']*100, model5.predict(df[['timeToSell']]))
     mae_allmodels_rf = mean_absolute_error(df['price']*100, model7.predict(df[['timeToSell']]))
-    mae_allmodels_nn = mean_absolute_error(df['price']*100, model9.predict(scaler_all.transform(df[['timeToSell']]))*100)
+    # mae_allmodels_nn = mean_absolute_error(df['price']*100, model9.predict(scaler_all.transform(df[['timeToSell']]))*100)
     if color_data_exists:
         mae_color_lr = mean_absolute_error(dp['price']*100, model2.predict(dp[['timeToSell']]))
         mae_color_poly = mean_absolute_error(dp['price']*100, model4.predict(poly.transform(dp[['timeToSell']])))
         mae_color_tree = mean_absolute_error(dp['price']*100, model6.predict(dp[['timeToSell']]))
         mae_color_rf = mean_absolute_error(dp['price']*100, model8.predict(dp[['timeToSell']]))
-        mae_color_nn = mean_absolute_error(dp['price']*100, model10.predict(scaler_red.transform(dp[['timeToSell']]))*100)
+        # mae_color_nn = mean_absolute_error(dp['price']*100, model10.predict(scaler_red.transform(dp[['timeToSell']]))*100)
 
     current, peak = tracemalloc.get_traced_memory()
     print(f"Evaluate 2 Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
@@ -435,7 +420,7 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     print("MAE - Polynomial regression - all models:", round(mae_allmodels_poly, 2), "€")
     print("MAE - Decision tree regression - all models:", round(mae_allmodels_tree), "€")
     print("MAE - Random forest regression - all models:", round(mae_allmodels_rf), "€")
-    print("MAE - Neural network regression - all models:", round(mae_allmodels_nn), "€")
+    # print("MAE - Neural network regression - all models:", round(mae_allmodels_nn), "€")
 
     print("")
 
@@ -444,20 +429,20 @@ def estimate_price(Brand, Model, Color, buying_price, days):
         print("MAE - Polynomial regression - " + Color + ":", round(mae_color_poly), "€")
         print("MAE - Decision tree regression - " + Color + ":", round(mae_color_tree), "€")
         print("MAE - Random forest regression - " + Color + ":", round(mae_color_rf), "€")
-        print("MAE - Neural network regression - " + Color + ":", round(mae_color_nn), "€")
+        # print("MAE - Neural network regression - " + Color + ":", round(mae_color_nn), "€")
 
 
     diff_allmodels_lr = abs(avg_price_all - int(round(get_optimal_price_allmodels(days)[0])))
     diff_allmodels_poly = abs(avg_price_all - int(round(get_optimal_price_allmodels_poly(days)[0])))
     diff_allmodels_tree = abs(avg_price_all - int(round(get_optimal_price_allmodels_tree(days)[0])))
     diff_allmodels_rf = abs(avg_price_all - int(round(get_optimal_price_allmodels_rf(days)[0])))
-    diff_allmodels_nn = abs(avg_price_all - int(round(get_optimal_price_allmodels_nn(days)[0][0])))
+    # diff_allmodels_nn = abs(avg_price_all - int(round(get_optimal_price_allmodels_nn(days)[0][0])))
     if color_data_exists:
         diff_color_lr = abs(avg_price_color - int(round(get_optimal_price_color(days)[0])))
         diff_color_poly = abs(avg_price_color - int(round(get_optimal_price_color_poly(days)[0])))
         diff_color_tree = abs(avg_price_color - int(round(get_optimal_price_color_tree(days)[0])))
         diff_color_rf = abs(avg_price_color - int(round(get_optimal_price_color_rf(days)[0])))
-        diff_color_nn = abs(avg_price_color - int(round(get_optimal_price_color_nn(days)[0][0])))
+        # diff_color_nn = abs(avg_price_color - int(round(get_optimal_price_color_nn(days)[0][0])))
     
     current, peak = tracemalloc.get_traced_memory()
     print(f"Evaluate Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
@@ -468,7 +453,7 @@ def estimate_price(Brand, Model, Color, buying_price, days):
         'Polynomial': diff_allmodels_poly,
         'Decision tree': diff_allmodels_tree,
         'Random forest': diff_allmodels_rf,
-        'Neural network': diff_allmodels_nn
+        # 'Neural network': diff_allmodels_nn
     }
 
     if color_data_exists:
@@ -477,7 +462,7 @@ def estimate_price(Brand, Model, Color, buying_price, days):
             'Polynomial': diff_color_poly,
             'Decision tree': diff_color_tree,
             'Random forest': diff_color_rf,
-            'Neural network': diff_color_nn
+            # 'Neural network': diff_color_nn
         }
 
     # Find the model with the smallest difference with average prices
@@ -494,8 +479,8 @@ def estimate_price(Brand, Model, Color, buying_price, days):
         predicted_price_all = int(round(get_optimal_price_allmodels_tree(days)[0]))
     elif best_model_all == 'Random forest':
         predicted_price_all = int(round(get_optimal_price_allmodels_rf(days)[0]))
-    else:  # Neural network
-        predicted_price_all = int(round(get_optimal_price_allmodels_nn(days)[0][0]))
+    # else:  # Neural network
+        # predicted_price_all = int(round(get_optimal_price_allmodels_nn(days)[0][0]))
 
     if color_data_exists:
         if best_model_color == 'Linear':
@@ -506,8 +491,8 @@ def estimate_price(Brand, Model, Color, buying_price, days):
             predicted_price_color = int(round(get_optimal_price_color_tree(days)[0]))
         elif best_model_color == 'Random forest':
             predicted_price_color = int(round(get_optimal_price_color_rf(days)[0]))
-        else:  # Neural network
-            predicted_price_color = int(round(get_optimal_price_color_nn(days)[0][0]))
+        # else:  # Neural network
+            # predicted_price_color = int(round(get_optimal_price_color_nn(days)[0][0]))
 
 
     profit_all = predicted_price_all - buying_price
