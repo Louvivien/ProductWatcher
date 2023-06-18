@@ -9,3 +9,12 @@ flask-bootstrap
 curlify
 pandas
 pycountry
+
+
+
+scikit-learn
+numpy
+matplotlib
+tensorflow
+keras
+
