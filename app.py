@@ -26,7 +26,6 @@ import pycountry
 from bson import ObjectId
 
 from load_offers import search_vestiaire, search_stockx
-from estimatepriceforgivendays_anyproduct import estimate_price
 
 
 
@@ -259,6 +258,9 @@ def estimate(brand, model, color, buying_price, days):
     # Convert the buying_price and days to int as they are passed as strings in the URL
     buying_price = int(buying_price)
     days = int(days)
+
+    # Import the estimate_price function here, when it's actually needed
+    from estimatepriceforgivendays_anyproduct import estimate_price
 
     # Call the estimate_price function
     result = estimate_price(brand, model, color, buying_price, days)

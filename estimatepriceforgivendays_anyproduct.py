@@ -19,6 +19,8 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.layers import Dropout
 from keras.initializers import Constant
 from sklearn.model_selection import GridSearchCV
+from sklearn.utils import shuffle
+
 
 import warnings
 from sklearn.exceptions import DataConversionWarning
