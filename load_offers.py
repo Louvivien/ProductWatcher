@@ -144,7 +144,7 @@ def search_vestiaire(brand, model):
         #     # Access the 5th query directly
         #     query = queries[4]['state']['data']['browse']['results']
         #     edges = query['edges']  # return the list of edges
-        logging.info("vestiaire : %s", queries)
+        # logging.info("vestiaire : %s", queries)
 
         # for query in queries:
         #     query['collection'] = brand + " " + model
@@ -231,7 +231,7 @@ def search_stockx(brand, model):
         #     # Access the 5th query directly
         #     query = queries[4]['state']['data']['browse']['results']
         #     edges = query['edges']  # return the list of edges
-        logging.info("stockx : %s", queries)
+        # logging.info("stockx : %s", queries)
 
         # if not edges:
         #     return None, curlify.to_curl(response.request)
