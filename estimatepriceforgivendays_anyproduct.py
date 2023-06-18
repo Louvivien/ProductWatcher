@@ -261,7 +261,7 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     validation_split = 0.2  
 
     # Set a smaller batch size
-    batch_size = 32  # Adjust this value as needed
+    batch_size = 15  # Adjust this value as needed
 
     # Initialize the weights to small random numbers to decrease randomness
     init = tf.keras.initializers.RandomNormal(seed=1)
