@@ -13,6 +13,7 @@ from keras.layers import Dense
 import matplotlib.pyplot as plt
 from tensorflow.keras.regularizers import l2
 import tensorflow as tf
+from keras import backend as K
 from sklearn.preprocessing import MinMaxScaler
 from keras.layers import Dropout
 from keras.initializers import Constant
@@ -42,6 +43,10 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     client = MongoClient(MONGO_URI.replace("<password>", MONGO_PASSWORD))
     db = client.productwatcher
     handbags = db.handbags
+
+
+
+
 
     # # Ask for inputs
     # Brand = input("Enter the brand of the product: ")
@@ -244,6 +249,8 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     scaler_red = MinMaxScaler() 
     X_scaled_red = scaler_red.fit_transform(dp[['timeToSell']])  
 
+
+
     # Convert price from cents to euros
     df['price'] = df['price'] / 100
     dp['price'] = dp['price'] / 100
@@ -253,6 +260,9 @@ def estimate_price(Brand, Model, Color, buying_price, days):
 
     # Add a validation split 
     validation_split = 0.2  
+
+    # Set a smaller batch size
+    batch_size = 32  # Adjust this value as needed
 
     # Initialize the weights to small random numbers to decrease randomness
     init = tf.keras.initializers.RandomNormal(seed=1)
@@ -268,7 +278,8 @@ def estimate_price(Brand, Model, Color, buying_price, days):
     model9.add(Dense(1, kernel_initializer=init))
 
     model9.compile(loss='mean_squared_error', optimizer='adam')  
-    history = model9.fit(X_scaled, df['price'], epochs=epochs, verbose=0, validation_split=validation_split)  
+    history = model9.fit(X_scaled, df['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split)  
+
 
     # # Print updated training history 
     # print("Training history for all model bags:")  

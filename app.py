@@ -254,8 +254,6 @@ def estimate_price_page():
 
 
 
-
-
 @app.route('/estimate_price/<brand>/<model>/<color>/<buying_price>/<days>', methods=['GET'])
 def estimate(brand, model, color, buying_price, days):
     # Convert the buying_price and days to int as they are passed as strings in the URL
