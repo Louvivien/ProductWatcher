@@ -15,5 +15,6 @@ numpy
 scikit-learn
 tensorflow
 matplotlib
+curlify
 
 
