@@ -203,6 +203,11 @@ def search_stockx(brand, model):
             logging.error("Timeout Error:", errt)
         except requests.exceptions.RequestException as err:
             logging.error("Something went wrong", err)
+        
+        except json.decoder.JSONDecodeError:
+            logging.error("JSONDecodeError: No data to parse or data is not in correct format.")
+            return None, "JSONDecodeError: No data to parse or data is not in correct format."
+
 
         if response is None:
             return None, "All requests failed due to proxy errors."
