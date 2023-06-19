@@ -22,9 +22,11 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 
+# Make port 8000 available to the world outside this container
+EXPOSE 8080
 
 # Run gunicorn when the container launches
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 app:app
+CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8080"]
 
 
 
