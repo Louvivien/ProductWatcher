@@ -29,7 +29,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 #     && rm -rf /var/lib/apt/lists/*
 
 # Make port 8000 available to the world outside this container
-EXPOSE 8000
+EXPOSE 8080
 
 # Run gunicorn when the container launches
-CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8000"]
+CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8080"]

@@ -285,7 +285,6 @@ def estimate(brand, model, color, buying_price, days):
 def get_status(request_id):
     # Return the status of the request
     return jsonify({"status": status_dict.get(request_id, "Not found")})
-import gc
 
 def process_request(request_id, brand, model, color, buying_price, days):
     try:
@@ -364,7 +363,7 @@ def process_request(request_id, brand, model, color, buying_price, days):
 
         del best_result
         gc.collect()
-        
+
         # Log the final status
         print(f"Final status for request {request_id}: {status_dict[request_id]}")
 
