@@ -187,7 +187,7 @@ def search_stockx(brand, model):
             # logging.info("Response content: %s", response.content)
 
             if "captcha-error" in response.text or "<h1>Access Denied</h1>" in response.text or "Enable JavaScript and cookies" in response.text:
-                logging.info("Captcha error or Access Denied detected, switching proxy...")
+                                return None, logging.info("Captcha error or Access Denied detected, switching proxy?")
 
         except requests.exceptions.HTTPError as errh:
             logging.error("Http Error:", errh)
