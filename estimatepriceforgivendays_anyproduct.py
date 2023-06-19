@@ -350,8 +350,6 @@ def train_neural_model( color_data_exists, df, dp):
     # Initialize the weights to small random numbers to decrease randomness
     init = tf.keras.initializers.RandomNormal(seed=1)
 
-    # Create a callback to save the model weights after each epoch
-    checkpoint = ModelCheckpoint('model_weights.h5', save_weights_only=True)
 
     # Neural network regression on all model bags
     model9 = Sequential()
