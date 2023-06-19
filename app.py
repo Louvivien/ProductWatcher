@@ -371,6 +371,8 @@ def process_request(request_id, brand, model, color, buying_price, days):
         # If an error occurs, update the status to "Error" and store the error message
         status_dict[request_id] = {"status": "Error", "error": str(e)}
         print(f"Error occurred for request {request_id}: {e}")
+        
+
 
 
 
