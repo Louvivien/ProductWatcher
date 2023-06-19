@@ -91,6 +91,9 @@ function checkStatus(requestId, retryCount = 0) {
         if (data.status.status === "Complete") {
             loader.style.display = 'none';
             displayResults(data.status.result);
+        } else if (data.status.status === "Not found") {
+            loader.style.display = 'none';
+            estimatePrice();
         } else {
             setTimeout(function() {
                 checkStatus(requestId);
@@ -102,6 +105,7 @@ function checkStatus(requestId, retryCount = 0) {
         console.error('Error:', error);
     });
 }
+
 
 
 
