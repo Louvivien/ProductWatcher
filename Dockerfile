@@ -20,8 +20,8 @@ RUN pip install --upgrade pip
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 8080 available to the world outside this container
-EXPOSE 8080
+
 
 # Run gunicorn when the container launches
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app
+# Here we use 8080 as the default port if the PORT environment variable is not set
+CMD exec gunicorn --bind :${PORT:-8080} --workers 1 --threads 8 --timeout 0 app:app
