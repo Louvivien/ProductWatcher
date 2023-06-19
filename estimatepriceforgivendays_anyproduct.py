@@ -70,12 +70,12 @@ def set_up(Brand, Model, Color):
 
 
 
-    # # Ask for inputs
-    # Brand = input("Enter the brand of the product: ")
-    # Model = input("Enter the model of the product: ")
-    # Color = input("Enter the color of the product: ")
-    # buying_price = int(input("Enter the buying price in €: "))
-    # days = int(input("Enter the maximum number of days you are willing to sell the product: "))
+    # Ask for inputs
+    Brand = input("Enter the brand of the product: ")
+    Model = input("Enter the model of the product: ")
+    Color = input("Enter the color of the product: ")
+    buying_price = int(input("Enter the buying price in €: "))
+    days = int(input("Enter the maximum number of days you are willing to sell the product: "))
 
     ##################### Getting data
 
@@ -165,16 +165,16 @@ def train_linear_model(Model, Color, color_data_exists, df, dp):
 
 
     model1.fit(df[['timeToSell']], df['price'])
-    del df  # Free up memory
-    gc.collect()  # Explicit garbage collection
+    # del df  # Free up memory
+    # gc.collect()  # Explicit garbage collection
 
     if color_data_exists:
         # Perform the linear regression analysis for model bags in the color   
         logging.info("Performing linear regression analysis for %s %s bags...", Color, Model)
         model2 = LinearRegression()
         model2.fit(dp[['timeToSell']], dp['price'])
-        del dp  # Free up memory
-        gc.collect()  # Explicit garbage collection
+        # del dp  # Free up memory
+        # gc.collect()  # Explicit garbage collection
 
     def get_optimal_price_allmodels(days):
         current, peak = tracemalloc.get_traced_memory()
@@ -201,8 +201,8 @@ def train_polynomial_model( Model, Color, color_data_exists, df, dp):
     X_poly = poly.fit_transform(df[['timeToSell']])
     model3 = LinearRegression()
     model3.fit(X_poly, df['price'])
-    del df  # Free up memory
-    gc.collect()  # Explicit garbage collection
+    # del df  # Free up memory
+    # gc.collect()  # Explicit garbage collection
 
     if color_data_exists:
         # Polynomial regression on model bags in the color
@@ -211,8 +211,8 @@ def train_polynomial_model( Model, Color, color_data_exists, df, dp):
         X_poly_red = poly.fit_transform(dp[['timeToSell']])
         model4 = LinearRegression()
         model4.fit(X_poly_red, dp['price'])
-        del dp  # Free up memory
-        gc.collect()  # Explicit garbage collection
+        # del dp  # Free up memory
+        # gc.collect()  # Explicit garbage collection
 
     # Define functions to get the optimal price for all models and color only using polynomial regression
     def get_optimal_price_allmodels_poly(days):
@@ -245,8 +245,8 @@ def train_decision_model( Model, Color, color_data_exists, df, dp):
     best_params = grid_search.best_params_
     model5 = DecisionTreeRegressor(max_depth=best_params['max_depth'], min_samples_split=best_params['min_samples_split'])
     model5.fit(df[['timeToSell']], df['price'])
-    del df  # Free up memory
-    gc.collect()  # Explicit garbage collection
+    # del df  # Free up memory
+    # gc.collect()  # Explicit garbage collection
 
     if color_data_exists:
         # Decision tree regression on model bags in the color with max_depth and min_samples_split parameters
@@ -255,8 +255,8 @@ def train_decision_model( Model, Color, color_data_exists, df, dp):
         best_params = grid_search.best_params_
         model6 = DecisionTreeRegressor(max_depth=best_params['max_depth'], min_samples_split=best_params['min_samples_split'])
         model6.fit(dp[['timeToSell']], dp['price'])
-        del dp  # Free up memory
-        gc.collect()  # Explicit garbage collection
+        # del dp  # Free up memory
+        # gc.collect()  # Explicit garbage collection
 
     # Define functions to get the optimal price for all models and color only using decision tree regression
     def get_optimal_price_allmodels_tree(days):
@@ -286,16 +286,16 @@ def train_forest_model( Model, Color, color_data_exists, df, dp):
     logging.info("Performing Random Forest regression analysis for all %s bags...", Model)
     model7 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
     model7.fit(df[['timeToSell']], df['price'])
-    del df  # Free up memory
-    gc.collect()  # Explicit garbage collection
+    # del df  # Free up memory
+    # gc.collect()  # Explicit garbage collection
 
     if color_data_exists:
         # Random Forest regression on model bags in the color with max_depth and min_samples_split parameters
         logging.info("Performing Random Forest regression analysis for %s %s bags...", Color, Model)
         model8 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
         model8.fit(dp[['timeToSell']], dp['price'])
-        del dp  # Free up memory
-        gc.collect()  # Explicit garbage collection
+        # del dp  # Free up memory
+        # gc.collect()  # Explicit garbage collection
 
     # Define functions to get the optimal price for all models and color only using Random Forest regression
     def get_optimal_price_allmodels_rf(days):
@@ -360,7 +360,7 @@ def train_neural_model( color_data_exists, df, dp):
     model9.add(Dense(1, kernel_initializer=init))
 
     model9.compile(loss='mean_squared_error', optimizer='adam')  
-    history = model9.fit(X_scaled, df['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split, callbacks=[checkpoint])  
+    history = model9.fit(X_scaled, df['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split)  
 
     if color_data_exists:
         # Neural network regression on all model bags in the color
@@ -372,7 +372,7 @@ def train_neural_model( color_data_exists, df, dp):
         model10.add(Dense(1, kernel_initializer=init))  
 
         model10.compile(loss='mean_squared_error', optimizer='adam')
-        history_red = model10.fit(X_scaled_red, dp['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split, callbacks=[checkpoint])   
+        history_red = model10.fit(X_scaled_red, dp['price'], epochs=epochs, batch_size=batch_size, verbose=0, validation_split=validation_split)   
 
     # Define functions to get the optimal price for all models and color only using neural network regression  
     def get_optimal_price_allmodels_nn(days):
