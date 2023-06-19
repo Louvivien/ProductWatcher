@@ -1,6 +1,10 @@
 # Use an official Python runtime as a parent image
 FROM python:3.10-slim as builder
 
+# Add a non-root user and switch to it
+RUN adduser --disabled-password --gecos '' app
+USER app
+
 # Allow statements and log messages to immediately appear in the logs
 ENV PYTHONUNBUFFERED True
 
@@ -22,9 +26,6 @@ FROM python:3.10-slim
 # Copy the dependencies from the builder stage
 COPY --from=builder /usr/local /usr/local
 
-# Add a non-root user and switch to it
-RUN adduser --disabled-password --gecos '' app
-USER app
 
 # Set the working directory in the container to /app
 WORKDIR /app
