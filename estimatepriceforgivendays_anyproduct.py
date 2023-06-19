@@ -71,11 +71,17 @@ def set_up(Brand, Model, Color):
 
 
     # Ask for inputs
-    Brand = input("Enter the brand of the product: ")
-    Model = input("Enter the model of the product: ")
-    Color = input("Enter the color of the product: ")
-    buying_price = int(input("Enter the buying price in €: "))
-    days = int(input("Enter the maximum number of days you are willing to sell the product: "))
+    # Brand = input("Enter the brand of the product: ")
+    # Model = input("Enter the model of the product: ")
+    # Color = input("Enter the color of the product: ")
+    # buying_price = int(input("Enter the buying price in €: "))
+    # days = int(input("Enter the maximum number of days you are willing to sell the product: "))
+    
+    Brand = Brand
+    Model = Model
+    Color = Color
+    buying_price = int(buying_price)
+    days = int(days)
 
     ##################### Getting data
 
