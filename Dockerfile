@@ -34,4 +34,4 @@ WORKDIR /app
 COPY --from=builder /app /app
 
 # Make sure the service listens on the port defined by the PORT environment variable
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 app:app
+CMD exec gunicorn --bind :8080 --workers 1 --threads 8 app:app
