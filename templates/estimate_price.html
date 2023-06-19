@@ -94,7 +94,7 @@ function checkStatus(requestId, retryCount = 0) {
         } else {
             setTimeout(function() {
                 checkStatus(requestId);
-            }, 2000);
+            }, 4000);
         }
     })
     .catch(error => {
