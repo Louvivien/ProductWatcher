@@ -81,10 +81,11 @@ def set_up(Brand, Model, Color):
 
     try:
         # Fetch all the sold bags for the brand and the model
-        logging.info("Fetching all "+ Brand +" "+ Model +" "+ "bags...")
+        logging.info("Fetching all %s %s bags...", Brand, Model)
         bags = handbags.find({"brand.name": {"$regex": Brand, "$options": 'i'}, "model.name": {"$regex": Model, "$options": 'i'}})
         bags_count = handbags.count_documents({"brand.name": {"$regex": Brand, "$options": 'i'}, "model.name": {"$regex": Model, "$options": 'i'}})
-        logging.info("Number of " + Brand + " " + Model + " bags fetched: ", bags_count)
+        logging.info("Number of %s %s bags fetched: %s", Brand, Model, bags_count)
+
 
         current, peak = tracemalloc.get_traced_memory()
         logging.info(f"Fetching - Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
@@ -94,10 +95,12 @@ def set_up(Brand, Model, Color):
             exit()
 
         # Fetch all the sold bags for the brand, the model and the color
-        logging.info("Fetching all "+ Brand  +" "+  Model  +" "+  Color +" "+ "bags...")
+        logging.info("Fetching all %s %s %s bags...", Brand, Model, Color)
+
         bags_color = handbags.find({"brand.name": {"$regex": Brand, "$options": 'i'}, "model.name": {"$regex": Model, "$options": 'i'}, "colors.all.name": {"$regex": Color, "$options": 'i'}})
         bags_color_count = handbags.count_documents({"brand.name": {"$regex": Brand, "$options": 'i'}, "model.name": {"$regex": Model, "$options": 'i'}, "colors.all.name": {"$regex": Color, "$options": 'i'}})
-        logging.info("Number of " + Brand + " " + Model + " " + Color + " bags fetched: ", bags_color_count)
+        logging.info("Number of %s %s %s bags fetched: %s", Brand, Model, Color, bags_color_count)
+
 
         current, peak = tracemalloc.get_traced_memory()
         logging.info(f"Fetching - Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
@@ -157,7 +160,7 @@ def train_linear_model(Model, Color, color_data_exists, df, dp):
     ##################### Linear regression 
 
     # Perform the linear regression analysis for all model bags
-    logging.info("Performing linear regression analysis for all "+ Model +" bags...")
+    logging.info("Performing linear regression analysis for all %s bags...", Model)
     model1 = LinearRegression()
 
 
@@ -167,7 +170,7 @@ def train_linear_model(Model, Color, color_data_exists, df, dp):
 
     if color_data_exists:
         # Perform the linear regression analysis for model bags in the color   
-        logging.info("Performing linear regression analysis for "+ Color +" "+ Model +" bags...")
+        logging.info("Performing linear regression analysis for %s %s bags...", Color, Model)
         model2 = LinearRegression()
         model2.fit(dp[['timeToSell']], dp['price'])
         del dp  # Free up memory
@@ -192,7 +195,8 @@ def train_polynomial_model( Model, Color, color_data_exists, df, dp):
     ##################### Polynomial regression 
 
     # Polynomial regression on all model bags
-    logging.info("Performing polynomial regression analysis for all "+ Model +" bags...")
+    logging.info("Performing polynomial regression analysis for all %s bags...", Model)
+
     poly = PolynomialFeatures(degree=2)
     X_poly = poly.fit_transform(df[['timeToSell']])
     model3 = LinearRegression()
@@ -202,7 +206,8 @@ def train_polynomial_model( Model, Color, color_data_exists, df, dp):
 
     if color_data_exists:
         # Polynomial regression on model bags in the color
-        logging.info("Performing polynomial regression analysis for "+ Color +" "+ Model +" bags...")
+        logging.info("Performing polynomial regression analysis  for %s %s bags...", Color, Model )
+
         X_poly_red = poly.fit_transform(dp[['timeToSell']])
         model4 = LinearRegression()
         model4.fit(X_poly_red, dp['price'])
@@ -233,7 +238,7 @@ def train_decision_model( Model, Color, color_data_exists, df, dp):
     }
 
     # Decision tree regression on all model bags with max_depth and min_samples_split parameters
-    logging.info("Decision Performing decision tree regression analysis for all "+ Model +" bags...")
+    logging.info("Decision Performing decision tree regression analysis for all %s bags...", Model)
     dt = DecisionTreeRegressor()
     grid_search = GridSearchCV(estimator=dt, param_grid=param_grid, cv=5)
     grid_search.fit(df[['timeToSell']], df['price'])
@@ -245,7 +250,7 @@ def train_decision_model( Model, Color, color_data_exists, df, dp):
 
     if color_data_exists:
         # Decision tree regression on model bags in the color with max_depth and min_samples_split parameters
-        logging.info("Decision Performing decision tree regression analysis for "+ Color +" "+ Model +" bags...")
+        logging.info("Decision Performing decision tree regression analysis  for %s %s bags...", Color, Model)
         grid_search.fit(dp[['timeToSell']], dp['price'])
         best_params = grid_search.best_params_
         model6 = DecisionTreeRegressor(max_depth=best_params['max_depth'], min_samples_split=best_params['min_samples_split'])
@@ -278,7 +283,7 @@ def train_forest_model( Model, Color, color_data_exists, df, dp):
         dp = dp.sample(frac=1, random_state=1)
 
     # Random Forest regression on all model bags with max_depth and min_samples_split parameters
-    logging.info("Performing Random Forest regression analysis for all "+ Model +" bags...")
+    logging.info("Performing Random Forest regression analysis for all %s bags...", Model)
     model7 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
     model7.fit(df[['timeToSell']], df['price'])
     del df  # Free up memory
@@ -286,7 +291,7 @@ def train_forest_model( Model, Color, color_data_exists, df, dp):
 
     if color_data_exists:
         # Random Forest regression on model bags in the color with max_depth and min_samples_split parameters
-        logging.info("Performing Random Forest regression analysis for "+ Color +" "+ Model +" bags...")
+        logging.info("Performing Random Forest regression analysis for %s %s bags...", Color, Model)
         model8 = RandomForestRegressor(max_depth=10, min_samples_split=20, random_state=1)
         model8.fit(dp[['timeToSell']], dp['price'])
         del dp  # Free up memory
@@ -419,29 +424,29 @@ def results(Color, days, color_data_exists, get_optimal_price_allmodels, get_opt
     logging.info("")
 
     # linear regression - all models
-    logging.info("Linear regression - all models:", int(round(get_optimal_price_allmodels(days)[0])), "€ | +", profit_allmodels_lr, "€")
+    logging.info("Linear regression - all models: % s€ | + %s €", int(round(get_optimal_price_allmodels(days)[0])), profit_allmodels_lr)
     # polynomial regression - all models
-    logging.info("Polynomial regression - all models:", int(round(get_optimal_price_allmodels_poly(days)[0])), "€ | +", profit_allmodels_poly, "€")
+    logging.info("Polynomial regression - all models: % s€ | + %s €",  int(round(get_optimal_price_allmodels_poly(days)[0])), profit_allmodels_poly)
     # decision tree regression - all models
-    logging.info("Decision tree regression - all models:", int(round(get_optimal_price_allmodels_tree(days)[0])), "€ | +", profit_allmodels_tree, "€")
+    logging.info("Decision tree regression - all models: % s€ | + %s €", int(round(get_optimal_price_allmodels_tree(days)[0])), profit_allmodels_tree)
     # random forest regression - all models
-    logging.info("Random forest regression - all models:", int(round(get_optimal_price_allmodels_rf(days)[0])), "€ | +", profit_allmodels_rf, "€")
+    logging.info("Random forest regression - all models: % s€ | + %s €",  int(round(get_optimal_price_allmodels_rf(days)[0])), profit_allmodels_rf)
     # neural network regression - all models
-    logging.info("Neural network regression - all models:", int(round(get_optimal_price_allmodels_nn(days)[0][0])), "€ | +", profit_allmodels_nn, "€")
+    logging.info("Neural network regression - all models: % s€ | + %s €", int(round(get_optimal_price_allmodels_nn(days)[0][0])), profit_allmodels_nn)
 
     logging.info("")
 
     if color_data_exists:
         # linear regression - color
-        logging.info("Linear regression - " + Color + ":", int(round(get_optimal_price_color(days)[0])), "€ | +", profit_color_lr, "€")
+        logging.info("Linear regression  - %s : %s € | + %s €", Color, int(round(get_optimal_price_color(days)[0])), profit_color_lr)
         # polynomial regression - color
-        logging.info("Polynomial regression - " + Color + ":", int(round(get_optimal_price_color_poly(days)[0])), "€ | +", profit_color_poly, "€")
+        logging.info("Polynomial regression  - %s : %s € | + %s €", Color, int(round(get_optimal_price_color_poly(days)[0])), profit_color_poly)
         # decision tree regression - color
-        logging.info("Decision tree regression - " + Color + ":", int(round(get_optimal_price_color_tree(days)[0])), "€ | +", profit_color_tree, "€")
+        logging.info("Decision tree regression  - %s : %s € | + %s €", Color, int(round(get_optimal_price_color_tree(days)[0])), profit_color_tree)
         # random forest regression - color
-        logging.info("Random forest regression - " + Color + ":", int(round(get_optimal_price_color_rf(days)[0])), "€ | +", profit_color_rf, "€")
+        logging.info("Random forest regression  - %s : %s € | + %s €", Color, int(round(get_optimal_price_color_rf(days)[0])), profit_color_rf )
         # neural network regression - color
-        logging.info("Neural network regression - " + Color + ":", int(round(get_optimal_price_color_nn(days)[0][0])), "€ | +", profit_color_nn, "€")
+        logging.info("Neural network regression - %s : %s € | + %s €", Color, int(round(get_optimal_price_color_nn(days)[0][0])), profit_color_nn)
 
 
 
@@ -459,9 +464,9 @@ def evaluate(Color, days, color_data_exists, df, dp, model1, model2, model3, mod
     if color_data_exists:
         avg_price_color = int(round((dp['price']*100).mean()))
 
-    logging.info("Average price - all models:", avg_price_all, "€")
+    logging.info("Average price - all models: %s €", avg_price_all)
     if color_data_exists:
-        logging.info("Average price - " + Color + ":", avg_price_color, "€")
+        logging.info("Average price - %s : %s €", Color, avg_price_color)
 
     current, peak = tracemalloc.get_traced_memory()
     logging.info(f"Evaluate Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
@@ -483,20 +488,20 @@ def evaluate(Color, days, color_data_exists, df, dp, model1, model2, model3, mod
     current, peak = tracemalloc.get_traced_memory()
     logging.info(f"Evaluate 2 Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
 
-    logging.info("MAE - Linear regression - all models:", round(mae_allmodels_lr), "€")
-    logging.info("MAE - Polynomial regression - all models:", round(mae_allmodels_poly, 2), "€")
-    logging.info("MAE - Decision tree regression - all models:", round(mae_allmodels_tree), "€")
-    logging.info("MAE - Random forest regression - all models:", round(mae_allmodels_rf), "€")
-    logging.info("MAE - Neural network regression - all models:", round(mae_allmodels_nn), "€")
+    logging.info("MAE - Linear regression  - all models: %s €", round(mae_allmodels_lr))
+    logging.info("MAE - Polynomial regression  - all models: %s €", round(mae_allmodels_poly, 2))
+    logging.info("MAE - Decision tree regression  - all models: %s €", round(mae_allmodels_tree))
+    logging.info("MAE - Random forest regression  - all models: %s €", round(mae_allmodels_rf))
+    logging.info("MAE - Neural network regression - all models: %s €", round(mae_allmodels_nn))
 
     logging.info("")
 
     if color_data_exists:
-        logging.info("MAE - Linear regression - " + Color + ":", round(mae_color_lr), "€")
-        logging.info("MAE - Polynomial regression - " + Color + ":", round(mae_color_poly), "€")
-        logging.info("MAE - Decision tree regression - " + Color + ":", round(mae_color_tree), "€")
-        logging.info("MAE - Random forest regression - " + Color + ":", round(mae_color_rf), "€")
-        logging.info("MAE - Neural network regression - " + Color + ":", round(mae_color_nn), "€")
+        logging.info("MAE - Linear regression  - %s : %s €", Color, round(mae_color_lr))
+        logging.info("MAE - Polynomial regression  - %s : %s €", Color, round(mae_color_poly))
+        logging.info("MAE - Decision tree regression  - %s : %s €", Color, round(mae_color_tree))
+        logging.info("MAE - Random forest regression  - %s : %s €", Color, round(mae_color_rf),)
+        logging.info("MAE - Neural network regression - %s : %s €", Color, round(mae_color_nn))
 
 
     diff_allmodels_lr = abs(avg_price_all - int(round(get_optimal_price_allmodels(days)[0])))
@@ -572,12 +577,11 @@ def best(Color, buying_price, days, color_data_exists, diff_allmodels, diff_colo
         profit_color = predicted_price_color - buying_price
 
     logging.info("")
-    logging.info("Closest model to average price for all models:", best_model_all, "with a difference of", round(diff_allmodels[best_model_all], 2), "€, a price of", predicted_price_all, "€ and a profit of", profit_all, "€")
+    logging.info("Closest model to average price for all models: %s with a difference of %s €, a price of %s € and a profit of %s €", best_model_all, round(diff_allmodels[best_model_all], 2), predicted_price_all, profit_all )
+
     if color_data_exists:
-        logging.info("Closest model to average price for " + Color + " bags:", best_model_color, "with a difference of", round(diff_color[best_model_color], 2), "€, a price of", predicted_price_color, "€ and a profit of", profit_color, "€")
+        logging.info("Closest model to average price for %s bags: %s with a difference of %s €, a price of %s € and a profit of %s €", Color, best_model_color, round(diff_color[best_model_color], 2), predicted_price_color, profit_color)
 
-
-   
 
     tracemalloc.stop()
     
