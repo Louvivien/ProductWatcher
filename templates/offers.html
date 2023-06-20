@@ -1,0 +1,231 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Price Watcher
+{% endblock %}
+
+{% block navbar %}
+<style>
+    #myTable th input, 
+    #myTable th div,
+    #myTable th:last-child .filter-text { 
+        display: none;
+    }
+</style>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Price Watcher</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <h1 style="text-align: center;">
+        {{ brand }} {{ model }}
+    </h1>
+    <br><br>
+    <div id="loading-status-stockx" class="alert alert-info" role="alert" style="text-align: center;"></div>
+    <div id="loading-status-vc" class="alert alert-info" role="alert" style="text-align: center;"></div>
+    <br><br>
+
+    <table id="myTable" class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Image</th>
+                <th scope="col">Title</th>
+                <th scope="col">Color</th>
+               <th scope="col">Average Price</th>
+                <th scope="col">Sold</th>
+                <th scope="col">Buying Price</th>
+                <th scope="col">Link</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th><input type="text" id="title-search" placeholder="Search Title"></th>
+                <th><div id="color-search"></div></th>
+                <th><input type="number" id="average-price-min-search" placeholder="Min"> - <input type="number" id="average-price-max-search" placeholder="Max"></th>
+                <th><div id="sold-search"></div></th>
+                <th><input type="number" id="buying-price-min-search" placeholder="Min"> - <input type="number" id="buying-price-max-search" placeholder="Max"></th>
+                <th>
+                    <input type="checkbox" id="stockx-filter" value="StockX"> <span class="filter-text">StockX</span><br>
+                    <input type="checkbox" id="vc-filter" value="VC"> <span class="filter-text">VC</span><br>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <div id="loader" class="spinner-border" role="status" style="display: none;">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </tbody>
+    </table>
+</div>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var $j = jQuery.noConflict();
+    
+    // Create the DataTable instance and assign it to a variable
+    var table = $j('#myTable').DataTable();
+
+    // Load the data from the server
+    var brand = "{{ brand }}";
+    var model = "{{ model }}";
+    $j('#loading-status-stockx').text('Loading data from StockX...');
+    $j.get('/product_detail/data/stockx/' + brand + '/' + model, function (data) {
+        console.log('StockX data:', data);
+        addDataToTable(data.stockx_data, 'StockX');
+
+        $j('#loading-status-stockx').remove();
+
+    })
+    $j('#loading-status-vc').text('Loading data from Vestiaire Collective...');
+    $j('#loading-status').text('Loading data from Vestiaire Collective...');
+    $j.get('/product_detail/data/vestiaire/' + brand + '/' + model, function (data) {
+        console.log('Vestiaire data:', data);
+        addDataToTable(data.vestiaire_data, 'VC');
+        $j('#loading-status-vc').remove();
+
+    });
+
+
+
+
+
+    function addDataToTable(data, source) {
+    data.forEach(function (item) {
+        var color, retailPrice, averagePrice, sold, highestBid, lowestAsk, link, row, buyingPrice;
+        
+        if (source === 'StockX') {
+            
+            picture_url = item['media']['thumbUrl'] || '';
+            var titleParts = item['title'].split('PM', 1);
+            color = item['title'].includes('PM') && titleParts.length > 1 ? titleParts[1].trim() : item['title'].split(' ')[item['title'].split(' ').length - 1];
+            var retailPriceTrait = item['traits'].find(function(trait) { return trait['name'] == 'Retail Price'; });
+            brand = item['brand'] || '';
+            averagePrice = item['market']['averageDeadstockPrice'] || '';
+            sold = item['market']['deadstockSold'] || '';
+            buyingPrice = item['market']['highestBid'] || item['market']['lowestAsk'] || (retailPriceTrait ? retailPriceTrait['value'] : '') || '';
+            link = "https://stockx.com/fr-fr/" + (item['urlKey'] || '');
+        
+        
+        
+        } else if (source === 'VC') {
+            
+            
+            picture_url = item.pictures.length > 0 ? "https://images.vestiairecollective.com" +  item.pictures[0] : '';
+            color = item.colors.all.length > 0 ? item.colors.all[0].name : '';
+            retailPrice = item.discount ? (item.discount.originalPrice.cents / 100).toFixed(0) : '';
+            brand = item.brand.name || '';
+            averagePrice = '';
+            sold = item.sold ? 1 : 0;
+            buyingPrice = (item.price.cents / 100).toFixed(0) || '';
+            link = "https://fr.vestiairecollective.com" + (item.link || '');
+        }
+
+        row = '<tr>' +
+        '<td><img src="' + picture_url + '"  style="width: 50px;"></td>' +
+        '<td>' + (brand + " " + item.name || '') + '</td>' +
+        '<td>' + (color || '') + '</td>' +
+        '<td>' + (averagePrice || '') + '</td>' +
+        '<td>' + (sold || '') + '</td>' +
+        '<td>' + (buyingPrice || '') + '</td>' +
+        '<td><a href="' + link + '" class="btn btn-primary">View on ' + source + '</a></td>' +
+        '</tr>';
+        table.row.add($j(row)).draw();
+    });
+}
+
+
+
+$j(document).ready(function () {
+
+
+        $j('#title-search').on('keyup', function () {
+            table.columns(1).search(this.value).draw();
+        });
+
+
+
+            // Add event listener to the average price range slider
+            $j('#average-price-search').on('input', function () {
+                table.column(4).search('^' + this.value, true, false).draw();
+            });
+
+            // Populate the sold checkboxes
+            var soldValues = table.column(5).data().unique();
+            soldValues.each(function (value) {
+                $j('#sold-search').append('<input type="checkbox" value="' + value + '">' + value + '<br>');
+            });
+
+                // Add event listener to the source checkboxes
+                $j('#stockx-filter, #vc-filter').on('change', function () {
+                    var search = $j('#stockx-filter:checked, #vc-filter:checked').map(function () {
+                        return this.value;
+                    }).get().join('|');
+                    table.column(8).search(search, true, false).draw();
+                });
+
+            // Add event listener to the sold checkboxes
+            $j('#sold-search input').on('change', function () {
+                var search = $j('#sold-search input:checked').map(function () {
+                    return this.value;
+                }).get().join('|');
+                table.column(5).search(search, true, false).draw();
+            });
+
+
+
+
+
+
+
+
+            $j('#average-price-min-search, #average-price-max-search').on('keyup', function () {
+                var min = $j('#average-price-min-search').val();
+                var max = $j('#average-price-max-search').val();
+                table.column(4).search(min + '|' + max, true, false).draw();
+            });
+
+
+            $j('#buying-price-min-search, #buying-price-max-search').on('keyup', function () {
+                var min = $j('#buying-price-min-search').val();
+                var max = $j('#buying-price-max-search').val();
+                table.column(3).search(min + '|' + max, true, false).draw();
+            });
+
+
+
+
+            $j('#myTable th, #myTable th:last-child').hover(
+                function () {
+                    $j(this).find('input, div, .filter-text').css('display', 'inline-block'); 
+                }, 
+                function () {
+                    $j(this).find('input, div, .filter-text').css('display', 'none'); 
+                }
+            );
+
+
+
+    });
+
+
+</script>
+{% endblock %}

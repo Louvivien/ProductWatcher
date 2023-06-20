@@ -25,10 +25,12 @@ import pycountry
 
 from bson import ObjectId
 
-from load_offers import search_vestiaire, search_stockx
-# from flask_cors import CORS
+from scripts.load_offers import search_vestiaire, search_stockx
 import threading
 import gc
+
+from scripts.estimatepriceforgivendays_anyproduct import estimate_price
+
 
 
 
@@ -36,7 +38,8 @@ import gc
 
 
 # Load .env file
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+root_dir = os.path.dirname(os.path.abspath(__file__))
+dotenv_path = os.path.join(root_dir, '.env')
 load_dotenv(dotenv_path)
 
 # MongoDB setup
@@ -47,7 +50,6 @@ db = client.productwatcher
 handbags = db.handbags  
 
 # This convert ObjectId / necessary for this route '/sales_stats/data'
-
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
@@ -65,7 +67,6 @@ def jsonify(*args, **kwargs):
 app = Flask(__name__)
 app.json_encoder = JSONEncoder
 Bootstrap(app)
-# CORS(app)
 
 
 # Set up logging
@@ -102,7 +103,7 @@ products = [
 ]
 
 
- # Add a new product to watch
+ ## Add a new product to watch
 @app.route('/', methods=['GET', 'POST'])
 def product_list():
     if request.method == 'POST':
@@ -112,18 +113,72 @@ def product_list():
 
     return render_template('product_list.html', products=products)
 
- # Get all offers from APIs
+
+## Load offers page
 @app.route('/product_detail/<brand>/<model>', methods=['GET'])
 def product_detail(brand, model):
-    stockx_result = search_stockx(brand, model)
-    if stockx_result is None:
-        return render_template('error.html', message="All requests failed due to proxy errors.", data=[])  
-    else:
-        queries, debug_info = stockx_result
-    vestiaire_result = search_vestiaire(brand, model)
-    return render_template('home.html', stockx_data=queries, vestiaire_data=vestiaire_result[0], debug_info=debug_info)
+    return render_template('offers.html', brand=brand, model=model)
 
-# Get Sales Items for a specific product
+# Load offers data 1
+@app.route('/product_detail/data/stockx/<brand>/<model>', methods=['GET'])
+def get_stockx_data(brand, model):
+    print("load stockx data")
+    stockx_result = search_stockx(brand, model)
+    if stockx_result is not None:
+        stockx_data, debug_info = stockx_result
+        for item in stockx_data:
+            item['source'] = 'StockX'
+    else:
+        stockx_data = []
+    return jsonify(stockx_data=stockx_data)
+
+# Load offers data 2
+@app.route('/product_detail/data/vestiaire/<brand>/<model>', methods=['GET'])
+def get_vestiaire_data(brand, model):
+    print("load vestiaire data")
+    vestiaire_result = search_vestiaire(brand, model)
+    if vestiaire_result is not None:
+        vestiaire_data = vestiaire_result[0]
+        for item in vestiaire_data:
+            item['source'] = 'VC'
+    else:
+        vestiaire_data = []
+    return jsonify(vestiaire_data=vestiaire_data)
+
+
+
+
+# Get Sales Items for all models
+@app.route('/sales_stats/allmodels', methods=['GET'])
+def sales_stats_allmodels():
+    page = request.args.get('page', default = 1, type = int)
+    per_page = request.args.get('per_page', default = 10, type = int)
+
+    collections = client.productwatcher.list_collection_names()  # Get all collection names
+    all_stats = []
+    all_colors = set()
+
+    for collection_name in collections:
+        collection = db[collection_name]
+        all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))  # Get all products with pagination
+
+        # Get all unique colors in the current collection
+        colors = collection.distinct('colors.all.name')
+        all_colors.update(colors)
+
+
+        sold_items = [item for item in all_products if item.get('sold')]
+
+        all_stats.append({
+            'collection_name': collection_name,
+            'all_products': all_products,
+            'currency': "EUR"
+        })
+
+    return render_template('sales_stats_allmodels.html', all_stats=all_stats, colors=all_colors)
+
+
+## Get Sales Items for a specific product
 @app.route('/sales_stats/<brand>/<model>', methods=['GET'])
 def sales_stats(brand, model):
     all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
@@ -161,8 +216,7 @@ def sales_stats(brand, model):
 
     return render_template('sales_stats.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
 
-
-# Get Sales Items data (for all models)
+# Get Sales Items data 
 @app.route('/sales_stats/data', methods=['GET'])
 def sales_stats_data():
     page = request.args.get('page', default = 1, type = int)
@@ -255,18 +309,18 @@ def sales_stats_data():
     return jsonify(response)
 
 
+## Estimate Price page
 @app.route('/estimate_price/', methods=['GET'])
 def estimate_price_page():
     return render_template('estimate_price.html')
 
 
-
 # This dictionary will hold the status of each request
 status_dict = {}
 
-
-@app.route('/estimate_price/<brand>/<model>/<color>/<buying_price>/<days>', methods=['GET'])
-def estimate(brand, model, color, buying_price, days):
+# Estimate Price route ML
+@app.route('/estimate_price_ml/<brand>/<model>/<color>/<buying_price>/<days>', methods=['GET'])
+def estimateML(brand, model, color, buying_price, days):
     # Convert the buying_price and days to int as they are passed as strings in the URL
     buying_price = int(buying_price)
     days = int(days)
@@ -281,6 +335,7 @@ def estimate(brand, model, color, buying_price, days):
     # Return the initial response
     return jsonify({"status": "Processing", "request_id": request_id})
 
+# Estimate ML Price request handling
 @app.route('/status/<request_id>', methods=['GET'])
 def get_status(request_id):
     # Return the status of the request
@@ -288,7 +343,7 @@ def get_status(request_id):
 
 def process_request(request_id, brand, model, color, buying_price, days):
     try:
-        from estimatepriceforgivendays_anyproduct import (set_up, train_linear_model, train_forest_model, train_polynomial_model, train_decision_model, train_neural_model, calculate_profits, results, evaluate, best)
+        from scripts.estimatepriceforgivendays_anyproduct_ml import (set_up, train_linear_model, train_forest_model, train_polynomial_model, train_decision_model, train_neural_model, calculate_profits, results, evaluate, best)
 
         status_dict[request_id] = "Setting up"
         set_up_result = set_up(brand, model, color)
@@ -372,74 +427,18 @@ def process_request(request_id, brand, model, color, buying_price, days):
         status_dict[request_id] = {"status": "Error", "error": str(e)}
         print(f"Error occurred for request {request_id}: {e}")
         
+# Estimate Price route 
+@app.route('/estimate_price/<brand>/<model>/<color>/<buying_price>/<days>', methods=['GET'])
+def estimate(brand, model, color, buying_price, days):
+    # Convert the buying_price and days to int as they are passed as strings in the URL
+    buying_price = int(buying_price)
+    days = int(days)
 
+    # Call the function from your script and get the result
+    result = estimate_price(brand, model, color, buying_price, days)
 
-
-
-
-# Get Sales Items for all models
-@app.route('/sales_stats/allmodels', methods=['GET'])
-def sales_stats_allmodels():
-    page = request.args.get('page', default = 1, type = int)
-    per_page = request.args.get('per_page', default = 10, type = int)
-
-    collections = client.productwatcher.list_collection_names()  # Get all collection names
-    all_stats = []
-    all_colors = set()
-
-    for collection_name in collections:
-        collection = db[collection_name]
-        all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))  # Get all products with pagination
-
-        # Get all unique colors in the current collection
-        colors = collection.distinct('colors.all.name')
-        all_colors.update(colors)
-
-
-        sold_items = [item for item in all_products if item.get('sold')]
-
-        # # calculate average price
-        # total_price = 0
-        # for item in sold_items:
-        #     price = item.get('price')
-        #     if isinstance(price, dict) and 'cents' in price and isinstance(price['cents'], (int, float)):
-        #         total_price += price['cents']
-        #     else:
-        #         app.logger.warning(f"Unexpected price type for item {item['_id']}: {type(price)} with value {price}")
-
-        # average_price = round(total_price / len(sold_items) / 100, 2) if sold_items else 0  # divide by 100 to convert cents to euros
-
-        # # calculate best selling color
-        # color_counts = {}
-        # for item in sold_items:
-        #     color = item.get('colors')
-        #     if isinstance(color, dict) and 'all' in color and isinstance(color['all'], list) and color['all']:
-        #         color_name = color['all'][0].get('name')
-        #         if color_name in color_counts:
-        #             color_counts[color_name] += 1
-        #         else:
-        #             color_counts[color_name] = 1
-        # best_selling_color = max(color_counts.items(), key=itemgetter(1))[0]
-
-        # # get top 5 liked products
-        # top_5_liked_products = sorted(sold_items, key=lambda x: x['likes'], reverse=True)[:5]
-
-        # # calculate average time to sell
-        # total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
-        # average_time_to_sell = round(total_time_to_sell / len(sold_items))
-
-        all_stats.append({
-            'collection_name': collection_name,
-            # 'average_time_to_sell': average_time_to_sell,
-            # 'best_selling_color': best_selling_color,
-            # 'average_price': average_price,
-            # 'top_5_liked_products': top_5_liked_products,
-            'all_products': all_products,
-            'currency': "EUR"
-        })
-
-    return render_template('sales_stats_allmodels.html', all_stats=all_stats, colors=all_colors)
-
+    # Return the result as JSON
+    return jsonify(result)
 
 
 
@@ -452,66 +451,3 @@ if __name__ == '__main__':
 
 
 
-
-
-
-
-
-# @app.route('/dashboard1/<brand>/<model>', methods=['GET'])
-# def dashboard1(brand, model):
-    # all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
-
-
-#     # Convert the list of dictionaries to a pandas DataFrame
-#     df = pd.DataFrame(all_products)
-
-#     # Flatten the nested fields in the DataFrame
-#     df['price_euros'] = df['price'].apply(lambda x: x['cents'] / 100)  # convert cents to euros
-#     df['brand_name'] = df['brand'].apply(lambda x: x['name'])
-#     df['creation_date'] = pd.to_datetime(df['creationDate'], unit='ms')  # convert timestamp to datetime
-
-#     # Convert ISO-2 country codes to ISO-3
-#     df['country_iso3'] = df['country'].apply(lambda x: pycountry.countries.get(alpha_2=x).alpha_3)
-
-#     # Create the plots
-#     fig1 = px.histogram(df, x="price_euros", nbins=20, title="Price Distribution")
-#     fig2 = px.scatter(df, x="price_euros", y="likes", title="Price vs Likes")
-#     fig3 = px.pie(df, names="brand_name", title="Products by Brand")
-#     fig4 = px.line(df, x="creation_date", y="price_euros", title="Price Trend Over Time")
-#     fig5 = px.scatter_geo(df, locations="country_iso3", color="price_euros", title="Geographic Distribution of Products")
-
-#     # Convert the plots to HTML and return
-#     plot1 = fig1.to_html(full_html=False)
-#     plot2 = fig2.to_html(full_html=False)
-#     plot3 = fig3.to_html(full_html=False)
-#     plot4 = fig4.to_html(full_html=False)
-#     plot5 = fig5.to_html(full_html=False)
-
-#     return render_template('dashboard1.html', plot1=plot1, plot2=plot2, plot3=plot3, plot4=plot4, plot5=plot5)
-
-
-
-# @app.route('/dashboard2/<brand>/<model>', methods=['GET'])
-# def dashboard2(brand, model):
-    # all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
-
-
-#     # Convert the list of dictionaries to a pandas DataFrame
-#     df = pd.DataFrame(all_products)
-
-#     # Flatten the nested fields in the DataFrame
-#     df['price_euros'] = df['price'].apply(lambda x: x['cents'] / 100)  # convert cents to euros
-#     df['brand_name'] = df['brand'].apply(lambda x: x['name'])
-#     df['creation_date'] = pd.to_datetime(df['creationDate'], unit='ms')  # convert timestamp to datetime
-
-#     # Convert ISO-2 country codes to ISO-3
-#     df['country_iso3'] = df['country'].apply(lambda x: pycountry.countries.get(alpha_2=x).alpha_3)
-
-#     # Create the data for the charts
-#     data1 = df['price_euros'].tolist()
-#     data2 = df[['price_euros', 'likes']].values.tolist()
-#     data3 = df['brand_name'].value_counts().reset_index().values.tolist()
-#     data4 = df[['creation_date', 'price_euros']].values.tolist()
-#     data5 = df['country_iso3'].value_counts().reset_index().values.tolist()
-
-#     return render_template('dashboard2.html', data1=data1, data2=data2, data3=data3, data4=data4, data5=data5)

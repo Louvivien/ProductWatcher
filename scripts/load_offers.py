@@ -4,7 +4,8 @@ import sys
 import requests
 import json
 import curlify
-
+import os
+import random
     
 
 
@@ -134,7 +135,7 @@ def search_vestiaire(brand, model):
   
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
-        print(response.content)
+        # print(response.content)
         data = json.loads(response.content)
         queries = data['items']
 
@@ -155,6 +156,8 @@ def search_vestiaire(brand, model):
 
 def search_stockx(brand, model):
     product_name = f"{brand} {model}"  
+    product_name = product_name.replace(' ', '%20') 
+
     headers = {
             'authority': 'stockx.com',
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -174,72 +177,37 @@ def search_stockx(brand, model):
         }
 
 
+    # Load proxies from the file
+    with open(os.path.join(os.path.dirname(__file__), 'scrapers/workingproxies.txt'), 'r') as f:
+        proxies = f.read().splitlines()
 
-    for _ in range(10):
-        product_name = product_name.replace(' ', '%20')
-        response = None  
+    for attempt in range(10):
+        # Select a random proxy
+        proxy = random.choice(proxies)
+        proxy_dict = {
+            'http': proxy,
+            'https': proxy,
+        }
 
         try:
-            response = requests.get('https://stockx.com/api/browse?_search=' + product_name, headers=headers,timeout=10)
-
-            # curl_command = curlify.to_curl(response.request)
-            # logging.info("curl_command: %s", curl_command)
-            # logging.info("Response content: %s", response.content)
+            response = requests.get('https://stockx.com/api/browse?_search=' + product_name, headers=headers, proxies=proxy_dict, timeout=10)
 
             if "captcha-error" in response.text or "<h1>Access Denied</h1>" in response.text or "Enable JavaScript and cookies" in response.text:
-                                return None, logging.error("Captcha error or Access Denied detected, switching proxy?")
+                raise Exception("Captcha error or Access Denied detected, switching proxy?")
 
-        except requests.exceptions.HTTPError as errh:
-            logging.error("Http Error:", errh)
-        except requests.exceptions.ProxyError:
-            logging.error("Proxy error occurred, switching proxy...")
-            logging.error("Failed request details: %s", curlify.to_curl(response.request) if response else "No response received")
-            logging.error("Response content: %s", response.content if response else "No response received")
+            data = json.loads(response.content)
+            queries = data['Products']
 
-        except requests.exceptions.ConnectionError as errc:
-            logging.error("Error Connecting: %s", errc)
-            logging.error("Failed request details: %s", curlify.to_curl(response.request) if response else "No response received")
-        except requests.exceptions.Timeout as errt:
-            logging.error("Timeout Error:", errt)
-        except requests.exceptions.RequestException as err:
-            logging.error("Something went wrong", err)
-        
-        except json.decoder.JSONDecodeError:
-            logging.error("JSONDecodeError: No data to parse or data is not in correct format.")
-            return None, "JSONDecodeError: No data to parse or data is not in correct format."
+            return queries, None
 
+        except Exception as e:
+            print(f"Error occurred: {e}. Retrying with another proxy...")
+            print(f"Removing {proxy} from the list of working proxies")
 
-        if response is None:
-            return None, "All requests failed due to proxy errors."
-        # else:
-        #     queries, debug_info = stockx_result
-        #     for query in queries:
-        #         query['collection'] = brand + " " + model
-        #         handbags.insert_one(query)
-        #     return queries, None
+            # Remove the problematic proxy from the list
+            proxies.remove(proxy)
 
-        
-        
-        # # Find the script tag with the id '__NEXT_DATA__'
-        # match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', response.text, re.DOTALL)
+    print("All attempts failed. Please check your proxies and try again.")
+    return None, "All attempts failed. Please check your proxies and try again."
 
-        # edges = None
-        # if match:
-        #     data_str = match.group(1)
-        data = json.loads(response.content)
-        queries = data['Products']
-        # queries = queries[1]
-
-        #     # Navigate to the 'results' key
-        #     queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
-
-        #     # Access the 5th query directly
-        #     query = queries[4]['state']['data']['browse']['results']
-        #     edges = query['edges']  # return the list of edges
-        # logging.info("stockx : %s", queries)
-
-        # if not edges:
-        #     return None, curlify.to_curl(response.request)
-        # else:
-        return queries, None
 

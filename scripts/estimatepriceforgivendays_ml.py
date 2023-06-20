@@ -31,8 +31,9 @@ warnings.filterwarnings(action='ignore', category=UserWarning)
 
 
 # Load .env file
-# print("Loading environment variables...")
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+root_dir = os.path.dirname(os.path.abspath(__file__))
+print("Loading environment variables...")
+dotenv_path = os.path.join(root_dir, '.env')
 load_dotenv(dotenv_path)
 
 # MongoDB setup
