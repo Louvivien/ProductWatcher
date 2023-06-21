@@ -85,6 +85,6 @@ def estimate_price(brand, model, color, buying_price, days):
             "Average price - color": avg_price_same_brand_model_color_general,
             "Recommended price - all": rec_price_all,
             "Profit- all": profit_all,
-            "Recommended price - all": rec_price_color,
+            "Recommended price - color": rec_price_color,
             "Profit - color": profit_color
         }
