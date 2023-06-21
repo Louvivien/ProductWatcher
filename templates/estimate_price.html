@@ -154,14 +154,12 @@ function displayResults(data) {
                     <h5 class="card-title">Estimate Price ML Results</h5>
                 </div>
                 <div class="card-body">
-                    <p>Number of sold bags in the database for this bag: ${data.bags_count} </p>
-                    ${data.color_data_exists ? `<p>Number of sold bags in the database for this color: ${data.bags_color_count} </p>` : ''}
-                    <p>Average price - all models: ${data.avg_price_all} €</p>
-                    <p>Closest model to average price for all models: ${data.best_model_all} with a difference of ${data.diff_allmodels} €</p>
+                    <p>Number of bags: ${data.bags_count} </p>
+                    ${data.color_data_exists ? `<p>Number of bags - color: ${data.bags_color_count} </p>` : ''}
+                    <p>Average price: ${data.avg_price_all} €</p>
                     ${data.color_data_exists ? `<p>Average price - ${data.color}: ${data.avg_price_color} €</p>` : ''}
-                    ${data.color_data_exists ? `<p>Closest model to average price for ${data.color} bags: ${data.best_model_color} with a difference of ${data.diff_color_models} €</p>` : ''}
-                    <p>Recommended price is ${Math.max(data.predicted_price_color, data.predicted_price_all)} €</p>
-                    <p>Profit - all: ${data.profit_all} €, Profit - color: ${data.profit_color ? data.profit_color : 'N/A'} €</p>
+                    <p>Recommended price - all is ${data.predicted_price_all} € for a profit of ${data.profit_all}</p>
+                    ${data.color_data_exists ? `<p>Recommended price - color is ${data.predicted_price_color} € for a profit of ${data.profit_color}</p>` : ''}
                 </div>
             </div>
             <br></br>
