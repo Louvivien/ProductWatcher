@@ -135,6 +135,8 @@ function estimatePrice() {
     });
 }
 
+
+
 function displayResults(data) {
     var resultDiv = document.getElementById('result');
     var cardContent = '';
@@ -164,7 +166,6 @@ function displayResults(data) {
             </div>
             <br></br>
         `;
-        resultDiv.innerHTML = cardContent + resultDiv.innerHTML; // Prepend the content
     } else { // Results from estimatePrice
         // Remove any existing cards from the same method
         var oldCards = document.getElementsByClassName('estimatePrice');
@@ -188,8 +189,9 @@ function displayResults(data) {
             </div>
             <br></br>
         `;
-        resultDiv.innerHTML = cardContent + resultDiv.innerHTML; // Prepend the content
     }
+
+    resultDiv.innerHTML += cardContent; // Append new results to existing content
 }
 
 

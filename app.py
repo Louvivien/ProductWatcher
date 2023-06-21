@@ -31,6 +31,8 @@ import gc
 
 from scripts.estimatepriceforgivendays_anyproduct import estimate_price
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 
 
 
@@ -79,8 +81,15 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 
 
+# Call root route to check if the server is running
+def call_root():
+    base_url = os.getenv('BASE_URL', 'http://localhost:5000/')
+    response = requests.get(base_url)
+    print(f"Response from root: {response.text}")
 
-
+scheduler = BackgroundScheduler()
+scheduler.add_job(call_root, 'interval', minutes=13)
+scheduler.start()
 
 # Define the list of products
 products = [
@@ -441,12 +450,16 @@ def estimate(brand, model, color, buying_price, days):
     return jsonify(result)
 
 
-
 if __name__ == '__main__':
     app.run(debug=True)
 
-
-
+    try:
+        # This is here to simulate application activity (which keeps the main thread alive).
+        while True:
+            time.sleep(2)
+    except (KeyboardInterrupt, SystemExit):
+        # Not strictly necessary if daemonic mode is enabled but should be done if possible
+        scheduler.shutdown()
 
 
 
