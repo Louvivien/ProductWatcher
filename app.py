@@ -22,6 +22,8 @@ import plotly.express as px
 import pandas as pd
 
 import pycountry
+import time
+
 
 from bson import ObjectId
 
@@ -85,7 +87,9 @@ handler.setFormatter(formatter)
 def call_root():
     base_url = os.getenv('BASE_URL', 'http://localhost:5000/')
     response = requests.get(base_url)
-    print(f"Response from root: {response.text}")
+    if response.status_code == 200:
+        print(f"Uptime check page up and running")
+        
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(call_root, 'interval', minutes=13)
