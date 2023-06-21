@@ -83,6 +83,8 @@ def estimate_price(brand, model, color, buying_price, days):
             "Number of bags - color": len(same_brand_model_color_general),
             "Average price": avg_price_same_brand_model_general,
             "Average price - color": avg_price_same_brand_model_color_general,
+            "Average price - for the period": avg_price_same_brand_model,
+            "Average price - color - for the period": avg_price_same_brand_model_color,
             "Recommended price - all": rec_price_all,
             "Profit- all": profit_all,
             "Recommended price - color": rec_price_color,
