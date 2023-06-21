@@ -82,8 +82,8 @@ def set_up(Brand, Model, Color):
     try:
         # Fetch all the sold bags for the brand and the model
         logging.info("Fetching all %s %s bags...", Brand, Model)
-        bags = handbags.find({"brand.name": {"$regex": Brand, "$options": 'i'}, "model.name": {"$regex": Model, "$options": 'i'}})
-        bags_count = handbags.count_documents({"brand.name": {"$regex": Brand, "$options": 'i'}, "model.name": {"$regex": Model, "$options": 'i'}})
+        bags = handbags.find({"collection": {"$regex": f"{Brand} {Model}", "$options": 'i'}})
+        bags_count = handbags.count_documents({"collection": {"$regex": f"{Brand} {Model}", "$options": 'i'}})
         logging.info("Number of %s %s bags fetched: %s", Brand, Model, bags_count)
 
 
@@ -97,8 +97,14 @@ def set_up(Brand, Model, Color):
         # Fetch all the sold bags for the brand, the model and the color
         logging.info("Fetching all %s %s %s bags...", Brand, Model, Color)
 
-        bags_color = handbags.find({"brand.name": {"$regex": Brand, "$options": 'i'}, "model.name": {"$regex": Model, "$options": 'i'}, "colors.all.name": {"$regex": Color, "$options": 'i'}})
-        bags_color_count = handbags.count_documents({"brand.name": {"$regex": Brand, "$options": 'i'}, "model.name": {"$regex": Model, "$options": 'i'}, "colors.all.name": {"$regex": Color, "$options": 'i'}})
+        bags_color = handbags.find({
+            "collection": {"$regex": f"{Brand} {Model}", "$options": 'i'},
+            "colors.all.name": {"$regex": Color, "$options": 'i'}
+        })
+        bags_color_count = handbags.count_documents({
+            "collection": {"$regex": f"{Brand} {Model}", "$options": 'i'},
+            "colors.all.name": {"$regex": Color, "$options": 'i'}
+        })
         logging.info("Number of %s %s %s bags fetched: %s", Brand, Model, Color, bags_color_count)
 
 

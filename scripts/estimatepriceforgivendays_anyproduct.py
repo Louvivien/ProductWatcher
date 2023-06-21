@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import os
 import statistics
 from dotenv import load_dotenv
-
+# TO DO: Update database call like the one for all product
 
 def estimate_price(brand, model, color, buying_price, days):
 

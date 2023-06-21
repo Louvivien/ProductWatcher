@@ -27,6 +27,11 @@ warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 warnings.filterwarnings(action='ignore', category=UserWarning)
 
 
+# TO DO: update database call like in non archived version
+# database call not accurate, use collection instead
+
+
+
 ##################### Setup
 
 
