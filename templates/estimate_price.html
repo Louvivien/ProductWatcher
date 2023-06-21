@@ -140,8 +140,14 @@ function displayResults(data) {
     var cardContent = '';
 
     if (data['bags_count'] !== undefined) { // Results from estimatePriceML
+        // Remove any existing cards from the same method
+        var oldCards = document.getElementsByClassName('estimatePriceML');
+        while(oldCards[0]) {
+            oldCards[0].parentNode.removeChild(oldCards[0]);
+        }
+
         cardContent = `
-            <div class="card">
+            <div class="card estimatePriceML">
                 <div class="card-header">
                     <h5 class="card-title">Estimate Price ML Results</h5>
                 </div>
@@ -157,31 +163,35 @@ function displayResults(data) {
                 </div>
             </div>
             <br></br>
-
         `;
+        resultDiv.innerHTML = cardContent + resultDiv.innerHTML; // Prepend the content
     } else { // Results from estimatePrice
+        // Remove any existing cards from the same method
+        var oldCards = document.getElementsByClassName('estimatePrice');
+        while(oldCards[0]) {
+            oldCards[0].parentNode.removeChild(oldCards[0]);
+        }
+
         cardContent = `
-                <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">Estimate Price Results</h5>
+            <div class="card estimatePrice">
+                <div class="card-header">
+                    <h5 class="card-title">Estimate Price Results</h5>
+                </div>
+                <div class="card-body">
+                    <p>Number of bags: ${data["Number of bags"]}</p>
+                    <p>Number of bags - color: ${data["Number of bags - color"]}</p>
+                    <p>Average price: ${Math.round(data["Average price"])} €</p>
+                    <p>Average price - color: ${Math.round(data["Average price - color"])} €</p>
+                    <p>Recommended price - all: ${Math.round(data["Recommended price - all"])} €, Profit - all: ${Math.round(data["Profit- all"])} €</p>
+                    <p>Recommended price - color: ${Math.round(data["Recommended price - all"])} €, Profit - color: ${Math.round(data["Profit - color"])} €</p>
+                </div>
             </div>
-            <div class="card-body">
-                <p>Number of bags: ${data["Number of bags"]}</p>
-                <p>Number of bags - color: ${data["Number of bags - color"]}</p>
-                <p>Average price: ${Math.round(data["Average price"])} €</p>
-                <p>Average price - color: ${Math.round(data["Average price - color"])} €</p>
-                <p>Recommended price - all: ${Math.round(data["Recommended price - all"])} €, Profit - all: ${Math.round(data["Profit- all"])} €</p>
-                <p>Recommended price - color: ${Math.round(data["Recommended price - all"])} €, Profit - color: ${Math.round(data["Profit - color"])} €</p>
-            </div>
-        </div>
-        <br></br>
-
-
+            <br></br>
         `;
+        resultDiv.innerHTML = cardContent + resultDiv.innerHTML; // Prepend the content
     }
-
-    resultDiv.innerHTML += cardContent; // Append new results to existing content
 }
+
 
 
 

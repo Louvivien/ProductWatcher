@@ -21,31 +21,30 @@ def estimate_price(brand, model, color, buying_price, days):
 
     # Input parameters
     max_time_to_sell = days
-
-
+    
     # Query for same brand and model without time constraint
-    same_brand_model_general = list(handbags.find({"brand.name": brand, "model.name": model}))
+    same_brand_model_general = list(handbags.find({"brand.name": {"$regex": brand, "$options": "i"}, "model.name": {"$regex": model, "$options": "i"}}))
     # Calculate general average price for same brand and model
     same_brand_model_general_prices = [bag['price']['cents']/100 for bag in same_brand_model_general]
-    avg_price_same_brand_model_general = statistics.mean(same_brand_model_general_prices)
+    avg_price_same_brand_model_general = statistics.mean(same_brand_model_general_prices) if same_brand_model_general_prices else 0
 
     # Query for same brand, model, and color without time constraint
-    same_brand_model_color_general = list(handbags.find({"brand.name": brand, "model.name": model, "colors.all.name": color}))
+    same_brand_model_color_general = list(handbags.find({"brand.name": {"$regex": brand, "$options": "i"}, "model.name": {"$regex": model, "$options": "i"}, "colors.all.name": {"$regex": color, "$options": "i"}}))
     # Calculate general average price for same brand, model, and color
     same_brand_model_color_general_prices = [bag['price']['cents']/100 for bag in same_brand_model_color_general]
-    avg_price_same_brand_model_color_general = statistics.mean(same_brand_model_color_general_prices)
+    avg_price_same_brand_model_color_general = statistics.mean(same_brand_model_color_general_prices) if same_brand_model_color_general_prices else 0
 
     # Query for same brand and model sold within max_time_to_sell
-    same_brand_model = list(handbags.find({"brand.name": brand, "model.name": model, "timeToSell": {"$lte": max_time_to_sell}}))
+    same_brand_model = list(handbags.find({"brand.name": {"$regex": brand, "$options": "i"}, "model.name": {"$regex": model, "$options": "i"}, "timeToSell": {"$lte": max_time_to_sell}}))
     # Calculate average price for same brand and model
     same_brand_model_prices = [bag['price']['cents']/100 for bag in same_brand_model]
-    avg_price_same_brand_model = statistics.mean(same_brand_model_prices)
+    avg_price_same_brand_model = statistics.mean(same_brand_model_prices) if same_brand_model_prices else 0
 
     # Query for same brand, model, and color sold within max_time_to_sell
-    same_brand_model_color = list(handbags.find({"brand.name": brand, "model.name": model, "colors.all.name": color, "timeToSell": {"$lte": max_time_to_sell}}))
+    same_brand_model_color = list(handbags.find({"brand.name": {"$regex": brand, "$options": "i"}, "model.name": {"$regex": model, "$options": "i"}, "colors.all.name": {"$regex": color, "$options": "i"}, "timeToSell": {"$lte": max_time_to_sell}}))
     # Calculate average price for same brand, model, and color
     same_brand_model_color_prices = [bag['price']['cents']/100 for bag in same_brand_model_color]
-    avg_price_same_brand_model_color = statistics.mean(same_brand_model_color_prices)
+    avg_price_same_brand_model_color = statistics.mean(same_brand_model_color_prices) if same_brand_model_color_prices else 0
 
     # Calculate recommended price and profit for all bags
     rec_price_all = avg_price_same_brand_model * 0.9  # Assuming we want to price 10% below average for quick sale
