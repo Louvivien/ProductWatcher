@@ -2,7 +2,8 @@ from pymongo import MongoClient
 import os
 import statistics
 from dotenv import load_dotenv
-# TO DO: Update database call like the one for all product
+import numpy as np
+
 
 def estimate_price(brand, model, color, buying_price, days):
 
@@ -39,6 +40,10 @@ def estimate_price(brand, model, color, buying_price, days):
     same_brand_model_color_general_prices = [bag['price']['cents']/100 for bag in same_brand_model_color_general]
     avg_price_same_brand_model_color_general = statistics.mean(same_brand_model_color_general_prices) if same_brand_model_color_general_prices else 0
 
+
+
+
+
     # Query for same brand and model sold within max_time_to_sell
     same_brand_model = list(handbags.find({
         "collection": {"$regex": f"{brand} {model}", "$options": "i"},
@@ -46,7 +51,13 @@ def estimate_price(brand, model, color, buying_price, days):
     }))
     # Calculate average price for same brand and model
     same_brand_model_prices = [bag['price']['cents']/100 for bag in same_brand_model]
-    avg_price_same_brand_model = statistics.mean(same_brand_model_prices) if same_brand_model_prices else 0
+    # Calculate percentiles and remove outliers
+    lower_bound = np.percentile(same_brand_model_prices, 1)
+    upper_bound = np.percentile(same_brand_model_prices, 99)
+    filtered_prices = [price for price in same_brand_model_prices if lower_bound <= price <= upper_bound]
+    
+    avg_price_same_brand_model = statistics.mean(filtered_prices) if filtered_prices else 0
+
 
     # Query for same brand, model, and color sold within max_time_to_sell
     same_brand_model_color = list(handbags.find({
@@ -57,8 +68,13 @@ def estimate_price(brand, model, color, buying_price, days):
     
     # Calculate average price for same brand, model, and color
     same_brand_model_color_prices = [bag['price']['cents']/100 for bag in same_brand_model_color]
-    avg_price_same_brand_model_color = statistics.mean(same_brand_model_color_prices) if same_brand_model_color_prices else 0
-
+    # Calculate percentiles and remove outliers
+    lower_bound = np.percentile(same_brand_model_color_prices, 1)
+    upper_bound = np.percentile(same_brand_model_color_prices, 99)
+    filtered_prices = [price for price in same_brand_model_color_prices if lower_bound <= price <= upper_bound]
+    avg_price_same_brand_model_color = statistics.mean(filtered_prices) if filtered_prices else 0
+    
+    
     # Calculate recommended price and profit for all bags
     rec_price_all = avg_price_same_brand_model * 0.9  # Assuming we want to price 10% below average for quick sale
     profit_all = rec_price_all - buying_price
