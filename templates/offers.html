@@ -15,6 +15,9 @@ Price Watcher
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
 <div class="navbar navbar-inverse" role="navigation">
     <div class="container">
         <div class="navbar-header">
@@ -39,6 +42,7 @@ Price Watcher
     <br><br>
     <div id="loading-status-stockx" class="alert alert-info" role="alert" style="text-align: center;"></div>
     <div id="loading-status-vc" class="alert alert-info" role="alert" style="text-align: center;"></div>
+    <div id="loading-status-original" class="alert alert-info" role="alert" style="text-align: center;"></div>
     <br><br>
 
     <table id="myTable" class="table table-striped">
@@ -62,6 +66,7 @@ Price Watcher
                 <th>
                     <input type="checkbox" id="stockx-filter" value="StockX"> <span class="filter-text">StockX</span><br>
                     <input type="checkbox" id="vc-filter" value="VC"> <span class="filter-text">VC</span><br>
+                    <input type="checkbox" id="original-filter" value="Orginal"> <span class="filter-text">Original</span><br>
                 </th>
             </tr>
         </thead>
@@ -82,7 +87,9 @@ Price Watcher
     var $j = jQuery.noConflict();
     
     // Create the DataTable instance and assign it to a variable
-    var table = $j('#myTable').DataTable();
+    var table = $j('#myTable').DataTable({
+        responsive: true
+    });
 
     // Load the data from the server
     var brand = "{{ brand }}";
@@ -95,6 +102,8 @@ Price Watcher
         $j('#loading-status-stockx').remove();
 
     })
+
+
     $j('#loading-status-vc').text('Loading data from Vestiaire Collective...');
     $j('#loading-status').text('Loading data from Vestiaire Collective...');
     $j.get('/product_detail/data/vestiaire/' + brand + '/' + model, function (data) {
@@ -103,6 +112,16 @@ Price Watcher
         $j('#loading-status-vc').remove();
 
     });
+
+    $j('#loading-status-original').text('Loading data from Original...');
+    $j('#loading-status').text('Loading data from Original...');
+    $j.get('/product_detail/data/original/' + brand + '/' + model, function (data) {
+        console.log('Original data:', data);
+        addDataToTable(data.original_data, 'Original');
+        $j('#loading-status-original').remove();
+
+    });
+
 
 
 
@@ -120,9 +139,10 @@ Price Watcher
             var retailPriceTrait = item['traits'].find(function(trait) { return trait['name'] == 'Retail Price'; });
             brand = item['brand'] || '';
             averagePrice = item['market']['averageDeadstockPrice'] || '';
-            sold = item['market']['deadstockSold'] || '';
+            sold = Number(item['market']['deadstockSold']) || 0;
             buyingPrice = item['market']['highestBid'] || item['market']['lowestAsk'] || (retailPriceTrait ? retailPriceTrait['value'] : '') || '';
             link = "https://stockx.com/fr-fr/" + (item['urlKey'] || '');
+            title = (brand + " " + item.name || '');
         
         
         
@@ -137,19 +157,87 @@ Price Watcher
             sold = item.sold ? 1 : 0;
             buyingPrice = (item.price.cents / 100).toFixed(0) || '';
             link = "https://fr.vestiairecollective.com" + (item.link || '');
+            title = (brand + " " + item.name || '');
+
+        
+        } else if (source === 'Original') {
+            picture_url = item.image || '';
+            color = '';
+            retailPrice = '';
+            brand = item.brand || '';
+            averagePrice = '';
+            sold = item.sold ? 1 : 0;
+            buyingPrice = item.price || '';
+            link = item.link || '';
+            title = (item.name || '');
+
         }
+        
+        if (sold === '') {
+            sold = 0;
+            }
 
         row = '<tr>' +
         '<td><img src="' + picture_url + '"  style="width: 50px;"></td>' +
-        '<td>' + (brand + " " + item.name || '') + '</td>' +
+        '<td>' + (title || '') + '</td>' +
         '<td>' + (color || '') + '</td>' +
         '<td>' + (averagePrice || '') + '</td>' +
         '<td>' + (sold || '') + '</td>' +
         '<td>' + (buyingPrice || '') + '</td>' +
-        '<td><a href="' + link + '" class="btn btn-primary">View on ' + source + '</a></td>' +
+        '<td><a href="' + link + '" class="btn btn-primary" target="_blank">View on ' + source + '</a></td>' +
         '</tr>';
         table.row.add($j(row)).draw();
     });
+
+    // Clear the sold checkboxes 
+$j('#sold-search').empty();
+
+// Populate the sold checkboxes 
+var soldValues = table.column(4).data().unique().toArray(); 
+soldValues = soldValues.filter(val => val !== ''); 
+
+console.log('Unique sold values:', soldValues);
+soldValues.forEach(function (value) {
+  $j('#sold-search').append('<input type="checkbox" value="' + value.toString() + '">' + value.toString() + '<br>'); 
+});
+
+// Add a "Empty" checkbox that filters for empty values
+$j('#sold-search').append('<input type="checkbox" value="">0<br>');
+
+// Add event listener to the sold checkboxes 
+$j('#sold-search input').on('change', function () {
+  var search = $j('#sold-search input:checked').map(function () {
+    return Number(this.value); 
+  }).get().join('|');
+  search += '|0'; // Add 0 to the filter
+  
+  if ($j('#sold-search input[value=""]').is(':checked')) {
+    search += '|'; // Also add empty string to filter 
+  }
+  
+  table.column(4).search(search, true, false).draw();
+});
+
+
+    // Clear the sold checkboxes 
+    $j('#color-search').empty();
+
+        // Populate the color checkboxes
+        var colors = table.column(2).data().unique();
+        colors.each(function (color) {
+            $j('#color-search').append('<input type="checkbox" value="' + color + '">' + color + '<br>');
+        });
+
+        // Add event listener to the color checkboxes
+        $j('#color-search input').on('change', function () {
+            var search = $j('#color-search input:checked').map(function () {
+                return this.value;
+            }).get().join('|');
+            table.column(2).search(search, true, false).draw();
+        });
+
+
+
 }
 
 
@@ -168,29 +256,16 @@ $j(document).ready(function () {
                 table.column(4).search('^' + this.value, true, false).draw();
             });
 
-            // Populate the sold checkboxes
-            var soldValues = table.column(5).data().unique();
-            soldValues.each(function (value) {
-                $j('#sold-search').append('<input type="checkbox" value="' + value + '">' + value + '<br>');
-            });
+
+
 
                 // Add event listener to the source checkboxes
-                $j('#stockx-filter, #vc-filter').on('change', function () {
-                    var search = $j('#stockx-filter:checked, #vc-filter:checked').map(function () {
+                $j('#stockx-filter, #vc-filter, #original-filter').on('change', function () {
+                    var search = $j('#stockx-filter:checked, #vc-filter:checked, #original-filter:checked').map(function () {
                         return this.value;
                     }).get().join('|');
                     table.column(8).search(search, true, false).draw();
                 });
-
-            // Add event listener to the sold checkboxes
-            $j('#sold-search input').on('change', function () {
-                var search = $j('#sold-search input:checked').map(function () {
-                    return this.value;
-                }).get().join('|');
-                table.column(5).search(search, true, false).draw();
-            });
-
-
 
 
 

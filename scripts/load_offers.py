@@ -6,7 +6,8 @@ import json
 import curlify
 import os
 import random
-    
+from bs4 import BeautifulSoup
+
 
 
 
@@ -211,3 +212,57 @@ def search_stockx(brand, model):
     return None, "All attempts failed. Please check your proxies and try again."
 
 
+
+def search_reoriginal(brand, model):
+    url = f"https://reoriginal.com/index.php?route=product/search&search={brand}%20{model}&category_id=194"
+
+    headers = {
+        'authority': 'reoriginal.com',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+        'cache-control': 'no-cache',
+        'cookie': 'OCSESSID=014ef995f36b88c04b4a9cc1b0; region=a%3A4%3A%7Bs%3A7%3A%22country%22%3Ba%3A3%3A%7Bs%3A2%3A%22id%22%3Bs%3A3%3A%22223%22%3Bs%3A4%3A%22name%22%3Bs%3A13%3A%22United%20States%22%3Bs%3A6%3A%22isEuro%22%3BN%3B%7Ds%3A7%3A%22isoCode%22%3Bs%3A2%3A%22US%22%3Bs%3A4%3A%22city%22%3BN%3Bs%3A10%3A%22postalCode%22%3BN%3B%7D; language=en-gb; currency=EUR; country=Ukraine; sbjs_migrations=1418474375998%3D1; sbjs_current_add=fd%3D2023-06-15%2014%3A46%3A58%7C%7C%7Cep%3Dhttps%3A%2F%2Freoriginal.com%2Fbrand%2Fbottega-veneta%2Fbottega-veneta-women%2Fmary-bag%2Fbottega-veneta%7C%7C%7Crf%3D%28none%29; sbjs_first_add=fd%3D2023-06-15%2014%3A46%3A58%7C%7C%7Cep%3Dhttps%3A%2F%2Freoriginal.com%2Fbrand%2Fbottega-veneta%2Fbottega-veneta-women%2Fmary-bag%2Fbottega-veneta%7C%7C%7Crf%3D%28none%29; sbjs_current=typ%3Dtypein%7C%7C%7Csrc%3D%28direct%29%7C%7C%7Cmdm%3D%28none%29%7C%7C%7Ccmp%3D%28none%29%7C%7C%7Ccnt%3D%28none%29%7C%7C%7Ctrm%3D%28none%29; sbjs_first=typ%3Dtypein%7C%7C%7Csrc%3D%28direct%29%7C%7C%7Cmdm%3D%28none%29%7C%7C%7Ccmp%3D%28none%29%7C%7C%7Ccnt%3D%28none%29%7C%7C%7Ctrm%3D%28none%29; _gcl_au=1.1.1219795752.1686833219; _fbp=fb.1.1686833219716.675848396; _hjSessionUser_2983182=eyJpZCI6IjQzZGRiOGE5LWJiNzgtNTI3NC1iYmFiLTY0MGEyOWVmZjg2ZCIsImNyZWF0ZWQiOjE2ODY4MzMyMjAwNTUsImV4aXN0aW5nIjp0cnVlfQ==; sbjs_udata=vst%3D7%7C%7C%7Cuip%3D%28none%29%7C%7C%7Cuag%3DMozilla%2F5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F114.0.0.0%20Safari%2F537.36; _gid=GA1.2.1403744859.1687442954; _hjIncludedInSessionSample_2983182=1; _hjSession_2983182=eyJpZCI6IjA5OTI4ODBlLWU0ODMtNDgyMC04NjhhLTZmYzhiMTA2MWI1YSIsImNyZWF0ZWQiOjE2ODc0NDI5NTQyNDAsImluU2FtcGxlIjp0cnVlfQ==; _hjAbsoluteSessionInProgress=0; socnetauth2_lastlink=https%3A%2F%2Freoriginal.com%2Findex.php%3Froute%3Dproduct%2Fsearch%26amp%3Bsearch%3Dhermes%2520evelyne%26amp%3Bcategory_id%3D194; sbjs_session=pgs%3D6%7C%7C%7Ccpg%3Dhttps%3A%2F%2Freoriginal.com%2Findex.php%3Froute%3Dproduct%2Fsearch%26search%3Dhermes%2520evelyne%26category_id%3D194; _dc_gtm_UA-229654751-1=1; _ga=GA1.1.1492341301.1686833220; _ga_PJ60BH2MMZ=GS1.1.1687442954.6.1.1687443103.58.0.0; _ga_24HH11E9LZ=GS1.2.1687442954.1.1.1687443103.60.0.0',
+        'pragma': 'no-cache',
+        'referer': f'https://reoriginal.com/index.php?route=product/search&search={brand}%20{model}&category_id=194',
+        'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'same-origin',
+        'sec-fetch-user': '?1',
+        'upgrade-insecure-requests': '1',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+    }
+
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    items = soup.find_all('div', class_='item single-product')
+    results = []
+
+    for item in items:
+        name = item.find('a', class_='product-name').text.strip()
+        price = float(item.find('div', class_='price').find('span').text.replace('€', ''))
+        link = item.find('a', class_='product-name')['href']
+        image = item.find('img')['src']
+        brand = name.split()[0]
+        sold = True if item.find('span', class_='badge out_of_stock_badge') else False
+
+        results.append({
+            'name': name,
+            'price': price,
+            'link': link,
+            'image': image,
+            'brand': brand,
+            'sold': sold
+        })
+
+    num_results = len(results)
+    pagination_text = soup.find('span', class_='pagination-text').text.split()
+    try:
+        num_pages = int(pagination_text[-2])
+    except ValueError:
+        num_pages = 0  # or some other default value
+
+    return results, num_results, num_pages

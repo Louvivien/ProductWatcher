@@ -27,7 +27,7 @@ import time
 
 from bson import ObjectId
 
-from scripts.load_offers import search_vestiaire, search_stockx
+from scripts.load_offers import search_vestiaire, search_stockx, search_reoriginal
 import threading
 import gc
 
@@ -157,6 +157,21 @@ def get_vestiaire_data(brand, model):
     else:
         vestiaire_data = []
     return jsonify(vestiaire_data=vestiaire_data)
+
+# Load offers data 3
+@app.route('/product_detail/data/original/<brand>/<model>', methods=['GET'])
+def get_original_data(brand, model):
+    print("load original data")
+    original_result = search_reoriginal(brand, model)
+    if original_result is not None:
+        original_data, _, _ = original_result
+        for item in original_data:
+            item['source'] = 'Original'
+    else:
+        original_data = []
+    return jsonify(original_data=original_data)
+
+
 
 
 

@@ -68,7 +68,7 @@ If the table is not displaying any data, check the following:
 
 Run the scraper when adding a new product to watch
 
-Go beyond page 10
+Go beyond page 10 / All results including all results pages
 
 Ability to read images like in this project:
 https://minigpt-4.github.io/

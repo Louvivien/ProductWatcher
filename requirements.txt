@@ -18,5 +18,5 @@ matplotlib
 curlify
 
 apscheduler
-
+beautifulsoup4
 
