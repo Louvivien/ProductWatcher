@@ -359,7 +359,7 @@ Sales Stats
                         <td>{{ product.timeToSell|default('') }}</td>
                         <td>
                             {% if product.link %}
-                                <a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary">Sell on VC</a>
+                                <a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary" target="_blank">Sell on VC</a>
                             {% else %}
                                 <a href="#">""</a>
                             {% endif %}
