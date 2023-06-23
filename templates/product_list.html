@@ -12,7 +12,6 @@ Product Watcher
     <div class="container-fluid">
         <h1>Product Watcher</h1>
     <p>Here are the products you watch :</p>
-    <br></br>
 
     <form method="POST">
         <div class="form-group">
@@ -30,13 +29,27 @@ Product Watcher
 
     </form>
 
-    <br></br>
 
     <!-- Add a button to see sales stats for all models -->
-    <a href="{{ url_for('estimate_price_page') }}" class="btn btn-primary">Estimate Price to buy a product</a>
-    <a href="{{ url_for('sales_stats_allmodels') }}" class="btn btn-primary">Get data to sell a product</a>
 
-    <br></br>
+    <div class="table-responsive">
+
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td>
+                        <a href="{{ url_for('estimate_price_page') }}" class="btn btn-primary">Estimate Price to buy a product</a>
+                    </td>
+                    <td>
+
+                        <a href="{{ url_for('sales_stats_allmodels') }}" class="btn btn-primary">Get data to sell a product</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
     <div class="table-responsive">
 
     <table class="table">
