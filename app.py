@@ -41,6 +41,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 
 
+
 # Load .env file
 root_dir = os.path.dirname(os.path.abspath(__file__))
 dotenv_path = os.path.join(root_dir, '.env')
@@ -73,14 +74,8 @@ app.json_encoder = JSONEncoder
 Bootstrap(app)
 
 
-# Set up logging
-root = logging.getLogger()
-root.setLevel(logging.INFO)
 
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
+
 
 
 # Call root route to check if the server is running
@@ -170,6 +165,39 @@ def get_original_data(brand, model):
     else:
         original_data = []
     return jsonify(original_data=original_data)
+
+from flask import request, jsonify
+
+# Load offers colors
+@app.route('/get_image_color', methods=['POST'])
+def get_color():
+    print("get color")
+    from scripts.getcolor import get_image_color
+    data = request.get_json()
+    image_url = data.get('image_url')
+    if not image_url:
+        return jsonify({'error': 'Missing image_url parameter'}), 400
+
+    try:
+        color = get_image_color(image_url)
+        return jsonify({'color': color})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Load profits
+@app.route('/get_profit/<brand>/<model>/<path:color>/<buying_price>', methods=['GET'])
+def get_profit(brand, model, color, buying_price):
+    print("get_profit route called")  # New print statement
+    print("Logging color") 
+    print(f"Color: {color}")
+    try:
+        profit_data = estimate_price(brand, model, color, float(buying_price), 30)
+        return jsonify(profit_data)
+    except Exception as e:
+        print(f"An error occurred in get_profit: {e}")  # New print statement
+        logging.error(f"An error occurred: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 
 
@@ -470,7 +498,7 @@ def estimate(brand, model, color, buying_price, days):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
 
     try:
         # This is here to simulate application activity (which keeps the main thread alive).

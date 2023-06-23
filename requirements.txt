@@ -20,3 +20,10 @@ curlify
 apscheduler
 beautifulsoup4
 
+
+webcolors
+Pillow
+
+scipy
+
+
