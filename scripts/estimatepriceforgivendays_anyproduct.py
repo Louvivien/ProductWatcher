@@ -154,10 +154,14 @@ def estimate_price(brand, model, color, buying_price, days):
         upper_bound = 0
         avg_price_same_brand_model_color = 0
 
-    rec_price_all = avg_price_same_brand_model * 0.9 
+    # rec_price_all = avg_price_same_brand_model * 0.05 
+    rec_price_all = avg_price_same_brand_model * 0.1 
+
     profit_all = rec_price_all - buying_price
 
-    rec_price_color = avg_price_same_brand_model_color * 0.9  
+    # rec_price_color = avg_price_same_brand_model_color * 0.05
+    rec_price_color = avg_price_same_brand_model_color * 0.1
+  
     profit_color = rec_price_color - buying_price   
 
     logging.info(f"Number of bags same brand same model: {len(same_brand_model_general)}")

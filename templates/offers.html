@@ -156,15 +156,18 @@ Price Watcher
 }
 
 
-
+function removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 
 function addRowToTable(color, picture_url, retailPrice, brand, averagePrice, sold, buyingPrice, link, title, source) {
     if (sold === '') {
         sold = 0;
     }
 
+
     // Encode the brand and color parameters
-    var encodedBrand = encodeURIComponent(brand);
+    var encodedBrand = encodeURIComponent(removeAccents(brand));
     var encodedColor = encodeURIComponent(color);
     var encodedModel = encodeURIComponent(model);
 
@@ -178,6 +181,9 @@ function addRowToTable(color, picture_url, retailPrice, brand, averagePrice, sol
         // Round the averagePrice and buyingPrice to the nearest integer
         averagePrice = averagePrice ? parseFloat(averagePrice).toFixed(0) : averagePrice;
         buying_price = buyingPrice ? parseFloat(buyingPrice).toFixed(0) : buyingPrice;
+
+
+
 
 
         var row = '<tr>' +
@@ -213,6 +219,18 @@ async function addDataToTable(data, source) {
             buyingPrice = item['market']['highestBid'] || item['market']['lowestAsk'] || (retailPriceTrait ? retailPriceTrait['value'] : '') || '';
             link = "https://stockx.com/fr-fr/" + (item['urlKey'] || '');
             title = (brand + " " + item.name || '');
+
+            if (!color || color === '') {
+                try {
+                    color = await getColorFromImageUrl(picture_url);
+                } catch (error) {
+                    console.error('Error getting color from image URL:', error);
+                    color = 'Unknown'; // Assign 'Unknown' if color cannot be retrieved from image
+                }       
+            }
+
+
+
             addRowToTable(color, picture_url, retailPrice, brand, averagePrice, sold, buyingPrice, link, title, source);
         } else if (source === 'VC') {
             picture_url = item.pictures.length > 0 ? "https://images.vestiairecollective.com" +  item.pictures[0] : '';
@@ -224,6 +242,16 @@ async function addDataToTable(data, source) {
             buyingPrice = (item.price.cents / 100).toFixed(0) || '';
             link = "https://fr.vestiairecollective.com" + (item.link || '');
             title = (brand + " " + item.name || '');
+
+            if (!color || color === '') {
+                try {
+                    color = await getColorFromImageUrl(picture_url);
+                } catch (error) {
+                    console.error('Error getting color from image URL:', error);
+                    color = 'Unknown'; // Assign 'Unknown' if color cannot be retrieved from image
+                }       
+            }
+
             addRowToTable(color, picture_url, retailPrice, brand, averagePrice, sold, buyingPrice, link, title, source);
           } else if (source === 'Original') {
             picture_url = item.image || '';
@@ -235,11 +263,18 @@ async function addDataToTable(data, source) {
             link = item.link || '';
             title = (item.name || '');
 
-            try {
-                color = await getColorFromImageUrl(picture_url);
-            } catch (error) {
-                console.error('Error getting color from image URL:', error);
+            if (!color || color === '') {
+                try {
+                    color = await getColorFromImageUrl(picture_url);
+                } catch (error) {
+                    console.error('Error getting color from image URL:', error);
+                    color = 'Unknown'; // Assign 'Unknown' if color cannot be retrieved from image
+                }       
             }
+
+
+
+
             addRowToTable(color, picture_url, retailPrice, brand, averagePrice, sold, buyingPrice, link, title, source);
         }
     }

@@ -44,8 +44,24 @@ def closest_color(requested_color):
 
 
 def get_image_color(image_url, border_width=10):
-    response = requests.get(image_url)
-    img = Image.open(BytesIO(response.content))
+    try:
+        response = requests.get(image_url)
+        response.raise_for_status()  # Raise an exception if the GET request failed
+    except requests.exceptions.HTTPError as err:
+        print(f"HTTP error occurred while trying to download {image_url}: {err}")
+        return None
+    except Exception as err:
+        print(f"An error occurred while trying to download {image_url}: {err}")
+        return None
+
+    try:
+        img = Image.open(BytesIO(response.content))
+    except IOError as e:
+        print(f"Cannot identify image file {image_url}: {e}")
+        return None
+
+    
+    
     img = img.resize((50,50)) # optional, to reduce time
 
     # Crop the image to remove the border
