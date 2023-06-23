@@ -1,12 +1,14 @@
 {% extends "bootstrap/base.html" %}
-
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 {% block title %}
 Estimate Price
 {% endblock %}
 
 {% block navbar %}
 <div class="navbar navbar-inverse" role="navigation">
-    <div class="container">
+    <div class="container-fluid">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="sr-only">Toggle navigation</span>
@@ -21,19 +23,31 @@ Estimate Price
 {% endblock %}
 
 {% block content %}
-<div class="container" style="height: auto;">
+<div class="container-fluid" style="height: auto;">
     <h1>Estimate Price</h1>
     <br></br>
 
-    <form id="estimate-form" class="form-group">
-        <input type="text" id="brand" placeholder="Brand" required class="form-control">
-        <input type="text" id="model" placeholder="Model" required class="form-control">
-        <input type="text" id="color" placeholder="Color" required class="form-control">
-        <input type="number" id="buying_price" placeholder="Buying Price" required class="form-control">
-        <input type="number" id="days" placeholder="Days" required class="form-control">
+    <form id="estimate-form">
+        <div class="form-group">
+            <input type="text" id="brand" placeholder="Brand" required class="form-control">
+        </div>
+        <div class="form-group">
+            <input type="text" id="model" placeholder="Model" required class="form-control">
+        </div>
+        <div class="form-group">
+            <input type="text" id="color" placeholder="Color" required class="form-control">
+        </div>
+        <div class="form-group">
+            <input type="number" id="buying_price" placeholder="Buying Price" required class="form-control">
+        </div>
+        <div class="form-group">
+            <input type="number" id="days" placeholder="Days" required class="form-control">
+        </div>
         <br></br>
-        <button type="button" onclick="estimatePrice()" class="btn btn-primary">Estimate Price</button>
-        <button type="button" onclick="estimatePriceML()" class="btn btn-light">Estimate Price ML</button>
+        <div class="form-group">
+            <button type="button" onclick="estimatePrice()" class="btn btn-primary">Estimate Price</button>
+            <button type="button" onclick="estimatePriceML()" class="btn btn-light">Estimate Price ML</button>
+        </div>
     </form>
 
     <div id="loader" class="spinner-border text-primary" role="status" style="display: none;">
