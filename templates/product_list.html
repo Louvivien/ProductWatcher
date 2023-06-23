@@ -34,17 +34,22 @@ Product Watcher
 
     <div class="table-responsive">
 
-        <table class="table">
+        <table class="table" style="height: 100px;">
             <tbody>
                 <tr>
                     <td>
                         <a href="{{ url_for('estimate_price_page') }}" class="btn btn-primary">Estimate Price to buy a product</a>
                     </td>
-                    <td>
 
-                        <a href="{{ url_for('sales_stats_allmodels') }}" class="btn btn-primary">Get data to sell a product</a>
-                    </td>
                 </tr>
+                <tr>
+
+                <td>
+
+                    <a href="{{ url_for('sales_stats_allmodels') }}" class="btn btn-primary">Get data to sell a product</a>
+                </td>
+            </tr>
+
             </tbody>
         </table>
     </div>
