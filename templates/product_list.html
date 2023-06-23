@@ -19,8 +19,8 @@ Product Watcher
     <br></br>
 
     <!-- Add a button to see sales stats for all models -->
-    <a href="{{ url_for('estimate_price_page') }}" class="btn btn-primary">Estimate Price for a product</a>
-    <a href="{{ url_for('sales_stats_allmodels') }}" class="btn btn-primary">See All Models Sales Stats</a>
+    <a href="{{ url_for('estimate_price_page') }}" class="btn btn-primary">Estimate Price to buy a product</a>
+    <a href="{{ url_for('sales_stats_allmodels') }}" class="btn btn-primary">Get data to sell a product</a>
 
     <br></br>
 
@@ -36,8 +36,8 @@ Product Watcher
             <tr>
                 <td>{{ product.brand }} {{ product.model }}</td>
                 <td>
-                    <a href="{{ url_for('product_detail', brand=product.brand, model=product.model) }}" class="btn btn-primary">See offers</a>
-                    <a href="{{ url_for('sales_stats', brand=product.brand, model=product.model) }}" class="btn btn-primary">See sales</a>
+                    <a href="{{ url_for('product_detail', brand=product.brand, model=product.model) }}" class="btn btn-primary">Buy</a>
+                    <a href="{{ url_for('sales_stats', brand=product.brand, model=product.model) }}" class="btn btn-primary">Sell</a>
                 </td>
             </tr>
             {% endfor %}
