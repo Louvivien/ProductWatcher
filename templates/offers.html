@@ -177,7 +177,7 @@ function addRowToTable(color, picture_url, retailPrice, brand, averagePrice, sol
 
         // Round the averagePrice and buyingPrice to the nearest integer
         averagePrice = averagePrice ? parseFloat(averagePrice).toFixed(0) : averagePrice;
-        buyingPrice = buyingPrice.toFixed(0);
+        buying_price = buyingPrice ? parseFloat(buyingPrice).toFixed(0) : buyingPrice;
 
 
         var row = '<tr>' +
@@ -186,7 +186,7 @@ function addRowToTable(color, picture_url, retailPrice, brand, averagePrice, sol
         '<td>' + (color || '') + '</td>' +
         '<td>' + (averagePrice || '') + '</td>' +
         '<td>' + (sold || '') + '</td>' +
-        '<td>' + (buyingPrice || '') + '</td>' +
+        '<td>' + (buying_price || '') + '</td>' +
         '<td>' + (profit || '') + '</td>' + 
         '<td><a href="' + link + '" class="btn btn-primary" target="_blank">View on ' + source + '</a></td>' +
         '</tr>';
@@ -353,21 +353,21 @@ $j(document).ready(function () {
 
  
 // Add event listener to the buying price filter
-$j('#profit-min-search, #profit-max-search').on('keyup', function () {
+$j('#buying_price-min-search, #buying_price-max-search').on('keyup', function () {
     table.draw();
 });
 
-// Custom filter for profit
+// Custom filter for buying_price
 $j.fn.dataTable.ext.search.push(
     function(settings, data, dataIndex) {
-        var min = parseInt($j('#profit-min-search').val(), 10);
-        var max = parseInt($j('#profit-max-search').val(), 10);
-        var profit = parseFloat(data[6]) || 0; // use data for the profit column
+        var min = parseInt($j('#buying_price-min-search').val(), 10);
+        var max = parseInt($j('#buying_price-max-search').val(), 10);
+        var buying_price = parseFloat(data[6]) || 0; // use data for the buying_price column
 
         if ((isNaN(min) && isNaN(max)) ||
-            (isNaN(min) && profit <= max) ||
-            (min <= profit && isNaN(max)) ||
-            (min <= profit && profit <= max)) {
+            (isNaN(min) && buying_price <= max) ||
+            (min <= buying_price && isNaN(max)) ||
+            (min <= buying_price && buying_price <= max)) {
             return true;
         }
         return false;

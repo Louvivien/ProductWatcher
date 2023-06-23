@@ -120,13 +120,20 @@ def estimate_price(brand, model, color, buying_price, days):
             "collection": {"$regex": f"{brand} {model}", "$options": "i"},         
             "timeToSell": {"$lte": max_time_to_sell}     
         })) 
-    
-        
+
     same_brand_model_prices = [bag['price']['cents']/100 for bag in same_brand_model]     
-    lower_bound = np.percentile(same_brand_model_prices, 1)     
-    upper_bound = np.percentile(same_brand_model_prices, 99)  
-    filtered_prices = [price for price in same_brand_model_prices if lower_bound <= price <= upper_bound]     
-    avg_price_same_brand_model = statistics.mean(filtered_prices) if filtered_prices else 0 
+
+    if same_brand_model_prices:  # Add this check
+        lower_bound = np.percentile(same_brand_model_prices, 1)     
+        upper_bound = np.percentile(same_brand_model_prices, 99)  
+        filtered_prices = [price for price in same_brand_model_prices if lower_bound <= price <= upper_bound]     
+        avg_price_same_brand_model = statistics.mean(filtered_prices) if filtered_prices else 0 
+    else:
+        logging.info("No prices found for the same brand and model. Setting related variables to 0.")
+        lower_bound = 0
+        upper_bound = 0
+        avg_price_same_brand_model = 0
+
 
     same_brand_model_color = list(handbags.find({        
             "collection": {"$regex": f"{brand} {model}", "$options": "i"},         
