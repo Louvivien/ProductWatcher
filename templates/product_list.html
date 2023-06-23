@@ -1,19 +1,33 @@
 {% extends "bootstrap/base.html" %}
-
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 {% block title %}
 Product Watcher
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Product Watcher</h1>
+
+
+    <div class="container-fluid">
+        <h1>Product Watcher</h1>
     <p>Here are the products you watch :</p>
     <br></br>
 
     <form method="POST">
+        <div class="form-group">
+
         <input type="text" name="new_brand" placeholder="Enter new brand">
+    </div>
+    <div class="form-group">
+
         <input type="text" name="new_model" placeholder="Enter new model">
+    </div>
+    <div class="form-group">
+
         <input type="submit" value="Add Product">
+    </div>
+
     </form>
 
     <br></br>
@@ -23,6 +37,7 @@ Product Watcher
     <a href="{{ url_for('sales_stats_allmodels') }}" class="btn btn-primary">Get data to sell a product</a>
 
     <br></br>
+    <div class="table-responsive">
 
     <table class="table">
         <thead>
@@ -44,6 +59,9 @@ Product Watcher
         </tbody>
     </table>
 </div>
+
+</div>
+
 
 {% endblock %}
 
