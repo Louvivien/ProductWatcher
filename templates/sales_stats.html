@@ -1,6 +1,8 @@
 
 {% extends "bootstrap/base.html" %}
-
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 {% block title %}
 Sales Stats
 {% endblock %}
@@ -204,7 +206,7 @@ Sales Stats
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
     <!-- First Section -->
 
     <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#salesStats">
@@ -224,6 +226,9 @@ Sales Stats
    
     <!-- Second Section -->
     <h3>All Products</h3>
+
+    <div class="table-responsive">
+
     <table id="allProductsTable" class="table table-striped">
         <thead>
             <tr>
@@ -237,48 +242,47 @@ Sales Stats
                 <th>Link</th>
             </tr>
             <tr>
+                <th></th>
                 <th>
-
-                </th>
-                <th>
-                    <div id="id-search">
+                    <div class="form-group" id="id-search">
                         <input type="text" placeholder="Search ID">
                     </div>
                 </th>
                 <th>
-                    <div id="name-search">
+                    <div class="form-group" id="name-search">
                         <input type="text" placeholder="Search Name">
                     </div>
                 </th>
                 <th>
-                    <div id="color-search">
+                    <div class="form-group" id="color-search">
                         <!-- Color checkboxes will be populated here -->
                     </div>
                 </th>
                 <th>
-                    <div id="price-search">
+                    <div class="form-group" id="price-search">
                         <input type="number" id="price-min" placeholder="Min Price">
                         <input type="number" id="price-max" placeholder="Max Price">
                     </div>
                 </th>
                 <th>
-                    <div id="likes-search">
+                    <div class="form-group" id="likes-search">
                         <input type="number" id="likes-min" placeholder="Min Likes">
                         <input type="number" id="likes-max" placeholder="Max Likes">
                     </div>
                 </th>
-                    <th>
-                        <div id="timeToSell-search">
-                            <input type="number" id="timeToSell-min" placeholder="Min Time to Sell">
-                            <input type="number" id="timeToSell-max" placeholder="Max Time to Sell">
-                        </div>
-                    </th>
                 <th>
-                    <div id="link-search">
+                    <div class="form-group" id="timeToSell-search">
+                        <input type="number" id="timeToSell-min" placeholder="Min Time to Sell">
+                        <input type="number" id="timeToSell-max" placeholder="Max Time to Sell">
+                    </div>
+                </th>
+                <th>
+                    <div class="form-group" id="link-search">
                         <input type="text" placeholder="Search Link">
                     </div>
                 </th>
             </tr>
+            
         </thead>
         <tbody>
             {% for product in all_products %}
@@ -297,6 +301,8 @@ Sales Stats
         </tbody>
     </table>
 </div>
+</div>
+
 
 {% endblock %}
 

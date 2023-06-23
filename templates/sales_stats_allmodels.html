@@ -1,6 +1,8 @@
 
 {% extends "bootstrap/base.html" %}
-
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 {% block title %}
 Sales Stats
 {% endblock %}
@@ -225,7 +227,7 @@ Sales Stats
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
     <!-- First Section -->
 
     <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#salesStats">
@@ -245,6 +247,9 @@ Sales Stats
    
     <!-- Second Section -->
     <h3>All Products</h3>
+
+    <div class="table-responsive">
+
     <table id="allProductsTable" class="table table-striped">
         <thead>
 
@@ -269,42 +274,39 @@ Sales Stats
                 <th>
                     <!-- Image -->
                 </th>
-
+                
                 <th>
-                    <div id="id-search">
+                    <div class="form-group" id="id-search">
                         <input type="text" placeholder="Search ID">
                     </div>
                 </th>
-
-
+                
                 <th>
-                    <div id="brand-search">
+                    <div class="form-group" id="brand-search">
                         <input type="text" placeholder="Search Brand">
                     </div>
                 </th>
-
-
+                
                 <th>
-                    <div id="model-search">
+                    <div class="form-group" id="model-search">
                         <input type="text" placeholder="Search Model">
                     </div>
                 </th>
-
-
+                
                 <th>
-                    <div id="name-search">
+                    <div class="form-group" id="name-search">
                         <input type="text" placeholder="Search Name">
                     </div>
                 </th>
-
-
+                
                 <th>
-                    <div id="color-search">
+                    <div class="form-group" id="color-search">
                         {% for color in colors %}
                             <input type="checkbox" value="{{ color }}">{{ color }}<br>
                         {% endfor %}
                     </div>
                 </th>
+                
 
 
                 <th>
@@ -369,6 +371,8 @@ Sales Stats
         
     </table>
 </div>
+</div>
+
 
 {% endblock %}
 
