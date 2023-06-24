@@ -246,7 +246,7 @@ def search_reoriginal(brand, model):
         price = float(item.find('div', class_='price').find('span').text.replace('€', ''))
         link = item.find('a', class_='product-name')['href']
         image = item.find('img')['src']
-        brand = item.find('span', class_='text-manufacture').text.strip() 
+        brand = item.find('span', class_='text-manufacture').text.strip()  # Extract brand from here
         sold = True if item.find('span', class_='badge out_of_stock_badge') else False
 
         results.append({
