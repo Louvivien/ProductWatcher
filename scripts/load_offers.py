@@ -191,7 +191,7 @@ def search_stockx(brand, model):
         }
 
         try:
-            response = requests.get('https://stockx.com/api/browse?_search=' + product_name, headers=headers, proxies=proxy_dict, timeout=10)
+            response = requests.get('https://stockx.com/api/browse?_search=' + product_name, headers=headers, proxies=proxy_dict, timeout=5)
 
             if "captcha-error" in response.text or "<h1>Access Denied</h1>" in response.text or "Enable JavaScript and cookies" in response.text:
                 raise Exception("Captcha error or Access Denied detected, switching proxy?")
