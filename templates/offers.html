@@ -217,11 +217,10 @@ function addRowToTable(color, picture_url, retailPrice, brand, averagePrice, sol
         '<td><img src="' + picture_url + '"  style="width: 50px;"></td>' +
         '<td>' + (title || '') + '</td>' +
         '<td>' + (color || '') + '</td>' +
-        '<td>' + (averagePrice || '') + '</td>' +
+        '<td>' + (averagePrice ? averagePrice + '€' : '') + '</td>' +
         '<td>' + (sold || '') + '</td>' +
-        '<td>' + (buying_price || '') + '</td>' +
-        '<td>' + (profit || '') + '</td>' + 
-        '<td><a href="' + link + '" class="btn btn-primary" target="_blank">Buy on ' + source + '</a></td>' +
+        '<td>' + (buying_price ? buying_price + '€' : '') + '</td>' +
+        '<td>' + (profit ? '<span style="color: ' + (profit > 0 ? 'green' : 'red') + '">' + (profit > 0 ? '+' : '') + profit.toLocaleString() + '€</span>' : '') + '</td>' +        '<td><a href="' + link + '" class="btn btn-primary" target="_blank">Buy on ' + source + '</a></td>' +
         '</tr>';
         table.row.add($j(row)).draw();
     });

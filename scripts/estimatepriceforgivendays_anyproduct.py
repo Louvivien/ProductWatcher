@@ -90,16 +90,6 @@ def estimate_price(brand, model, color, buying_price, days):
             profit_color = 0
 
 
-    try:
-        requested_color = webcolors.name_to_rgb(color)
-        closest_named_color = closest_color(requested_color)
-    except ValueError:
-        logging.info(f"Color {color} not recognized. Setting all color-related variables to 0.")
-        closest_named_color = "0"
-        avg_price_same_brand_model_color_general = 0
-        avg_price_same_brand_model_color = 0
-        rec_price_color = 0 
-        profit_color = 0
 
     if closest_named_color != "0": 
         same_brand_model_color_general = list(handbags.find({  
@@ -107,7 +97,7 @@ def estimate_price(brand, model, color, buying_price, days):
             "colors.all.name": {"$regex": closest_named_color, "$options": "i"}  
         }))  
         same_brand_model_color_general_prices = [bag['price']['cents']/100 for bag in same_brand_model_color_general] 
-        avg_price_same_brand_model_color_general = statistics.mean(same_brand_model_color_general_prices) if same_brand_model_color_general_prices else 0
+        avg_price_same_brand_model_color_general = statistics.mean(same_brand_model_color_general_prices) if same_brand_model_color_general_prices and len(same_brand_model_color_general) != 0 else 0
     else:
         logging.info(f"Closest named color {closest_named_color} is not a string. Setting all color-related variables to 0.")
         avg_price_same_brand_model_color_general = 0
@@ -147,22 +137,23 @@ def estimate_price(brand, model, color, buying_price, days):
         lower_bound = np.percentile(same_brand_model_color_prices, 1)
         upper_bound = np.percentile(same_brand_model_color_prices, 99) 
         filtered_prices = [price for price in same_brand_model_color_prices if lower_bound <= price <= upper_bound]
-        avg_price_same_brand_model_color = statistics.mean(filtered_prices) if filtered_prices else 0 
+        avg_price_same_brand_model_color = statistics.mean(filtered_prices) if filtered_prices and len(same_brand_model_color) != 0 else 0
     else:
         logging.info("No prices found for the same brand and model color. Setting related variables to 0.")
         lower_bound = 0
         upper_bound = 0
         avg_price_same_brand_model_color = 0
+        profit_color = 0 
 
-    # rec_price_all = avg_price_same_brand_model * 0.05 
-    rec_price_all = avg_price_same_brand_model * 0.1 
+    rec_price_all = avg_price_same_brand_model * 0.9 
 
     profit_all = rec_price_all - buying_price
 
-    # rec_price_color = avg_price_same_brand_model_color * 0.05
-    rec_price_color = avg_price_same_brand_model_color * 0.1
+    rec_price_color = avg_price_same_brand_model_color * 0.9
   
-    profit_color = rec_price_color - buying_price   
+    profit_color = rec_price_color - buying_price
+    
+
 
     logging.info(f"Number of bags same brand same model: {len(same_brand_model_general)}")
     logging.info(f"Number of bags same brand same model same color: {len(same_brand_model_color_general)}")  

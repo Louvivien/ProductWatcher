@@ -16,7 +16,8 @@ def closest_color(requested_color):
         "Burgundy": [160, 69, 81],
         "Camel": [198, 151, 90],
         "Charcoal": [78, 78, 78],
-        "Ecru": [248, 249, 236],
+        # remove "Ecru" and add "Beige" instead with the same color value
+        "Beige*": [248, 249, 236],  # previously "Ecru"
         "Gold*": [255, 223, 0],  # approximate
         "Green": [137, 179, 121],
         "Grey": [197, 197, 197],
