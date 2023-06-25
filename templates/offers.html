@@ -58,6 +58,7 @@ Price Watcher
                     <th scope="col">Average Price</th>
                     <th scope="col">Sold</th>
                     <th scope="col">Buying Price</th>
+                    <th scope="col">Profit</th>
                     <th scope="col">Link</th>
                 </tr>
                 <tr>
@@ -89,6 +90,12 @@ Price Watcher
                         -
                         <div class="form-group">
                             <input type="number" id="buying-price-max-search" placeholder="Max">
+                        </div>
+                    </th>
+                    <th>
+                        <div class="form-group">
+                            <input type="number" id="profit-min-search" placeholder="Min"> - 
+                            <input type="number" id="profit-max-search" placeholder="Max">
                         </div>
                     </th>
                     <th>
@@ -158,7 +165,26 @@ Price Watcher
 
     });
 
-
+        function getColorFromImageUrl(picture_url) {
+        return new Promise((resolve, reject) => {
+            if (picture_url) {
+                jQuery.ajax({
+                    url: '/get_image_color',
+                    type: 'POST',
+                    data: JSON.stringify({image_url: picture_url}),
+                    contentType: 'application/json; charset=utf-8',
+                    success: function(response) {
+                        resolve(response.color);
+                    },
+                    error: function(error) {
+                        reject(error);
+                    }
+                });
+            } else {
+                resolve('');
+            }
+        });
+    }
 
 
 
@@ -220,6 +246,7 @@ Price Watcher
         '<td>' + (averagePrice || '') + '</td>' +
         '<td>' + (sold || '') + '</td>' +
         '<td>' + (buyingPrice || '') + '</td>' +
+        '<td>' + ('' || '') + '</td>' +
         '<td><a href="' + link + '" class="btn btn-primary" target="_blank">View on ' + source + '</a></td>' +
         '</tr>';
         table.row.add($j(row)).draw();
@@ -255,7 +282,7 @@ $j('#sold-search input').on('change', function () {
 });
 
 
-    // Clear the sold checkboxes 
+    // Clear the color checkboxes 
     $j('#color-search').empty();
 
         // Populate the color checkboxes
