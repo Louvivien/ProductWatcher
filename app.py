@@ -125,7 +125,7 @@ def product_list():
 ## Load offers page
 @app.route('/product_detail/<brand>/<model>', methods=['GET'])
 def product_detail(brand, model):
-    return render_template('offers.html', brand=brand, model=model)
+    return render_template('sell.html', brand=brand, model=model)
 
 # Load offers data 1
 @app.route('/product_detail/data/stockx/<brand>/<model>', methods=['GET'])
@@ -231,7 +231,7 @@ def sales_stats_allmodels():
             'currency': "EUR"
         })
 
-    return render_template('sales_stats_allmodels.html', all_stats=all_stats, colors=all_colors)
+    return render_template('sell_allmodels.html', all_stats=all_stats, colors=all_colors)
 
 
 ## Get Sales Items for a specific product
@@ -270,7 +270,7 @@ def sales_stats(brand, model):
     total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
     average_time_to_sell = round(total_time_to_sell / len(sold_items))
 
-    return render_template('sales_stats.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
+    return render_template('sell.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
 
 # Get Sales Items data 
 @app.route('/sales_stats/data', methods=['GET'])

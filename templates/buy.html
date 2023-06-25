@@ -1,4 +1,7 @@
 {% extends "bootstrap/base.html" %}
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 
 {% block title %}
 Price Watcher
@@ -19,7 +22,7 @@ Price Watcher
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
 
 <div class="navbar navbar-inverse" role="navigation">
-    <div class="container">
+    <div class="container-fluid">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="sr-only">Toggle navigation</span>
@@ -34,8 +37,8 @@ Price Watcher
 {% endblock %}
 
 {% block content %}
-<div class="container">
 
+<div class="container-fluid">
     <h1 style="text-align: center;">
         {{ brand }} {{ model }}
     </h1>
@@ -45,38 +48,71 @@ Price Watcher
     <div id="loading-status-original" class="alert alert-info" role="alert" style="text-align: center;"></div>
     <br><br>
 
-    <table id="myTable" class="table table-striped">
-        <thead>
-            <tr>
-                <th scope="col">Image</th>
-                <th scope="col">Title</th>
-                <th scope="col">Color</th>
-               <th scope="col">Average Price</th>
-                <th scope="col">Sold</th>
-                <th scope="col">Buying Price</th>
-                <th scope="col">Link</th>
-            </tr>
-            <tr>
-                <th></th>
-                <th><input type="text" id="title-search" placeholder="Search Title"></th>
-                <th><div id="color-search"></div></th>
-                <th><input type="number" id="average-price-min-search" placeholder="Min"> - <input type="number" id="average-price-max-search" placeholder="Max"></th>
-                <th><div id="sold-search"></div></th>
-                <th><input type="number" id="buying-price-min-search" placeholder="Min"> - <input type="number" id="buying-price-max-search" placeholder="Max"></th>
-                <th>
-                    <input type="checkbox" id="stockx-filter" value="StockX"> <span class="filter-text">StockX</span><br>
-                    <input type="checkbox" id="vc-filter" value="VC"> <span class="filter-text">VC</span><br>
-                    <input type="checkbox" id="original-filter" value="Orginal"> <span class="filter-text">Original</span><br>
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <div id="loader" class="spinner-border" role="status" style="display: none;">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table id="myTable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Image</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Color</th>
+                    <th scope="col">Average Price</th>
+                    <th scope="col">Sold</th>
+                    <th scope="col">Buying Price</th>
+                    <th scope="col">Link</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>
+                        <div class="form-group">
+                            <input type="text" id="title-search" placeholder="Search Title">
+                        </div>
+                    </th>
+                    <th>
+                        <div id="color-search"></div>
+                    </th>
+                    <th>
+                        <div class="form-group">
+                            <input type="number" id="average-price-min-search" placeholder="Min">
+                        </div>
+                        -
+                        <div class="form-group">
+                            <input type="number" id="average-price-max-search" placeholder="Max">
+                        </div>
+                    </th>
+                    <th>
+                        <div id="sold-search"></div>
+                    </th>
+                    <th>
+                        <div class="form-group">
+                            <input type="number" id="buying-price-min-search" placeholder="Min">
+                        </div>
+                        -
+                        <div class="form-group">
+                            <input type="number" id="buying-price-max-search" placeholder="Max">
+                        </div>
+                    </th>
+                    <th>
+                        <div class="form-group">
+                            <input type="checkbox" id="stockx-filter" value="StockX"> <span class="filter-text">StockX</span><br>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" id="vc-filter" value="VC"> <span class="filter-text">VC</span><br>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" id="original-filter" value="Orginal"> <span class="filter-text">Original</span><br>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <div id="loader" class="spinner-border" role="status" style="display: none;">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </tbody>
+        </table>
+    </div>
 </div>
+
 
 
 
