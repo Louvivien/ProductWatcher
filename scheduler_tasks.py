@@ -24,11 +24,14 @@ def call_product_detail():
     
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)  # This line will handle the driver download
     try:
-        for product in products:
+        total_products = len(products)
+        print(f"Total number of products to process: {total_products}")
+        for index, product in enumerate(products, start=1):
             brand = product['brand']
             model = product['model']
             try:
                 driver.get(f"{base_url}/product_detail/{brand}/{model}")
+                print(f"Processing product {index} of {total_products}")
                 print(f"Before sleep at {datetime.now().time()}")
                 time.sleep(1200)  # Delay for 20 minutes
                 print(f"After sleep at {datetime.now().time()}")
@@ -38,6 +41,7 @@ def call_product_detail():
         print(f"Error while initializing the webdriver: {e}")
     finally:
         driver.quit()
+
 
 
 
