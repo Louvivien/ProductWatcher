@@ -7,6 +7,8 @@ from selenium import webdriver
 from datetime import datetime, timedelta
 import time
 from webdriver_manager.chrome import ChromeDriverManager
+import subprocess
+
 
 def call_root():
     base_url = os.getenv('BASE_URL', 'http://localhost:5000')
@@ -41,14 +43,24 @@ def call_product_detail():
         print(f"Error while initializing the webdriver: {e}")
     finally:
         driver.quit()
+        
+        
 
+def run_proxies_script():
+    try:
+        subprocess.Popen(["python", "./scripts/scrapers/proxies.py"])
+        print("Started proxies.py script.")
+    except Exception as e:
+        print(f"Error while trying to run proxies.py script: {e}")
 
 
 
 # Call the function once before adding it to the scheduler
-
-
 scheduler = BackgroundScheduler()
 scheduler.add_job(call_root, 'interval', minutes=13)
+
 scheduler.add_job(call_product_detail, DateTrigger(run_date=datetime.now()))
+scheduler.add_job(run_proxies_script, DateTrigger(run_date=datetime.now()))
+
 scheduler.add_job(call_product_detail, 'interval', hours=1, start_date=datetime.now() + timedelta(hours=1))
+scheduler.add_job(run_proxies_script, 'interval', hours=1, start_date=datetime.now() + timedelta(minutes=5))
