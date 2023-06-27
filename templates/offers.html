@@ -523,14 +523,14 @@ $j(document).ready(function () {
             if ($j('#profit-calculation-status').text() === '') {
                 // If it is, wait for 1 second before checking again
                 setTimeout(function() {
-                    // Check again if the content of the info box is still empty
+                    // Check again if the content of the info box is still empty after 3 seconds
                     if ($j('#profit-calculation-status').text() === '') {
                         // If it is, remove the info box
                         $j('#profit-calculation-status').remove();
                         // Stop the interval
                         clearInterval(intervalId);
                     }
-                }, 1000);
+                }, 3000);
             }
         }, 2000);
 

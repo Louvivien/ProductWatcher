@@ -33,7 +33,7 @@ import gc
 
 from scripts.estimatepriceforgivendays_anyproduct import estimate_price
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from scheduler_tasks import scheduler, call_product_detail
 
 
 from urllib.parse import unquote
@@ -41,6 +41,8 @@ from unidecode import unidecode
 
 from flask_caching import Cache
 
+# Define the list of products to watch
+from config import products
 
 
 
@@ -77,44 +79,12 @@ app = Flask(__name__)
 app.json_encoder = JSONEncoder
 Bootstrap(app)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
-
-
-
-
-
-
-
-# Call root route to check if the server is running
-def call_root():
-    base_url = os.getenv('BASE_URL', 'http://localhost:5000/')
-    response = requests.get(base_url)
-    if response.status_code == 200:
-        print(f"Uptime check page up and running")
-        
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(call_root, 'interval', minutes=13)
 scheduler.start()
 
-# Define the list of products
-products = [
-    {'brand': 'Hermes', 'model': 'Evelyn'},
-    {'brand': 'Hermes', 'model': 'Kelly'},
-    {'brand': 'Hermes', 'model': 'Birkin'},
-    {'brand': 'Hermes', 'model': 'Picotin'},
-    {'brand': 'Chanel', 'model': 'Flap'},
-    {'brand': 'Chanel', 'model': 'Double Flap'},
-    {'brand': 'Chanel', 'model': 'Boy'},
-    {'brand': 'Chanel', 'model': '19'},
-    {'brand': 'Chanel', 'model': '2.55'},
-    {'brand': 'Chanel', 'model': 'mini Flap'},
-    {'brand': 'Dior', 'model': 'Lady Dior'},
-    {'brand': 'Dior', 'model': 'Diorama'},
-    {'brand': 'Bottega Veneta', 'model': 'Cassette'},
-    {'brand': 'Chanel', 'model': 'V Stitch'},
-    {'brand': 'Louis Vuitton', 'model': 'Capucines'},
-    {'brand': 'Louis Vuitton', 'model': 'Twist Chain'}
-]
+
+
+
+
 
 
  ## Add a new product to watch
@@ -127,6 +97,9 @@ def product_list():
 
     return render_template('product_list.html', products=products)
 
+
+
+################## Buy ##################
 
 ## Load offers page
 @app.route('/product_detail/<brand>/<model>', methods=['GET'])
@@ -208,6 +181,7 @@ def get_profit(brand, model, color, buying_price):
 
     
 
+################## Sell ##################
 
 
 # Get Sales Items for all models
@@ -370,12 +344,12 @@ def sales_stats_data():
 
     return jsonify(response)
 
+################## Estimate once ##################
 
 ## Estimate Price page
 @app.route('/estimate_price/', methods=['GET'])
 def estimate_price_page():
     return render_template('estimate_price.html')
-
 
 # This dictionary will hold the status of each request
 status_dict = {}
