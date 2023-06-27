@@ -41,10 +41,15 @@ def call_product_detail():
             model = product['model']
             try:
                 driver.get(f"{base_url}/product_detail/{brand}/{model}")
-                print(f"Processing product {index} of {total_products}  😃")
+                print(f"Processing product Buy {index} of {total_products}  😃")
                 print(f"Before sleep at {datetime.now().time()}")
-                time.sleep(1200)  # Delay for 20 minutes
+                time.sleep(1200+random.randint(1, 3))  # Delay for 20 minutes
                 print(f"After sleep at {datetime.now().time()}")
+                print(f"Processing product Sell {index} of {total_products}  😃")
+                driver.get(f"{base_url}/sales_stats/{brand}/{model}")
+                time.sleep(90 +random.randint(1, 3))
+
+
             except Exception as e:
                 print(f"Error while trying to access product detail page for {brand} {model}: {e}")
     except Exception as e:
