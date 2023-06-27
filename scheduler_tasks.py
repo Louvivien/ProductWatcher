@@ -39,7 +39,7 @@ def call_product_detail():
             model = product['model']
             try:
                 driver.get(f"{base_url}/product_detail/{brand}/{model}")
-                print(f"Processing product {index} of {total_products}")
+                print(f"Processing product {index} of {total_products}  😃")
                 print(f"Before sleep at {datetime.now().time()}")
                 time.sleep(1200)  # Delay for 20 minutes
                 print(f"After sleep at {datetime.now().time()}")
