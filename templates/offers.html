@@ -220,6 +220,7 @@ function getProfit(brand, model, color, buyingPrice) {
         }).fail(function(error) {
             console.log('Error getting profit:', error);
 
+            $j('#profit-calculation-status').text('');
 
             reject(error);
         });
@@ -231,12 +232,7 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
 
 
 
-
-
     async function addDataToTable(data, source) {
-    var totalItems = data.length; // Add this line at the start of your addDataToTable function
-    var calculatedItems = 0; // Add this line at the start of your addDataToTable function
-
     for (const item of data) {
         var color, retailPrice, averagePrice, sold, highestBid, lowestAsk, link, row, buyingPrice, picture_url, title, brand, profit;
 
@@ -328,10 +324,8 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
         // Get profit
         try {
             profit = await getProfit(brand, model, color, buyingPrice);
+            $j('#profit-calculation-status').text('');
             console.log('Profit:', profit);
-            // Increment the counter after each profit is calculated
-            calculatedItems++;
-            console.log('Calculated items:', calculatedItems);
         } catch (error) {
             console.log('Error getting profit:', error);
             profit = 'Error Profit';
@@ -510,12 +504,7 @@ $j.fn.dataTable.ext.search.push(
 );
 
 
-    // Clear the status message when all profits are calculated
-    console.log('Calculated items:', calculatedItems);
-    if (calculatedItems === totalItems) {
-        $j('#profit-calculation-status').text('');
-        $j('#profit-calculation-status').remove();
-    }
+
 }
 
 
