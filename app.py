@@ -41,8 +41,13 @@ from unidecode import unidecode
 
 from flask_caching import Cache
 
+from flask_executor import Executor
+
+
 # Define the list of products to watch
 from config import products
+
+
 
 
 
@@ -76,9 +81,13 @@ def jsonify(*args, **kwargs):
 
 
 app = Flask(__name__)
+executor = Executor(app)
+
 app.json_encoder = JSONEncoder
 Bootstrap(app)
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
+
 scheduler.start()
 
 
