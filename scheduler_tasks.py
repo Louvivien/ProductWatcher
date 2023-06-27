@@ -22,8 +22,7 @@ def call_product_detail():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     
-    
-    driver = webdriver.Chrome(ChromeDriverManager().install())  # This line will handle the driver download
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)  # This line will handle the driver download
     try:
         for product in products:
             brand = product['brand']
@@ -39,6 +38,7 @@ def call_product_detail():
         print(f"Error while initializing the webdriver: {e}")
     finally:
         driver.quit()
+
 
 
 # Call the function once before adding it to the scheduler
