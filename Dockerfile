@@ -32,5 +32,5 @@ RUN apt-get update && apt-get install -y \
 EXPOSE 8080
 
 # Run gunicorn when the container launches
-CMD ["gunicorn -t 600", "app:app", "-b", "0.0.0.0:8080"]
+CMD ["gunicorn", "-t", "600", "app:app", "-b", "0.0.0.0:8080"]
 
