@@ -8,15 +8,21 @@ from datetime import datetime, timedelta
 import time
 from webdriver_manager.chrome import ChromeDriverManager
 import subprocess
+import random
+
 
 
 def call_root():
+    random_delay = random.randint(1, 3)
+    time.sleep(random_delay)  
     base_url = os.getenv('BASE_URL', 'http://localhost:5000')
     response = requests.get(base_url)
     if response.status_code == 200:
         print(f"Uptime check page up and running")
 
 def call_product_detail():
+    random_delay = random.randint(1, 3)
+    time.sleep(random_delay)  
     base_url = os.getenv('BASE_URL', 'http://localhost:5000')
     
     # Setup Chrome options to run in headless mode

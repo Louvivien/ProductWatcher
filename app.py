@@ -80,7 +80,6 @@ def jsonify(*args, **kwargs):
 
 
 app = Flask(__name__)
-executor = Executor(app)
 
 app.json_encoder = JSONEncoder
 Bootstrap(app)
