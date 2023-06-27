@@ -215,13 +215,11 @@ function getProfit(brand, model, color, buyingPrice) {
             }
 
 
-            $j('#profit-calculation-status').text('');
 
             resolve(minProfit);
         }).fail(function(error) {
             console.log('Error getting profit:', error);
 
-            $j('#profit-calculation-status').text('');
 
             reject(error);
         });
@@ -504,7 +502,8 @@ $j.fn.dataTable.ext.search.push(
 );
 
 
-
+    // Clear the status message after all profits are calculated
+    $j('#profit-calculation-status').text('');
 }
 
 
