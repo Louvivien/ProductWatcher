@@ -117,12 +117,14 @@ def product_list():
 
 ## Load offers page
 @app.route('/product_detail/<brand>/<model>', methods=['GET'])
+@cache.cached(3600)  
 def product_detail(brand, model):
     return render_template('offers.html', brand=brand, model=model)
 
 
 # Load offers data 1
 @app.route('/product_detail/data/stockx/<brand>/<model>', methods=['GET'])
+@cache.cached(3600)  
 def get_stockx_data(brand, model):
     print("load stockx data")
     stockx_result = search_stockx(brand, model)
@@ -136,6 +138,7 @@ def get_stockx_data(brand, model):
 
 # Load offers data 2
 @app.route('/product_detail/data/vestiaire/<brand>/<model>', methods=['GET'])
+@cache.cached(3600)  
 def get_vestiaire_data(brand, model):
     print("load vestiaire data")
     vestiaire_result = search_vestiaire(brand, model)
@@ -149,6 +152,7 @@ def get_vestiaire_data(brand, model):
 
 # Load offers data 3
 @app.route('/product_detail/data/original/<brand>/<model>', methods=['GET'])
+@cache.cached(3600)  
 def get_original_data(brand, model):
     print("load original data")
     original_result = search_reoriginal(brand, model)
@@ -163,6 +167,7 @@ def get_original_data(brand, model):
 
 # Load offers colors
 @app.route('/get_image_color', methods=['POST'])
+@cache.cached(3600)  
 def get_color():
     print("get color")
     from scripts.getcolor import get_image_color

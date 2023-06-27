@@ -528,30 +528,30 @@ $j(document).ready(function () {
         });
 
 
-// var counter = 0;
+var counter = 0;
 
-//  // Start an interval that runs every 2 seconds
-// var intervalId = setInterval(function() {
-//     // Check if the content of the info box is empty
-//     if ($j('#profit-calculation-status').text() === '') {
-//         // If it is, wait for 1 second before checking again
-//         setTimeout(function() {
-//             // Check again if the content of the info box is still empty after 1 second
-//             if ($j('#profit-calculation-status').text() === '') {
-//                 // If it is, increment the counter
-//                 counter++;
-//                 // If the counter has reached 3, remove the info box and stop the interval
-//                 if (counter >= 3) {
-//                     $j('#profit-calculation-status').remove();
-//                     clearInterval(intervalId);
-//                 }
-//             } else {
-//                 // If the content is not empty, reset the counter
-//                 counter = 0;
-//             }
-//         }, 1000);
-//     }
-// }, 2000);
+ // Start an interval that runs every 2 seconds
+var intervalId = setInterval(function() {
+    // Check if the content of the info box is empty
+    if ($j('#profit-calculation-status').text() === '') {
+        // If it is, wait for 1 second before checking again
+        setTimeout(function() {
+            // Check again if the content of the info box is still empty after 1 second
+            if ($j('#profit-calculation-status').text() === '') {
+                // If it is, increment the counter
+                counter++;
+                // If the counter has reached 3, remove the info box and stop the interval
+                if (counter >= 3) {
+                    $j('#profit-calculation-status').remove();
+                    clearInterval(intervalId);
+                }
+            } else {
+                // If the content is not empty, reset the counter
+                counter = 0;
+            }
+        }, 1000);
+    }
+}, 2000);
 
 
 
