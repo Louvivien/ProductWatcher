@@ -16,6 +16,13 @@ def call_root():
 
 def call_product_detail():
     base_url = os.getenv('BASE_URL', 'http://localhost:5000')
+    
+    # Setup Chrome options to run in headless mode
+    from selenium.webdriver.chrome.options import Options
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    
+    
     driver = webdriver.Chrome(ChromeDriverManager().install())  # This line will handle the driver download
     try:
         for product in products:
