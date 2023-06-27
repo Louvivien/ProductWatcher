@@ -33,6 +33,10 @@ import gc
 
 from scripts.estimatepriceforgivendays_anyproduct import estimate_price
 
+
+from flask import request, jsonify
+
+
 from scheduler_tasks import scheduler, call_product_detail
 
 
@@ -116,6 +120,7 @@ def product_list():
 def product_detail(brand, model):
     return render_template('offers.html', brand=brand, model=model)
 
+
 # Load offers data 1
 @app.route('/product_detail/data/stockx/<brand>/<model>', methods=['GET'])
 def get_stockx_data(brand, model):
@@ -155,7 +160,6 @@ def get_original_data(brand, model):
         original_data = []
     return jsonify(original_data=original_data)
 
-from flask import request, jsonify
 
 # Load offers colors
 @app.route('/get_image_color', methods=['POST'])
@@ -196,6 +200,11 @@ def get_profit(brand, model, color, buying_price):
 
 # Get Sales Items for all models
 @app.route('/sales_stats/allmodels', methods=['GET'])
+@cache.cached(36000)  
+
+
+# Put all of this inside the page so that the user does not wait after clicking a button
+
 def sales_stats_allmodels():
     page = request.args.get('page', default = 1, type = int)
     per_page = request.args.get('per_page', default = 10, type = int)
@@ -226,6 +235,8 @@ def sales_stats_allmodels():
 
 ## Get Sales Items for a specific product
 @app.route('/sales_stats/<brand>/<model>', methods=['GET'])
+@cache.cached(36000)  
+
 def sales_stats(brand, model):
     all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
     sold_items = [item for item in all_products if item.get('sold')]
