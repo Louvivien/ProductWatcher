@@ -45,6 +45,9 @@ from unidecode import unidecode
 
 from flask_caching import Cache
 
+import atexit
+
+
 
 
 # Define the list of products to watch
@@ -510,17 +513,10 @@ def estimate(brand, model, color, buying_price, days):
     return jsonify(result)
 
 
+
+
 if __name__ == '__main__':
+    # Register the scheduler.shutdown function to be called when the Python interpreter is about to exit
+    atexit.register(scheduler.shutdown)
+
     app.run(debug=False)
-
-    try:
-        # This is here to simulate application activity (which keeps the main thread alive).
-        while True:
-            time.sleep(2)
-    except (KeyboardInterrupt, SystemExit):
-        # Not strictly necessary if daemonic mode is enabled but should be done if possible
-        scheduler.shutdown()
-
-
-
-
