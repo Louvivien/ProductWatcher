@@ -247,6 +247,7 @@ def sales_stats_allmodels():
 
 
 ## Get Sales Items for a specific product
+# Clear that
 @app.route('/sales_stats/<brand>/<model>', methods=['GET'])
 @cache.cached(36000)  
 
@@ -254,39 +255,39 @@ def sales_stats(brand, model):
     all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
     sold_items = [item for item in all_products if item.get('sold')]
 
-    # # calculate average price
-    # total_price = 0
-    # for item in sold_items:
-    #     price = item.get('price')
-    #     if isinstance(price, dict) and 'cents' in price and isinstance(price['cents'], (int, float)):
-    #         total_price += price['cents']
-    #     else:
-    #         app.logger.warning(f"Unexpected price type for item {item['_id']}: {type(price)} with value {price}")
+    # calculate average price
+    total_price = 0
+    for item in sold_items:
+        price = item.get('price')
+        if isinstance(price, dict) and 'cents' in price and isinstance(price['cents'], (int, float)):
+            total_price += price['cents']
+        else:
+            app.logger.warning(f"Unexpected price type for item {item['_id']}: {type(price)} with value {price}")
 
-    # average_price = round(total_price / len(sold_items) / 100, 2) if sold_items else 0  # divide by 100 to convert cents to euros
+    average_price = round(total_price / len(sold_items) / 100, 2) if sold_items else 0  # divide by 100 to convert cents to euros
 
-    # # calculate best selling color
-    # color_counts = {}
-    # for item in sold_items:
-    #     color = item.get('colors')
-    #     if isinstance(color, dict) and 'all' in color and isinstance(color['all'], list) and color['all']:
-    #         color_name = color['all'][0].get('name')
-    #         if color_name in color_counts:
-    #             color_counts[color_name] += 1
-    #         else:
-    #             color_counts[color_name] = 1
-    # best_selling_color = max(color_counts.items(), key=itemgetter(1))[0]
+    # calculate best selling color
+    color_counts = {}
+    for item in sold_items:
+        color = item.get('colors')
+        if isinstance(color, dict) and 'all' in color and isinstance(color['all'], list) and color['all']:
+            color_name = color['all'][0].get('name')
+            if color_name in color_counts:
+                color_counts[color_name] += 1
+            else:
+                color_counts[color_name] = 1
+    best_selling_color = max(color_counts.items(), key=itemgetter(1))[0]
 
-    # # get top 5 liked products
-    # top_5_liked_products = sorted(sold_items, key=lambda x: x['likes'], reverse=True)[:5]
+    # get top 5 liked products
+    top_5_liked_products = sorted(sold_items, key=lambda x: x['likes'], reverse=True)[:5]
 
-    # # calculate average time to sell
-    # total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
-    # average_time_to_sell = round(total_time_to_sell / len(sold_items))
+    # calculate average time to sell
+    total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
+    average_time_to_sell = round(total_time_to_sell / len(sold_items))
 
-    # return render_template('sales_stats.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
+    return render_template('sales_stats.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
 
-    return render_template('sales_stats.html', brand=brand, model=model, currency="EUR")
+    # return render_template('sales_stats.html', brand=brand, model=model, currency="EUR")
 
 # Get Sales Items data 
 @app.route('/sales_stats/data', methods=['GET'])
