@@ -41,7 +41,6 @@ from unidecode import unidecode
 
 from flask_caching import Cache
 
-from flask_executor import Executor
 
 
 # Define the list of products to watch
