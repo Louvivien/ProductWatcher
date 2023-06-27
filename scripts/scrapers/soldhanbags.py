@@ -21,7 +21,13 @@ import http.client
 
 
 # Load .env file
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+root_dir = os.path.dirname(os.path.abspath(__file__))
+
+parent_dir = os.path.dirname(root_dir)
+parent_dir = os.path.dirname(parent_dir)
+
+dotenv_path = os.path.join(parent_dir, '.env')
+print(dotenv_path)
 load_dotenv(dotenv_path)
 
 # MongoDB setup

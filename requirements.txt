@@ -26,4 +26,7 @@ Pillow
 
 scipy
 
+unidecode
+
+flask_caching
 

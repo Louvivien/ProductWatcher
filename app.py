@@ -36,6 +36,10 @@ from scripts.estimatepriceforgivendays_anyproduct import estimate_price
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
+from urllib.parse import unquote
+from unidecode import unidecode
+
+from flask_caching import Cache
 
 
 
@@ -72,6 +76,8 @@ def jsonify(*args, **kwargs):
 app = Flask(__name__)
 app.json_encoder = JSONEncoder
 Bootstrap(app)
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
 
 
 
@@ -184,23 +190,23 @@ def get_color():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Load profits
+# Load offers profits
 @app.route('/get_profit/<brand>/<model>/<path:color>/<buying_price>', methods=['GET'])
+@cache.memoize(36000)  
 def get_profit(brand, model, color, buying_price):
-    print("get_profit route called")  # New print statement
+    print("get_profit route called")  
+    brand = unidecode(unquote(brand))  
     print("Logging color") 
     print(f"Color: {color}")
     try:
         profit_data = estimate_price(brand, model, color, float(buying_price), 30)
         return jsonify(profit_data)
     except Exception as e:
-        print(f"An error occurred in get_profit: {e}")  # New print statement
+        print(f"An error occurred in get_profit: {e}")  
         logging.error(f"An error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
-
-
-
+    
 
 
 

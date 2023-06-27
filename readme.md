@@ -73,6 +73,8 @@ Go beyond page 10 / All results including all results pages
 Ability to read images like in this project:
 https://minigpt-4.github.io/
 
+Silver/Gold
+
 
 
 ## Contributing

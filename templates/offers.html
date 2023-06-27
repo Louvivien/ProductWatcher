@@ -46,6 +46,7 @@ Price Watcher
     <div id="loading-status-stockx" class="alert alert-info" role="alert" style="text-align: center;"></div>
     <div id="loading-status-vc" class="alert alert-info" role="alert" style="text-align: center;"></div>
     <div id="loading-status-original" class="alert alert-info" role="alert" style="text-align: center;"></div>
+    <div id="profit-calculation-status" class="alert alert-info" role="alert" style="text-align: center;"></div>
     <br><br>
 
     <div class="table-responsive">
@@ -106,7 +107,7 @@ Price Watcher
                             <input type="checkbox" id="vc-filter" value="VC"> <span class="filter-text">VC</span><br>
                         </div>
                         <div class="form-group">
-                            <input type="checkbox" id="original-filter" value="Orginal"> <span class="filter-text">Original</span><br>
+                            <input type="checkbox" id="original-filter" value="Original"> <span class="filter-text">Original</span><br>
                         </div>
                     </th>
                 </tr>
@@ -128,6 +129,8 @@ Price Watcher
 {% block scripts %}
 <script>
     var $j = jQuery.noConflict();
+
+
     
     // Create the DataTable instance and assign it to a variable
     var table = $j('#myTable').DataTable({
@@ -165,39 +168,82 @@ Price Watcher
 
     });
 
-        function getColorFromImageUrl(picture_url) {
-        return new Promise((resolve, reject) => {
-            if (picture_url) {
-                jQuery.ajax({
-                    url: '/get_image_color',
-                    type: 'POST',
-                    data: JSON.stringify({image_url: picture_url}),
-                    contentType: 'application/json; charset=utf-8',
-                    success: function(response) {
-                        resolve(response.color);
-                    },
-                    error: function(error) {
-                        reject(error);
-                    }
-                });
+    function getColorFromImageUrl(picture_url) {
+    return new Promise((resolve, reject) => {
+        if (picture_url) {
+            jQuery.ajax({
+                url: '/get_image_color',
+                type: 'POST',
+                data: JSON.stringify({image_url: picture_url}),
+                contentType: 'application/json; charset=utf-8',
+                success: function(response) {
+                    resolve(response.color || 'NaN');
+                },
+                error: function(error) {
+                    reject(error);
+                }
+            });
+        } else {
+            resolve('NaN');
+        }
+    });
+}
+
+function getProfit(brand, model, color, buyingPrice) {
+    return new Promise((resolve, reject) => {
+        $j('#profit-calculation-status').text('Calculating profit...');
+
+        var url = '/get_profit/' + brand + '/' + model + '/' + color + '/' + buyingPrice;
+        $j.get(url, function(data) {
+            console.log('Profit data for color ' + color + ':', data);
+            var profitColor = data['Profit - color'];
+            var profitAll = data['Profit- all'];
+            var minProfit;
+
+            if (profitColor < 0 && profitAll < 0) {
+                // When both are negative, choose the one closer to 0
+                minProfit = Math.max(profitColor, profitAll);
+            } else if ((profitColor > 0 && profitAll <= 0) || (profitColor <= 0 && profitAll > 0)) {
+                // When one is positive and the other is 0 or negative, choose the positive
+                minProfit = Math.max(profitColor, profitAll);
+            } else if ((profitColor < 0 && profitAll == 0) || (profitColor == 0 && profitAll < 0)) {
+                // When one is negative and the other is 0, choose the negative
+                minProfit = Math.min(profitColor, profitAll);
             } else {
-                resolve('');
+                // When both are positive, choose the one closer to 0
+                minProfit = Math.min(profitColor, profitAll);
             }
+
+
+            $j('#profit-calculation-status').text('');
+
+            resolve(minProfit);
+        }).fail(function(error) {
+            console.log('Error getting profit:', error);
+
+            $j('#profit-calculation-status').text('');
+
+            reject(error);
         });
-    }
+    });
+}
+
+
+var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', 'trainer', 'espadrille', 'mule', 'boot', 'sandal', 'bag charm', 'key ring', 'necklace', 'T-shirt', 'Sunglasses', 'scarf', 'Pendant', 'Jewellery', 'tie', 'skirt', 'flats', 'brooche', 'Earrings', 'cardigan', 'silver ring', 'Coat', 'Vest', 'Dress', 'shirt', 'phone charm', 'choker', 'Knitwear', 'camisole', 'Cashmere top', 'Kelly ring', 'handkerchief', 'Hat', 'stole', 'blazer', 'jumper'];
 
 
 
+    async function addDataToTable(data, source) {
+    for (const item of data) {
+        var color, retailPrice, averagePrice, sold, highestBid, lowestAsk, link, row, buyingPrice, picture_url, title, brand, profit;
 
-    function addDataToTable(data, source) {
-    data.forEach(function (item) {
-        var color, retailPrice, averagePrice, sold, highestBid, lowestAsk, link, row, buyingPrice;
-        
         if (source === 'StockX') {
             
             picture_url = item['media']['thumbUrl'] || '';
             var titleParts = item['title'].split('PM', 1);
-            color = item['title'].includes('PM') && titleParts.length > 1 ? titleParts[1].trim() : item['title'].split(' ')[item['title'].split(' ').length - 1];
+            var colorTrait = item['traits'].find(function(trait) { return trait['name'] == 'Color Generic'; });
+            color = colorTrait ? colorTrait['value'] : '';
+            console.log('Color stockX:', color);      
             var retailPriceTrait = item['traits'].find(function(trait) { return trait['name'] == 'Retail Price'; });
             brand = item['brand'] || '';
             averagePrice = item['market']['averageDeadstockPrice'] || '';
@@ -205,8 +251,9 @@ Price Watcher
             buyingPrice = item['market']['highestBid'] || item['market']['lowestAsk'] || (retailPriceTrait ? retailPriceTrait['value'] : '') || '';
             link = "https://stockx.com/fr-fr/" + (item['urlKey'] || '');
             title = (brand + " " + item.name || '');
-        
-        
+
+
+      
         
         } else if (source === 'VC') {
             
@@ -221,6 +268,8 @@ Price Watcher
             link = "https://fr.vestiairecollective.com" + (item.link || '');
             title = (brand + " " + item.name || '');
 
+
+
         
         } else if (source === 'Original') {
             picture_url = item.image || '';
@@ -234,10 +283,55 @@ Price Watcher
             title = (item.name || '');
 
         }
+
+
+            // Remove what is not handbags
+
+
+            // Get the title in lowercase
+            var lowerCaseTitle = title.toLowerCase();
+
+            // Check if the title contains any of the words in the list
+            var containsWord = words.some(function(word) {
+                return lowerCaseTitle.includes(word.toLowerCase());
+            });
+
+            // If the title contains a word from the list, skip this item
+            if (containsWord) {
+                console.log('Item ' + lowerCaseTitle + 'removed from the results');
+
+                continue;
+            }
+
+
         
         if (sold === '') {
             sold = 0;
             }
+
+
+
+
+        // Get color from image URL if color is not available
+        if (color === '') {
+            try {
+                color = await getColorFromImageUrl(picture_url);
+                console.log('Color ' + source + ':', color);
+            } catch (error) {
+                color = 'NaN';
+            }
+        }
+
+        // Get profit
+        try {
+            profit = await getProfit(brand, model, color, buyingPrice);
+            console.log('Profit:', profit);
+        } catch (error) {
+            console.log('Error getting profit:', error);
+            profit = 'Error Profit';
+        }
+
+            
 
         row = '<tr>' +
         '<td><img src="' + picture_url + '"  style="width: 50px;"></td>' +
@@ -245,12 +339,16 @@ Price Watcher
         '<td>' + (color || '') + '</td>' +
         '<td>' + (averagePrice || '') + '</td>' +
         '<td>' + (sold || '') + '</td>' +
-        '<td>' + (buyingPrice || '') + '</td>' +
-        '<td>' + ('' || '') + '</td>' +
-        '<td><a href="' + link + '" class="btn btn-primary" target="_blank">View on ' + source + '</a></td>' +
+        '<td>' + (buyingPrice + '€' || '') + '</td>' +
+        '<td>' + (typeof profit !== 'undefined' ? '<span style="color: ' + (profit > 0 ? 'green' : 'red') + '">' + (profit > 0 ? '+' : '') + Number(profit).toFixed(0) + '€</span>' : 'NaN') + '</td>' +
+        '<td><a href="' + link + '" class="btn btn-primary" target="_blank">Buy on ' + source + '</a></td>' +
         '</tr>';
         table.row.add($j(row)).draw();
-    });
+
+
+    };
+
+
 
     // Clear the sold checkboxes 
 $j('#sold-search').empty();
@@ -300,6 +398,112 @@ $j('#sold-search input').on('change', function () {
         });
 
 
+// Add event listener to the buying price filter 
+$j('#buying-price-min-search, #buying-price-max-search').on('change', function () {
+    // Get the minimum and maximum values from the input fields
+    var min = $j('#buying-price-min-search').val();
+    var minInt = min === "" ? undefined : parseInt(min, 10);
+  
+    var max = $j('#buying-price-max-search').val();
+    var maxInt = max === "" ? undefined : parseInt(max, 10);
+  
+    console.log('Min:', minInt);
+    console.log('Max:', maxInt);
+  
+    // Redraw the table
+    table.draw();
+});
+
+// Custom filter for buying price
+$j.fn.dataTable.ext.search.push(
+    function(settings, data, dataIndex) {
+        // Get the minimum and maximum values from the input fields
+        var min = $j('#buying-price-min-search').val();
+        var max = $j('#buying-price-max-search').val();
+
+        // If both min and max are empty, don't apply the filter
+        if (min === "" && max === "") {
+            return true;
+        }
+
+        // Parse the min and max values to integers
+        var minInt = min === "" ? -Infinity : parseInt(min, 10);
+        var maxInt = max === "" ? Infinity : parseInt(max, 10);
+
+        console.log('Parsed Min:', minInt);
+        console.log('Parsed Max:', maxInt);
+
+        // Get the buying price from the data for the current row and convert it to an integer
+        var buyingPrice = parseInt(data[5]) || 0;
+
+        console.log('Buying Price:', buyingPrice);
+
+        // If min is less than or equal to buying price and buying price is less than or equal to max, return true
+        // In all other cases, return false (hide the row)
+        if (minInt <= buyingPrice && buyingPrice <= maxInt) {
+            console.log('Row is shown');
+            return true;
+        }
+
+        console.log('Row is hidden');
+        return false;
+    }
+);
+
+
+// Add event listener to the profit filter 
+$j('#profit-min-search, #profit-max-search').on('change', function () {
+    // Get the minimum and maximum values from the input fields
+    var min = $j('#profit-min-search').val();
+    var minInt = min === "" ? undefined : parseInt(min, 10);
+  
+    var max = $j('#profit-max-search').val();
+    var maxInt = max === "" ? undefined : parseInt(max, 10);
+  
+    console.log('Min:', minInt);
+    console.log('Max:', maxInt);
+  
+    // Redraw the table
+    table.draw();
+});
+
+// Custom filter for profit
+$j.fn.dataTable.ext.search.push(
+    function(settings, data, dataIndex) {
+        // Get the minimum and maximum values from the input fields
+        var min = $j('#profit-min-search').val();
+        var max = $j('#profit-max-search').val();
+
+        // If both min and max are empty, don't apply the filter
+        if (min === "" && max === "") {
+            return true;
+        }
+
+        // Parse the min and max values to integers
+        var minInt = min === "" ? -Infinity : parseInt(min, 10);
+        var maxInt = max === "" ? Infinity : parseInt(max, 10);
+
+        console.log('Parsed Min:', minInt);
+        console.log('Parsed Max:', maxInt);
+
+        // Get the buying price from the data for the current row and convert it to an integer
+        var profitFilt = parseInt(data[6]) || 0;
+
+        console.log('Profit:', profitFilt);
+
+        // If min is less than or equal to buying price and buying price is less than or equal to max, return true
+        // In all other cases, return false (hide the row)
+        if (minInt <= profitFilt && profitFilt <= maxInt) {
+            console.log('Row is shown');
+            return true;
+        }
+
+        console.log('Row is hidden');
+        return false;
+    }
+);
+
+
 
 }
 
@@ -313,6 +517,26 @@ $j(document).ready(function () {
         });
 
 
+        // Start an interval that runs every 2 seconds
+        var intervalId = setInterval(function() {
+            // Check if the content of the info box is empty
+            if ($j('#profit-calculation-status').text() === '') {
+                // If it is, wait for 1 second before checking again
+                setTimeout(function() {
+                    // Check again if the content of the info box is still empty
+                    if ($j('#profit-calculation-status').text() === '') {
+                        // If it is, remove the info box
+                        $j('#profit-calculation-status').remove();
+                        // Stop the interval
+                        clearInterval(intervalId);
+                    }
+                }, 1000);
+            }
+        }, 2000);
+
+
+
+
 
             // Add event listener to the average price range slider
             $j('#average-price-search').on('input', function () {
@@ -322,13 +546,13 @@ $j(document).ready(function () {
 
 
 
-                // Add event listener to the source checkboxes
-                $j('#stockx-filter, #vc-filter, #original-filter').on('change', function () {
-                    var search = $j('#stockx-filter:checked, #vc-filter:checked, #original-filter:checked').map(function () {
-                        return this.value;
-                    }).get().join('|');
-                    table.column(8).search(search, true, false).draw();
-                });
+        // Add event listener to the source checkboxes
+        $j('#stockx-filter, #vc-filter, #original-filter').on('change', function () {
+            var search = $j('#stockx-filter:checked, #vc-filter:checked, #original-filter:checked').map(function () {
+                return this.value;
+            }).get().join('|');
+            table.column(7).search(search, true, false).draw();
+        });
 
 
 
@@ -342,11 +566,7 @@ $j(document).ready(function () {
             });
 
 
-            $j('#buying-price-min-search, #buying-price-max-search').on('keyup', function () {
-                var min = $j('#buying-price-min-search').val();
-                var max = $j('#buying-price-max-search').val();
-                table.column(3).search(min + '|' + max, true, false).draw();
-            });
+
 
 
 
@@ -363,6 +583,7 @@ $j(document).ready(function () {
 
 
     });
+
 
 
 </script>

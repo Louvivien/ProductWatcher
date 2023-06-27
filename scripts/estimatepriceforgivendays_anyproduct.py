@@ -12,6 +12,8 @@ import numpy as np
 import webcolors
 import urllib.parse
 import logging
+import math
+
 
 
 # Set up logging
@@ -151,7 +153,10 @@ def estimate_price(brand, model, color, buying_price, days):
 
     rec_price_color = avg_price_same_brand_model_color * 0.9
   
-    profit_color = rec_price_color - buying_price
+    if avg_price_same_brand_model_color != 0:
+        profit_color = rec_price_color - buying_price
+    else:
+        profit_color = 0
     
 
 
@@ -165,14 +170,18 @@ def estimate_price(brand, model, color, buying_price, days):
     logging.info(f"Recommended price (bags same color): {rec_price_color}€, Profit: {profit_color}€")
 
     return {        
-            "Number of bags": len(same_brand_model_general),        
-            "Number of bags - color": len(same_brand_model_color_general),        
-            "Average price": avg_price_same_brand_model_general,        
-            "Average price - color": avg_price_same_brand_model_color_general,        
-            "Average price - for the period": avg_price_same_brand_model,        
-            "Average price - color - for the period": avg_price_same_brand_model_color,        
-            "Recommended price - all": rec_price_all,        
-            "Profit- all": profit_all,        
-            "Recommended price - color": rec_price_color,        
-            "Profit - color": profit_color    
-        }
+        "Number of bags": len(same_brand_model_general),        
+        "Number of bags - color": len(same_brand_model_color_general),        
+        "Average price": round(avg_price_same_brand_model_general),        
+        "Average price - color": round(avg_price_same_brand_model_color_general),        
+        "Average price - for the period": round(avg_price_same_brand_model),        
+        "Average price - color - for the period": round(avg_price_same_brand_model_color),        
+        "Recommended price - all": round(rec_price_all),        
+        "Profit- all": round(profit_all),        
+        "Recommended price - color": round(rec_price_color),        
+        "Profit - color": round(profit_color)    
+    }
+
+    
+    
+    
