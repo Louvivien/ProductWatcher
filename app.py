@@ -83,7 +83,10 @@ app = Flask(__name__)
 
 app.json_encoder = JSONEncoder
 Bootstrap(app)
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+cache = Cache(app, config={
+    'CACHE_TYPE': 'redis',
+    'CACHE_REDIS_URL': os.getenv('CACHE_REDIS_URL')
+})
 
 
 scheduler.start()
