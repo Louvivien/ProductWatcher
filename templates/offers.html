@@ -230,8 +230,13 @@ function getProfit(brand, model, color, buyingPrice) {
 var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', 'trainer', 'espadrille', 'mule', 'boot', 'sandal', 'bag charm', 'key ring', 'necklace', 'T-shirt', 'Sunglasses', 'scarf', 'Pendant', 'Jewellery', 'tie', 'skirt', 'flats', 'brooche', 'Earrings', 'cardigan', 'silver ring', 'Coat', 'Vest', 'Dress', 'shirt', 'phone charm', 'choker', 'Knitwear', 'camisole', 'Cashmere top', 'Kelly ring', 'handkerchief', 'Hat', 'stole', 'blazer', 'jumper'];
 
 
+var totalItems = data.length; // Add this line at the start of your addDataToTable function
+var calculatedItems = 0; // Add this line at the start of your addDataToTable function
+
+
 
     async function addDataToTable(data, source) {
+    
     for (const item of data) {
         var color, retailPrice, averagePrice, sold, highestBid, lowestAsk, link, row, buyingPrice, picture_url, title, brand, profit;
 
@@ -324,6 +329,8 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
         try {
             profit = await getProfit(brand, model, color, buyingPrice);
             console.log('Profit:', profit);
+            // Increment the counter after each profit is calculated
+            calculatedItems++;
         } catch (error) {
             console.log('Error getting profit:', error);
             profit = 'Error Profit';
@@ -502,8 +509,10 @@ $j.fn.dataTable.ext.search.push(
 );
 
 
-    // Clear the status message after all profits are calculated
-    $j('#profit-calculation-status').text('');
+    // Clear the status message when all profits are calculated
+    if (calculatedItems === totalItems) {
+        $j('#profit-calculation-status').text('');
+    }
 }
 
 
