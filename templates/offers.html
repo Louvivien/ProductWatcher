@@ -230,13 +230,13 @@ function getProfit(brand, model, color, buyingPrice) {
 var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', 'trainer', 'espadrille', 'mule', 'boot', 'sandal', 'bag charm', 'key ring', 'necklace', 'T-shirt', 'Sunglasses', 'scarf', 'Pendant', 'Jewellery', 'tie', 'skirt', 'flats', 'brooche', 'Earrings', 'cardigan', 'silver ring', 'Coat', 'Vest', 'Dress', 'shirt', 'phone charm', 'choker', 'Knitwear', 'camisole', 'Cashmere top', 'Kelly ring', 'handkerchief', 'Hat', 'stole', 'blazer', 'jumper'];
 
 
-var totalItems = data.length; // Add this line at the start of your addDataToTable function
-var calculatedItems = 0; // Add this line at the start of your addDataToTable function
 
 
 
     async function addDataToTable(data, source) {
-    
+    var totalItems = data.length; // Add this line at the start of your addDataToTable function
+    var calculatedItems = 0; // Add this line at the start of your addDataToTable function
+
     for (const item of data) {
         var color, retailPrice, averagePrice, sold, highestBid, lowestAsk, link, row, buyingPrice, picture_url, title, brand, profit;
 
