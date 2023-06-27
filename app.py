@@ -175,7 +175,7 @@ def get_color():
 
 # Load offers profits
 @app.route('/get_profit/<brand>/<model>/<path:color>/<buying_price>', methods=['GET'])
-@cache.memoize(36000)  
+@cache.cached(36000)  
 def get_profit(brand, model, color, buying_price):
     print("get_profit route called")  
     brand = unidecode(unquote(brand))  
