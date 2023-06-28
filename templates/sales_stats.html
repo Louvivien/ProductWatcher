@@ -56,10 +56,11 @@ Sales Stats
 
 <script>
     var $j = jQuery.noConflict();
+
     $j(document).ready(function () {
         var table = $j('#allProductsTable').DataTable({
-            "pageLength": 100,
-            "lengthMenu": [[100, 200, -1], [100, 200, "All"]]
+            "pageLength": 50,
+            "lengthMenu": [[50, 100, -1], [50, 100, "All"]]
         });
 
         $j('#title-search').on('keyup', function () {
@@ -305,36 +306,3 @@ Sales Stats
 
 
 {% endblock %}
-
-<!-- to do real stats manually -->
-<!-- <div>
-    <h2>Sales Stats</h2>
-    <p>Average time to sell: {{ average_time_to_sell }}</p>
-    <p>Best selling color: {{ best_selling_color }}</p>
-    <p>Average price: {{ average_price }}</p>
-</div>
-
-<h2>Top 5 Liked Products</h2>
-<table class="table table-striped">
-    <tr>
-        <th>Product ID</th>
-        <th>Name</th>
-        <th>Color</th>
-        <th>Price</th>
-        <th>Likes</th>
-        <th>Time to Sell</th>
-        <th>Link</th>
-    </tr>
-    {% for product in top_5_liked_products %}
-    <tr>
-        <td>{{ product.id }}</td>
-        <td>{{ product.name }}</td>
-        <td>{{ product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else 'N/A' }}</td>
-        <td>{{ product.price.cents/100 if product.price and product.price.cents else 'N/A' }} EUR</td>
-        <td>{{ product.likes }}</td>
-        <td>{{ product.timeToSell }}</td>
-        <td><a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary">View on VC</a></td>
-
-    </tr>
-    {% endfor %}
-</table> -->
