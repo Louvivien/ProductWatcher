@@ -25,7 +25,6 @@ def call_root():
     response = requests.get(base_url)
     if response.status_code == 200:
         print(f"Uptime check page up and running")
-
 def call_product_detail():
     global proxies_process
     # Acquire the lock before running the function
@@ -39,12 +38,21 @@ def call_product_detail():
         time.sleep(random_delay)  
         base_url = os.getenv('BASE_URL', 'http://localhost:5000')
         
-        # Setup Chrome options to run in headless mode
+        # Setup Chrome options to run in headless mode and optimize memory usage
         from selenium.webdriver.chrome.options import Options
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")  # Disable GPU hardware acceleration
+        chrome_options.add_argument("--disable-software-rasterizer")  # Disable software rasterizer
+        chrome_options.add_argument("--disk-cache-size=10000000")  # Limit disk cache size to 10MB
+        prefs = {"profile.managed_default_content_settings.images": 2}  # Disable images
+        chrome_options.add_experimental_option("prefs", prefs)
+
+        # Set mobile emulation
+        mobile_emulation = {"deviceName": "iPhone X"}  # You can change this to any other supported device
+        chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
         
         driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)  # This line will handle the driver download
         try:
@@ -70,6 +78,7 @@ def call_product_detail():
             print(f"Error while initializing the webdriver: {e}")
         finally:
             driver.quit()
+
         
         
 
