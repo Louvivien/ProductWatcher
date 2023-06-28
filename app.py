@@ -313,7 +313,7 @@ def get_color():
     else:
         try:
             color = get_image_color(image_url)
-            cache.set(cache_key, color, timeout=3600)  # Cache the data for 3600 seconds
+            cache.set(cache_key, color, timeout=36000)  # Cache the data for 3600 seconds
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 

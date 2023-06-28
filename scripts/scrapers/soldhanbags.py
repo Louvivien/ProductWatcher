@@ -17,6 +17,8 @@ from urllib.parse import quote
 
 import http.client
 
+import redis
+
 
 
 
@@ -29,6 +31,9 @@ parent_dir = os.path.dirname(parent_dir)
 dotenv_path = os.path.join(parent_dir, '.env')
 print(dotenv_path)
 load_dotenv(dotenv_path)
+
+# Set up Redis for caching
+r = redis.Redis.from_url(os.getenv('CACHE_REDIS_URL'))
 
 # MongoDB setup
 MONGO_URI = os.getenv('MONGO_URI')
@@ -61,6 +66,16 @@ def curl_from_response(response, method, url, headers, body):
 
 # Function to extract models from eBay
 def get_models(brand, model):
+    # Create a unique key for this query
+    query_key = f"models_{brand}_{model}"
+
+    # Try to get the result from the cache
+    result = r.get(query_key)
+
+    if result is not None:
+        # If the result is in the cache, return it
+        return json.loads(result)    
+    
     try:
         conn = http.client.HTTPSConnection("www.ebay.com")
         brand_encoded = quote(brand)
@@ -107,12 +122,25 @@ def get_models(brand, model):
 
 
         logging.info(f"Retrieved {len(models)} models for {brand} {model}")
+        # Store the result in the cache, with an expiration time of 1 hour (3600 seconds)
+        r.set(query_key, json.dumps(models), ex=3600)
+        
         return models
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)
 
 # Function to get sold products from vestiairecollective
 def get_sold_products(brand, model):
+    # Create a unique key for this query
+    query_key = f"sold_products_{brand}_{model}"
+
+    # Try to get the result from the cache
+    result = r.get(query_key)
+    
+    if result is not None:
+        # If the result is in the cache, return it
+        return json.loads(result)
+    
     try:
         conn = http.client.HTTPSConnection("search.vestiairecollective.com")
         brand_encoded = quote(brand)
@@ -160,6 +188,10 @@ def get_sold_products(brand, model):
             # Random sleep to avoid being detected as a bot
             time.sleep(randint(1,3))
         logging.info(f"Retrieved {len(sold_products)} sold products for {brand} {model}")
+      
+        # Store the result in the cache, with an expiration time of 1 hour (3600 seconds)
+        r.set(query_key, json.dumps(sold_products), ex=3600)
+  
         return sold_products
     except Exception as e:
         logging.error("Exception occurred", exc_info=True)

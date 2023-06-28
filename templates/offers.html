@@ -129,6 +129,8 @@ Price Watcher
 {% block scripts %}
 <script>
     var $j = jQuery.noConflict();
+    var ajaxRequests = [];  // The array that will hold the AJAX requests
+
 
 
     
@@ -141,32 +143,51 @@ Price Watcher
     var brand = "{{ brand }}";
     var model = "{{ model }}";
     $j('#loading-status-stockx').text('Loading data from StockX...');
-    $j.get('/product_detail/data/stockx/' + brand + '/' + model, function (data) {
+    // $j.get('/product_detail/data/stockx/' + brand + '/' + model, function (data) {
+    //     console.log('StockX data:', data);
+    //     addDataToTable(data.stockx_data, 'StockX');
+
+    //     $j('#loading-status-stockx').remove();
+
+    // })
+
+    ajaxRequests.push($j.get('/product_detail/data/stockx/' + brand + '/' + model, function (data) {
         console.log('StockX data:', data);
         addDataToTable(data.stockx_data, 'StockX');
 
         $j('#loading-status-stockx').remove();
-
-    })
+        }));
 
 
     $j('#loading-status-vc').text('Loading data from Vestiaire Collective...');
     $j('#loading-status').text('Loading data from Vestiaire Collective...');
-    $j.get('/product_detail/data/vestiaire/' + brand + '/' + model, function (data) {
+    // $j.get('/product_detail/data/vestiaire/' + brand + '/' + model, function (data) {
+    //     console.log('Vestiaire data:', data);
+    //     addDataToTable(data.vestiaire_data, 'VC');
+    //     $j('#loading-status-vc').remove();
+
+    // });
+
+    ajaxRequests.push($j.get('/product_detail/data/vestiaire/' + brand + '/' + model, function (data) {
         console.log('Vestiaire data:', data);
         addDataToTable(data.vestiaire_data, 'VC');
         $j('#loading-status-vc').remove();
-
-    });
+    }));
 
     $j('#loading-status-original').text('Loading data from Original...');
     $j('#loading-status').text('Loading data from Original...');
-    $j.get('/product_detail/data/original/' + brand + '/' + model, function (data) {
+    // $j.get('/product_detail/data/original/' + brand + '/' + model, function (data) {
+    //     console.log('Original data:', data);
+    //     addDataToTable(data.original_data, 'Original');
+    //     $j('#loading-status-original').remove();
+
+    // });
+
+    ajaxRequests.push($j.get('/product_detail/data/original/' + brand + '/' + model, function (data) {
         console.log('Original data:', data);
         addDataToTable(data.original_data, 'Original');
         $j('#loading-status-original').remove();
-
-    });
+    }));
 
     function getColorFromImageUrl(picture_url) {
     return new Promise((resolve, reject) => {
@@ -221,6 +242,8 @@ function getProfit(brand, model, color, buyingPrice) {
             console.log('Error getting profit:', error);
 
             $j('#profit-calculation-status').text('');
+
+
 
             reject(error);
         });
@@ -297,7 +320,7 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
 
             // If the title contains a word from the list, skip this item
             if (containsWord) {
-                console.log('Item ' + lowerCaseTitle + 'removed from the results');
+                console.log(lowerCaseTitle + ' removed from the results');
 
                 continue;
             }
@@ -325,6 +348,7 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
         try {
             profit = await getProfit(brand, model, color, buyingPrice);
             $j('#profit-calculation-status').text('');
+            $j('#profit-calculation-status').remove();
             console.log('Profit:', profit);
         } catch (error) {
             console.log('Error getting profit:', error);
@@ -519,31 +543,61 @@ $j(document).ready(function () {
 
 var counter = 0;
 
- // Start an interval that runs every 2 seconds
+
 var intervalId = setInterval(function() {
     // Check if the content of the info box is empty
     if ($j('#profit-calculation-status').text() === '') {
-        // If it is, wait for 1 second before checking again
-        setTimeout(function() {
-            // Check again if the content of the info box is still empty after 1 second
-            if ($j('#profit-calculation-status').text() === '') {
-                // If it is, increment the counter
-                counter++;
-                // If the counter has reached 3, remove the info box and stop the interval
-                if (counter >= 3) {
-                    $j('#profit-calculation-status').remove();
-                    clearInterval(intervalId);
-                }
-            } else {
-                // If the content is not empty, reset the counter
-                counter = 0;
-            }
-        }, 1000);
+        // If it is, remove the info box and stop the interval
+        $j('#profit-calculation-status').remove();
+        clearInterval(intervalId);
     }
 }, 2000);
 
 
 
+
+//  // Start an interval that runs every 2 seconds
+// var intervalId = setInterval(function() {
+//     // Check if the content of the info box is empty
+//     if ($j('#profit-calculation-status').text() === '') {
+//         // If it is, wait for 1 second before checking again
+//         setTimeout(function() {
+//             // Check again if the content of the info box is still empty after 1 second
+//             if ($j('#profit-calculation-status').text() === '') {
+//                 // If it is, increment the counter
+//                 counter++;
+//                 // If the counter has reached 3, remove the info box and stop the interval
+//                 if (counter >= 3) {
+//                     $j('#profit-calculation-status').remove();
+//                     clearInterval(intervalId);
+//                 }
+//             } else {
+//                 // If the content is not empty, reset the counter
+//                 counter = 0;
+//             }
+//         }, 1000);
+//     }
+// }, 2000);
+
+
+
+
+
+// event listener to the navigation link that aborts all ongoing AJAX requests when the link is clicked.
+    $j('.navbar-brand').on('click', function(e) {
+        e.preventDefault();  // Prevent the default action
+
+        // If there are any ongoing AJAX requests
+        if(ajaxRequests.length > 0) {
+            // Abort each request
+            ajaxRequests.forEach(function(request) {
+                request.abort();
+            });
+        }
+
+        // Navigate to the new page
+        window.location.href = $j(this).attr('href');
+    });
 
 
 

@@ -14,18 +14,55 @@ import urllib.parse
 import logging
 import math
 
+import redis
 
+from dotenv import load_dotenv
+import os
+import json
+from bson import json_util
+
+
+# Load .env file
+root_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(root_dir)  
+dotenv_path = os.path.join(parent_dir, '.env')
+print(dotenv_path)
+load_dotenv(dotenv_path)
 
 # Set up logging
 root = logging.getLogger()
 root.setLevel(logging.INFO)
-
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 
+# Set up the DB
+MONGO_URI = os.getenv('MONGO_URI')   
+MONGO_PASSWORD = os.getenv('MONGO_PASSWORD') 
+client = MongoClient(MONGO_URI.replace("<password>", MONGO_PASSWORD))  
+db = client.productwatcher  
+handbags = db.handbags  
 
+# Set up Redis for caching
+r = redis.Redis.from_url(os.getenv('CACHE_REDIS_URL'))
+
+def get_from_cache_or_db(query):
+    # Create a unique key for this query
+    query_key = str(query)
+
+    # Try to get the result from the cache
+    result = r.get(query_key)
+
+    if result is not None:
+        # If the result is in the cache, return it
+        return json.loads(result, object_hook=json_util.object_hook)
+    else:
+        # If the result is not in the cache, get it from the database
+        result = list(handbags.find(query))
+        # Store the result in the cache, with an expiration time of 1 hour (3600 seconds)
+        r.set(query_key, json.dumps(result, default=json_util.default), ex=3600)
+        return result
 
 
 def closest_color(requested_color):
@@ -39,27 +76,21 @@ def closest_color(requested_color):
     return min_colors[min(min_colors.keys())]
 
 def estimate_price(brand, model, color, buying_price, days):  
-    root_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Create a unique key for this query
+    query_key = f"{brand}_{model}_{color}_{buying_price}_{days}"
 
-    parent_dir = os.path.dirname(root_dir)
+    # Try to get the result from the cache
+    result = r.get(query_key)
 
-    dotenv_path = os.path.join(parent_dir, '.env')
+    if result is not None:
+        # If the result is in the cache, return it
+        return json.loads(result)
 
-    load_dotenv(dotenv_path)  
-
-    MONGO_URI = os.getenv('MONGO_URI')   
-
-    MONGO_PASSWORD = os.getenv('MONGO_PASSWORD') 
-
-    client = MongoClient(MONGO_URI.replace("<password>", MONGO_PASSWORD))  
-
-    db = client.productwatcher  
-
-    handbags = db.handbags  
 
     max_time_to_sell = days 
 
-    same_brand_model_general = list(handbags.find({"collection": {"$regex": f"{brand} {model}", "$options": "i"}})) 
+    same_brand_model_general = get_from_cache_or_db({"collection": {"$regex": f"{brand} {model}", "$options": "i"}})
 
     same_brand_model_general_prices = [bag['price']['cents']/100 for bag in same_brand_model_general]
 
@@ -94,10 +125,10 @@ def estimate_price(brand, model, color, buying_price, days):
 
 
     if closest_named_color != "0": 
-        same_brand_model_color_general = list(handbags.find({  
+        same_brand_model_color_general = get_from_cache_or_db({  
             "collection": {"$regex": f"{brand} {model}", "$options": "i"},  
             "colors.all.name": {"$regex": closest_named_color, "$options": "i"}  
-        }))  
+        })  
         same_brand_model_color_general_prices = [bag['price']['cents']/100 for bag in same_brand_model_color_general] 
         avg_price_same_brand_model_color_general = statistics.mean(same_brand_model_color_general_prices) if same_brand_model_color_general_prices and len(same_brand_model_color_general) != 0 else 0
     else:
@@ -108,10 +139,10 @@ def estimate_price(brand, model, color, buying_price, days):
         profit_color = 0
 
 
-    same_brand_model = list(handbags.find({         
-            "collection": {"$regex": f"{brand} {model}", "$options": "i"},         
-            "timeToSell": {"$lte": max_time_to_sell}     
-        })) 
+    same_brand_model = get_from_cache_or_db({         
+        "collection": {"$regex": f"{brand} {model}", "$options": "i"},         
+        "timeToSell": {"$lte": max_time_to_sell}     
+    })
 
     same_brand_model_prices = [bag['price']['cents']/100 for bag in same_brand_model]     
 
@@ -127,11 +158,11 @@ def estimate_price(brand, model, color, buying_price, days):
         avg_price_same_brand_model = 0
 
 
-    same_brand_model_color = list(handbags.find({        
-            "collection": {"$regex": f"{brand} {model}", "$options": "i"},         
-            "colors.all.name": {"$regex": color, "$options": "i"},         
-            "timeToSell": {"$lte": max_time_to_sell}     
-        }))  
+    same_brand_model_color = get_from_cache_or_db({        
+        "collection": {"$regex": f"{brand} {model}", "$options": "i"},         
+        "colors.all.name": {"$regex": color, "$options": "i"},         
+        "timeToSell": {"$lte": max_time_to_sell}     
+    })  
     
 
     same_brand_model_color_prices = [bag['price']['cents']/100 for bag in same_brand_model_color]
@@ -169,7 +200,7 @@ def estimate_price(brand, model, color, buying_price, days):
     logging.info(f"Recommended price (based on all bags): {rec_price_all}€, Profit: {profit_all}€")
     logging.info(f"Recommended price (bags same color): {rec_price_color}€, Profit: {profit_color}€")
 
-    return {        
+    result = {        
         "Number of bags": len(same_brand_model_general),        
         "Number of bags - color": len(same_brand_model_color_general),        
         "Average price": round(avg_price_same_brand_model_general),        
@@ -181,6 +212,12 @@ def estimate_price(brand, model, color, buying_price, days):
         "Recommended price - color": round(rec_price_color),        
         "Profit - color": round(profit_color)    
     }
+
+    # Store the result in the cache, with an expiration time of 1 hour (3600 seconds)
+    r.set(query_key, json.dumps(result), ex=3600)
+
+    return result
+
 
     
     
