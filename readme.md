@@ -75,6 +75,7 @@ https://minigpt-4.github.io/
 
 Silver/Gold
 
+Clear half the cache then half the cache
 
 
 ## Contributing
