@@ -1,5 +1,10 @@
 from flask import Flask, render_template, request, jsonify
 from flask import Response
+
+from flask import make_response
+from flask import Flask, render_template, request, redirect, url_for
+
+
 from datetime import date, datetime
 
 import pymongo  
@@ -59,6 +64,9 @@ from config import products
 
 
 
+
+
+
 # Load .env file
 root_dir = os.path.dirname(os.path.abspath(__file__))
 dotenv_path = os.path.join(root_dir, '.env')
@@ -109,73 +117,186 @@ def clear_cache():
 
 
  ## Add a new product to watch
+# @app.route('/', methods=['GET', 'POST'])
+# # @cache.cached(36000)  
+# def product_list():
+#     if request.method == 'POST':
+#         new_product = request.form.get('new_product')
+#         if new_product:
+#             products.append(new_product)
+
+#     return render_template('product_list.html', products=products)
+
 @app.route('/', methods=['GET', 'POST'])
-@cache.cached(36000)  
 def product_list():
     if request.method == 'POST':
         new_product = request.form.get('new_product')
         if new_product:
             products.append(new_product)
+            cache.delete('product_list')  # Clear the cache when a new product is added
+        return redirect(url_for('product_list'))  # Redirect to the GET request
 
-    return render_template('product_list.html', products=products)
+    is_cached = False
+    cache_key = 'product_list'
+    product_list_html = cache.get(cache_key)
+    if product_list_html is not None:
+        is_cached = True
+    else:
+        product_list_html = render_template('product_list.html', products=products)
+        cache.set(cache_key, product_list_html, timeout=36000)  # Cache the data for 36000 seconds
 
+    return product_list_html, 200, {'From-Cache': str(is_cached)}
 
 
 ################## Buy ##################
 
+# ## Load offers page
+# @app.route('/product_detail/<brand>/<model>', methods=['GET'])
+# @cache.cached(3600)  
+# def product_detail(brand, model):
+#     return render_template('offers.html', brand=brand, model=model)
+
 ## Load offers page
 @app.route('/product_detail/<brand>/<model>', methods=['GET'])
-@cache.cached(3600)  
 def product_detail(brand, model):
-    return render_template('offers.html', brand=brand, model=model)
+    cache_key = f'product_detail_{brand}_{model}'
+    page = cache.get(cache_key)
+    if page is None:
+        page = render_template('offers.html', brand=brand, model=model)
+        cache.set(cache_key, page, timeout=3600)  # Cache the page for 3600 seconds
+        is_cached = False
+    else:
+        is_cached = True
+    response = make_response(page)
+    response.headers['X-From-Cache'] = str(is_cached)
+    return response
+
+# # Load offers data 1
+# @app.route('/product_detail/data/stockx/<brand>/<model>', methods=['GET'])
+# # @cache.cached(3600)  
+# def get_stockx_data(brand, model):
+#     print("load stockx data")
+#     stockx_result = search_stockx(brand, model)
+#     if stockx_result is not None:
+#         stockx_data, debug_info = stockx_result
+#         for item in stockx_data:
+#             item['source'] = 'StockX'
+#     else:
+#         stockx_data = []
+#     return jsonify(stockx_data=stockx_data)
 
 
 # Load offers data 1
 @app.route('/product_detail/data/stockx/<brand>/<model>', methods=['GET'])
-@cache.cached(3600)  
 def get_stockx_data(brand, model):
     print("load stockx data")
-    stockx_result = search_stockx(brand, model)
-    if stockx_result is not None:
-        stockx_data, debug_info = stockx_result
-        for item in stockx_data:
-            item['source'] = 'StockX'
+    cache_key = f'stockx_data_{brand}_{model}'
+    stockx_data = cache.get(cache_key)
+    if stockx_data is None:
+        stockx_result = search_stockx(brand, model)
+        if stockx_result is not None:
+            stockx_data, debug_info = stockx_result
+            for item in stockx_data:
+                item['source'] = 'StockX'
+            cache.set(cache_key, stockx_data, timeout=3600)  # Cache the data for 3600 seconds
+        else:
+            stockx_data = []
+        is_cached = False
     else:
-        stockx_data = []
-    return jsonify(stockx_data=stockx_data)
+        is_cached = True
+    return jsonify({ "from_cache": is_cached, "stockx_data": stockx_data })
+
 
 # Load offers data 2
+# @app.route('/product_detail/data/vestiaire/<brand>/<model>', methods=['GET'])
+# # @cache.cached(3600)  
+# def get_vestiaire_data(brand, model):
+#     print("load vestiaire data")
+#     vestiaire_result = search_vestiaire(brand, model)
+#     if vestiaire_result is not None:
+#         vestiaire_data = vestiaire_result[0]
+#         for item in vestiaire_data:
+#             item['source'] = 'VC'
+#     else:
+#         vestiaire_data = []
+#     return jsonify(vestiaire_data=vestiaire_data)
+
+
 @app.route('/product_detail/data/vestiaire/<brand>/<model>', methods=['GET'])
-@cache.cached(3600)  
 def get_vestiaire_data(brand, model):
     print("load vestiaire data")
-    vestiaire_result = search_vestiaire(brand, model)
-    if vestiaire_result is not None:
-        vestiaire_data = vestiaire_result[0]
-        for item in vestiaire_data:
-            item['source'] = 'VC'
+    is_cached = False
+    cache_key = f'vestiaire_data_{brand}_{model}'
+    vestiaire_data = cache.get(cache_key)
+    if vestiaire_data is not None:
+        is_cached = True
     else:
-        vestiaire_data = []
-    return jsonify(vestiaire_data=vestiaire_data)
+        vestiaire_result = search_vestiaire(brand, model)
+        if vestiaire_result is not None:
+            vestiaire_data = vestiaire_result[0]
+            for item in vestiaire_data:
+                item['source'] = 'VC'
+            cache.set(cache_key, vestiaire_data, timeout=3600)  # Cache the data for 3600 seconds
+        else:
+            vestiaire_data = []
+    return jsonify(from_cache=is_cached, vestiaire_data=vestiaire_data)
+
 
 # Load offers data 3
+# @app.route('/product_detail/data/original/<brand>/<model>', methods=['GET'])
+# # @cache.cached(3600)  
+# def get_original_data(brand, model):
+#     print("load original data")
+#     original_result = search_reoriginal(brand, model)
+#     if original_result is not None:
+#         original_data, _, _ = original_result
+#         for item in original_data:
+#             item['source'] = 'Original'
+#     else:
+#         original_data = []
+#     return jsonify(original_data=original_data)
+
 @app.route('/product_detail/data/original/<brand>/<model>', methods=['GET'])
-@cache.cached(3600)  
 def get_original_data(brand, model):
     print("load original data")
-    original_result = search_reoriginal(brand, model)
-    if original_result is not None:
-        original_data, _, _ = original_result
-        for item in original_data:
-            item['source'] = 'Original'
+    is_cached = False
+    cache_key = f'original_data_{brand}_{model}'
+    original_data = cache.get(cache_key)
+    if original_data is not None:
+        is_cached = True
     else:
-        original_data = []
-    return jsonify(original_data=original_data)
+        original_result = search_reoriginal(brand, model)
+        if original_result is not None:
+            original_data, _, _ = original_result
+            for item in original_data:
+                item['source'] = 'Original'
+            cache.set(cache_key, original_data, timeout=3600)  # Cache the data for 3600 seconds
+        else:
+            original_data = []
+    return jsonify( from_cache=is_cached, original_data=original_data)
 
 
-# Load offers colors
+
+
+# # Load offers colors
+# @app.route('/get_image_color', methods=['POST'])
+# # @cache.cached(3600)  
+# def get_color():
+#     print("get color")
+#     from scripts.getcolor import get_image_color
+#     data = request.get_json()
+#     image_url = data.get('image_url')
+#     if not image_url:
+#         return jsonify({'error': 'Missing image_url parameter'}), 400
+
+#     try:
+#         color = get_image_color(image_url)
+#         return jsonify({'color': color})
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
+    
+ # Load offers colors
 @app.route('/get_image_color', methods=['POST'])
-@cache.cached(3600)  
 def get_color():
     print("get color")
     from scripts.getcolor import get_image_color
@@ -184,110 +305,223 @@ def get_color():
     if not image_url:
         return jsonify({'error': 'Missing image_url parameter'}), 400
 
-    try:
-        color = get_image_color(image_url)
-        return jsonify({'color': color})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    cache_key = f'color_{image_url}'
+    color = cache.get(cache_key)
+    is_cached = False
+    if color is not None:
+        is_cached = True
+    else:
+        try:
+            color = get_image_color(image_url)
+            cache.set(cache_key, color, timeout=3600)  # Cache the data for 3600 seconds
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    return jsonify({ 'from_cache': is_cached, 'color': color})   
+    
+
+# # Load offers profits
+# @app.route('/get_profit/<brand>/<model>/<path:color>/<buying_price>', methods=['GET'])
+# # @cache.cached(36000)  
+# def get_profit(brand, model, color, buying_price):
+#     print("get_profit route called")  
+#     brand = unidecode(unquote(brand))  
+#     print("Logging color") 
+#     print(f"Color: {color}")
+#     try:
+#         profit_data = estimate_price(brand, model, color, float(buying_price), 30)
+#         return jsonify(profit_data)
+#     except Exception as e:
+#         print(f"An error occurred in get_profit: {e}")  
+#         logging.error(f"An error occurred: {e}")
+#         return jsonify({"error": str(e)}), 500
+
 
 # Load offers profits
 @app.route('/get_profit/<brand>/<model>/<path:color>/<buying_price>', methods=['GET'])
-@cache.cached(36000)  
 def get_profit(brand, model, color, buying_price):
     print("get_profit route called")  
     brand = unidecode(unquote(brand))  
     print("Logging color") 
     print(f"Color: {color}")
-    try:
-        profit_data = estimate_price(brand, model, color, float(buying_price), 30)
-        return jsonify(profit_data)
-    except Exception as e:
-        print(f"An error occurred in get_profit: {e}")  
-        logging.error(f"An error occurred: {e}")
-        return jsonify({"error": str(e)}), 500
+    cache_key = f'profit_{brand}_{model}_{color}_{buying_price}'
+    profit_data = cache.get(cache_key)
+    is_cached = False
+    if profit_data is not None:
+        is_cached = True
+    else:
+        try:
+            profit_data = estimate_price(brand, model, color, float(buying_price), 30)
+            cache.set(cache_key, profit_data, timeout=36000)  # Cache the data for 36000 seconds
+        except Exception as e:
+            print(f"An error occurred in get_profit: {e}")  
+            logging.error(f"An error occurred: {e}")
+            return jsonify({"error": str(e)}), 500
 
+    return jsonify(profit_data, from_cache=is_cached)
     
 
 ################## Sell ##################
 
 
 # Get Sales Items for all models
+# @app.route('/sales_stats/allmodels', methods=['GET'])
+# @cache.cached(36000)  
+
+# # Put all of this inside the page so that the user does not wait after clicking a button
+
+# def sales_stats_allmodels():
+#     page = request.args.get('page', default = 1, type = int)
+#     per_page = request.args.get('per_page', default = 10, type = int)
+
+#     collections = client.productwatcher.list_collection_names()  # Get all collection names
+#     all_stats = []
+#     all_colors = set()
+
+#     for collection_name in collections:
+#         collection = db[collection_name]
+#         all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))  # Get all products with pagination
+
+#         # Get all unique colors in the current collection
+#         colors = collection.distinct('colors.all.name')
+#         all_colors.update(colors)
+
+
+#         sold_items = [item for item in all_products if item.get('sold')]
+
+#         all_stats.append({
+#             'collection_name': collection_name,
+#             'all_products': all_products,
+#             'currency': "EUR"
+#         })
+
+#     return render_template('sales_stats_allmodels.html', all_stats=all_stats, colors=all_colors)
+
 @app.route('/sales_stats/allmodels', methods=['GET'])
-@cache.cached(36000)  
-
-
-# Put all of this inside the page so that the user does not wait after clicking a button
-
 def sales_stats_allmodels():
     page = request.args.get('page', default = 1, type = int)
     per_page = request.args.get('per_page', default = 10, type = int)
-
-    collections = client.productwatcher.list_collection_names()  # Get all collection names
-    all_stats = []
+    cache_key = f'sales_stats_allmodels_{page}_{per_page}'
+    is_cached = False
+    all_stats = cache.get(cache_key)
     all_colors = set()
 
-    for collection_name in collections:
-        collection = db[collection_name]
-        all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))  # Get all products with pagination
+    if all_stats is not None:
+        is_cached = True
+    else:
+        collections = client.productwatcher.list_collection_names()  # Get all collection names
+        all_stats = []
+        for collection_name in collections:
+            collection = db[collection_name]
+            all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))  # Get all products with pagination
 
-        # Get all unique colors in the current collection
-        colors = collection.distinct('colors.all.name')
-        all_colors.update(colors)
+            # Get all unique colors in the current collection
+            colors = collection.distinct('colors.all.name')
+            all_colors.update(colors)
+
+            sold_items = [item for item in all_products if item.get('sold')]
+
+            all_stats.append({
+                'collection_name': collection_name,
+                'all_products': all_products,
+                'currency': "EUR"
+            })
+        cache.set(cache_key, all_stats, timeout=36000)  # Cache the data for 36000 seconds
+
+    return render_template('sales_stats_allmodels.html', all_stats=all_stats, colors=all_colors, from_cache=is_cached)
 
 
+
+# ## Get Sales Items for a specific product
+# # Clear that
+# @app.route('/sales_stats/<brand>/<model>', methods=['GET'])
+# @cache.cached(36000)  
+
+# def sales_stats(brand, model):
+#     all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
+#     sold_items = [item for item in all_products if item.get('sold')]
+
+#     # calculate average price
+#     total_price = 0
+#     for item in sold_items:
+#         price = item.get('price')
+#         if isinstance(price, dict) and 'cents' in price and isinstance(price['cents'], (int, float)):
+#             total_price += price['cents']
+#         else:
+#             app.logger.warning(f"Unexpected price type for item {item['_id']}: {type(price)} with value {price}")
+
+#     average_price = round(total_price / len(sold_items) / 100, 2) if sold_items else 0  # divide by 100 to convert cents to euros
+
+#     # calculate best selling color
+#     color_counts = {}
+#     for item in sold_items:
+#         color = item.get('colors')
+#         if isinstance(color, dict) and 'all' in color and isinstance(color['all'], list) and color['all']:
+#             color_name = color['all'][0].get('name')
+#             if color_name in color_counts:
+#                 color_counts[color_name] += 1
+#             else:
+#                 color_counts[color_name] = 1
+#     best_selling_color = max(color_counts.items(), key=itemgetter(1))[0]
+
+#     # get top 5 liked products
+#     top_5_liked_products = sorted(sold_items, key=lambda x: x['likes'], reverse=True)[:5]
+
+#     # calculate average time to sell
+#     total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
+#     average_time_to_sell = round(total_time_to_sell / len(sold_items))
+
+#     return render_template('sales_stats.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
+
+@app.route('/sales_stats/<brand>/<model>', methods=['GET'])
+def sales_stats(brand, model):
+    cache_key = f'sales_stats_{brand}_{model}'
+    cached_data = cache.get(cache_key)
+
+    if cached_data is not None:
+        from_cache = True
+        average_time_to_sell, best_selling_color, average_price, top_5_liked_products, all_products = cached_data
+    else:
+        from_cache = False
+        all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
         sold_items = [item for item in all_products if item.get('sold')]
 
-        all_stats.append({
-            'collection_name': collection_name,
-            'all_products': all_products,
-            'currency': "EUR"
-        })
-
-    return render_template('sales_stats_allmodels.html', all_stats=all_stats, colors=all_colors)
-
-
-## Get Sales Items for a specific product
-# Clear that
-@app.route('/sales_stats/<brand>/<model>', methods=['GET'])
-@cache.cached(36000)  
-
-def sales_stats(brand, model):
-    all_products = list(handbags.find({'collection': brand + " " + model}))  # Get all products from the new collection
-    sold_items = [item for item in all_products if item.get('sold')]
-
-    # calculate average price
-    total_price = 0
-    for item in sold_items:
-        price = item.get('price')
-        if isinstance(price, dict) and 'cents' in price and isinstance(price['cents'], (int, float)):
-            total_price += price['cents']
-        else:
-            app.logger.warning(f"Unexpected price type for item {item['_id']}: {type(price)} with value {price}")
-
-    average_price = round(total_price / len(sold_items) / 100, 2) if sold_items else 0  # divide by 100 to convert cents to euros
-
-    # calculate best selling color
-    color_counts = {}
-    for item in sold_items:
-        color = item.get('colors')
-        if isinstance(color, dict) and 'all' in color and isinstance(color['all'], list) and color['all']:
-            color_name = color['all'][0].get('name')
-            if color_name in color_counts:
-                color_counts[color_name] += 1
+        # calculate average price
+        total_price = 0
+        for item in sold_items:
+            price = item.get('price')
+            if isinstance(price, dict) and 'cents' in price and isinstance(price['cents'], (int, float)):
+                total_price += price['cents']
             else:
-                color_counts[color_name] = 1
-    best_selling_color = max(color_counts.items(), key=itemgetter(1))[0]
+                app.logger.warning(f"Unexpected price type for item {item['_id']}: {type(price)} with value {price}")
 
-    # get top 5 liked products
-    top_5_liked_products = sorted(sold_items, key=lambda x: x['likes'], reverse=True)[:5]
+        average_price = round(total_price / len(sold_items) / 100, 2) if sold_items else 0  # divide by 100 to convert cents to euros
 
-    # calculate average time to sell
-    total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
-    average_time_to_sell = round(total_time_to_sell / len(sold_items))
+        # calculate best selling color
+        color_counts = {}
+        for item in sold_items:
+            color = item.get('colors')
+            if isinstance(color, dict) and 'all' in color and isinstance(color['all'], list) and color['all']:
+                color_name = color['all'][0].get('name')
+                if color_name in color_counts:
+                    color_counts[color_name] += 1
+                else:
+                    color_counts[color_name] = 1
+        best_selling_color = max(color_counts.items(), key=itemgetter(1))[0]
 
-    return render_template('sales_stats.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR")
+        # get top 5 liked products
+        top_5_liked_products = sorted(sold_items, key=lambda x: x['likes'], reverse=True)[:5]
 
-    # return render_template('sales_stats.html', brand=brand, model=model, currency="EUR")
+        # calculate average time to sell
+        total_time_to_sell = sum(item['timeToSell'] for item in sold_items)
+        average_time_to_sell = round(total_time_to_sell / len(sold_items))
+
+        # Cache the data for 36000 seconds (10 hours)
+        cache.set(cache_key, (average_time_to_sell, best_selling_color, average_price, top_5_liked_products, all_products), timeout=36000)
+
+    return render_template('sales_stats.html', brand=brand, model=model, average_time_to_sell=average_time_to_sell, best_selling_color=best_selling_color, average_price=average_price, top_5_liked_products=top_5_liked_products, all_products=all_products, currency="EUR", from_cache=from_cache)
+
+
 
 # Get Sales Items data 
 @app.route('/sales_stats/data', methods=['GET'])
