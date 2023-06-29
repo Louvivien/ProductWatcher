@@ -44,7 +44,7 @@ def search_vestiaire(brand, model):
     data = {
   "pagination": {
     "offset": 0,
-    "limit": 48
+    "limit": 100
   },
   "fields": [
     "name",
@@ -71,8 +71,8 @@ def search_vestiaire(brand, model):
   "facets": {
     "fields": [
       "brand",
+      "model",
       "universe",
-      "country",
       "stock",
       "color",
       "categoryLvl0",
@@ -84,37 +84,7 @@ def search_vestiaire(brand, model):
       "watchMechanism",
       "discount",
       "sold",
-      "directShippingEligible",
-      "directShippingCountries",
-      "localCountries",
-      "sellerBadge",
-      "isOfficialStore",
-      "materialLvl0",
-      "size0",
-      "size1",
-      "size2",
-      "size3",
-      "size4",
-      "size5",
-      "size6",
-      "size7",
-      "size8",
-      "size9",
-      "size10",
-      "size11",
-      "size12",
-      "size13",
-      "size14",
-      "size15",
-      "size16",
-      "size17",
-      "size18",
-      "size19",
-      "size20",
-      "size21",
-      "size22",
-      "size23",
-      "dealEligible"
+      "sellerBadge"
     ],
     "stats": [
       "price"
@@ -122,7 +92,17 @@ def search_vestiaire(brand, model):
   },
   "q": brand + " " + model,
   "sortBy": "relevance",
-  "filters": { },
+  "filters": {
+    "catalogLinksWithoutLanguage": [
+      "/women-bags/handbags/"
+    ],
+    "universe.id": [
+      "1"
+    ],
+    "sold": [
+      "0"
+    ]
+  },
  
   "locale": {
     "country": "FR",
@@ -139,18 +119,6 @@ def search_vestiaire(brand, model):
         # print(response.content)
         data = json.loads(response.content)
         queries = data['items']
-
-        #     # Navigate to the 'results' key
-        #     queries = data['props']['pageProps']['req']['appContext']['states']['query']['value']['queries']
-
-        #     # Access the 5th query directly
-        #     query = queries[4]['state']['data']['browse']['results']
-        #     edges = query['edges']  # return the list of edges
-        # logging.info("vestiaire : %s", queries)
-
-        # for query in queries:
-        #     query['collection'] = brand + " " + model
-        #     handbags.insert_one(query)
         return queries, None
     else:
         return None

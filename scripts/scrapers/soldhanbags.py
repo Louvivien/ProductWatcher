@@ -64,70 +64,73 @@ def curl_from_response(response, method, url, headers, body):
 
 
 
-# Function to extract models from eBay
-def get_models(brand, model):
-    # Create a unique key for this query
-    query_key = f"models_{brand}_{model}"
+# # Function to extract models from eBay
+# def get_models(brand, model):
+#     # Create a unique key for this query
+#     query_key = f"models_{brand}_{model}"
 
-    # Try to get the result from the cache
-    result = r.get(query_key)
+#     # Try to get the result from the cache
+#     result = r.get(query_key)
 
-    if result is not None:
-        # If the result is in the cache, return it
-        return json.loads(result)    
+#     if result is not None:
+#         # If the result is in the cache, return it
+#         return json.loads(result)    
     
-    try:
-        conn = http.client.HTTPSConnection("www.ebay.com")
-        brand_encoded = quote(brand)
-        model_encoded = quote(model)
-        headers = {
-                'authority': 'www.ebay.com',
-                'accept': '*/*',
-                'cache-control': 'no-cache',
-                'pragma': 'no-cache',
-                'referer': "https://www.ebay.com/sch/i.html?_fsrp=1&_from=R40&_nkw={brand}+{model}&_sacat=0&LH_Sold=1&rt=nc&_oaa=1&_dcat=169291".format(brand=brand, model=model),
-                'sec-ch-ua-full-version': '"114.0.5735.106"',
-                'sec-ch-ua-mobile': '?0',
-                'sec-ch-ua-model': '""',
-                'sec-ch-ua-platform-version': '"12.6.5"',
-                'sec-fetch-dest': 'empty',
-                'sec-fetch-mode': 'cors',
-                'sec-fetch-site': 'same-origin',
-                'x-requested-with': 'XMLHttpRequest',
-                'User-Agent': ua.random,
-                'Cookie': '__deba=OH9EbZd2CoWoYUNpbimbaoLyC_7t7Wv8oNC_87lDaMxvQ_HHkvsvqUSySNteDQSQWiP3ms0kLC5xqOQEeY2siogkSZp4GNO8aVvCTEaxLKHC5xHjSmsDUvAlQQsigp4P2HUUX7nXo10fSYckCM7qWA==; __uzma=497fe911-5b45-475c-abde-d88a75158a0d; __uzmb=1686237210; __uzmc=2542512492180; __uzmd=1686301844; __uzme=0223; __uzmf=7f6000c29712ca-d5b1-4784-a289-f4c5838bf289168623721003164634252-9d24dd2e3ba6d10b124; ak_bmsc=26C214431EF86207F0366187658499F0~000000000000000000000000000000~YAAQZ4QVAo4is26IAQAAcCRsnxTsI6byoozSOTbxVvWVFV6c9FzEpx3BFiU5Hi3LnIpqGEwQ9zMjdZz1kWANzpxvFRwopyZ9F+FEqLP3YC9UJvPkGB3xApJqKA3USaEdGDu2xYeoWt8Waeo9s09NcGsNhx8gfKnB5isymvaMZCjYK7Lr3dolGBOgf2/0VREzO2ZSPj2yrfIxIudxriYjGHxLBFfQniyDqH8H0bT+mDa31CQ1vr3CfWXdDDmp9rxlbbRggG06ZIhu8hVTrAkkqMtH/c8q/+smtRSgccIGD2augEFsU1xI4F1MwG+64Cz+L2dJsbSKzzgJLw7KbbMwOn4IJMvbIuOnhpAyV0eTOrM2rOaT0M/Voom3GUAlCz/rCNqAWTbg1zHXxcTd; bm_sv=5AC5A3C6ABB14408F00C111A04F46B82~YAAQZ4QVAo8is26IAQAAcCRsnxSVCLXRb+quQ7NMW+wI/7k8Z14ShGTOaOxPd9LQxZNxZsa6ACxrFo/VNXekw30B4eZPZLb+N7Ee9+ABk6v6LVAAo4N+usIfavW+3ADtP/F4CS+Ius1Lbt3m+qaxJTGWWyWL3j7rmWGZlOywOFxL8iNJSpVtoS6kfJl/TAEALJjvEIbi+pOJamZYpsFMuhDCh99Ot4NV0m0tO9FZZWX2+ly11al+ESgewbiwXg==~1; dp1=bu1p/QEBfX0BAX19AQA**68455394^pbf/%23a000e0000001000200000066642014^bl/FR68455394^; ebay=%5Ejs%3D1%5Esbf%3D%23000000%5E; nonsession=BAQAAAYhF58hiAAaAADMABWZkIBQ3NTAxNQDKACBoRVOUOWI5MWUxYWQxODgwYTQ0ZTAxZDJjMmUzZmZmODBiY2QAywABZILznDURRbiFYqWwMTMb+G4a3Yu+wyLuyA**; ns1=BAQAAAYhF58hiAAaAANgAU2ZkIBRjNjl8NjAxXjE2ODYyMzcyMTgwNzNeXjFeM3wyfDV8NHw3fDEwfDQyfDQzfDExXl5eNF4zXjEyXjEyXjJeMV4xXjBeMV4wXjFeNjQ0MjQ1OTA3NXq1/TdTTuiGs141oU0ocy2Wm1lV; s=CgADuAIRkg0RUMwZodHRwczovL3d3dy5lYmF5LmNvbS9zY2gvaS5odG1sP19mc3JwPTEmX2Zyb209UjQwJl9ua3c9aGVybWVzK2V2ZWx5bmUmX3NhY2F0PTAmTEhfU29sZD0xJnJ0PW5jJl9vYWE9MSZfZGNhdD0xNjkyOTEjaXRlbTUyOWQyODdjYjUHAPgAIGSDRFQ5YjkxZTFhZDE4ODBhNDRlMDFkMmMyZTNmZmY4MGJjZABW5tY*',
-}
-        url = f"/sch/ajax/refine?no_encode_refine_params=1&_fsrp=1&rt=nc&_from=R40&_nkw={brand_encoded}+{model_encoded}&_sacat=0&&_oaa=1&LH_Sold=1&_aspectname=aspect-Model&modules=SEARCH_REFINEMENTS_MODEL_V2%3Afa"
-        conn.request("GET", url, headers=headers)
+#     try:
+#         conn = http.client.HTTPSConnection("www.ebay.com")
+#         brand_encoded = quote(brand)
+#         model_encoded = quote(model)
+#         headers = {
+#                 'authority': 'www.ebay.com',
+#                 'accept': '*/*',
+#                 'cache-control': 'no-cache',
+#                 'pragma': 'no-cache',
+#                 'referer': "https://www.ebay.com/sch/i.html?_fsrp=1&_from=R40&_nkw={brand}+{model}&_sacat=0&LH_Sold=1&rt=nc&_oaa=1&_dcat=169291".format(brand=brand, model=model),
+#                 'sec-ch-ua-full-version': '"114.0.5735.106"',
+#                 'sec-ch-ua-mobile': '?0',
+#                 'sec-ch-ua-model': '""',
+#                 'sec-ch-ua-platform-version': '"12.6.5"',
+#                 'sec-fetch-dest': 'empty',
+#                 'sec-fetch-mode': 'cors',
+#                 'sec-fetch-site': 'same-origin',
+#                 'x-requested-with': 'XMLHttpRequest',
+#                 'User-Agent': ua.random,
+#                 'Cookie': '__deba=OH9EbZd2CoWoYUNpbimbaoLyC_7t7Wv8oNC_87lDaMxvQ_HHkvsvqUSySNteDQSQWiP3ms0kLC5xqOQEeY2siogkSZp4GNO8aVvCTEaxLKHC5xHjSmsDUvAlQQsigp4P2HUUX7nXo10fSYckCM7qWA==; __uzma=497fe911-5b45-475c-abde-d88a75158a0d; __uzmb=1686237210; __uzmc=2542512492180; __uzmd=1686301844; __uzme=0223; __uzmf=7f6000c29712ca-d5b1-4784-a289-f4c5838bf289168623721003164634252-9d24dd2e3ba6d10b124; ak_bmsc=26C214431EF86207F0366187658499F0~000000000000000000000000000000~YAAQZ4QVAo4is26IAQAAcCRsnxTsI6byoozSOTbxVvWVFV6c9FzEpx3BFiU5Hi3LnIpqGEwQ9zMjdZz1kWANzpxvFRwopyZ9F+FEqLP3YC9UJvPkGB3xApJqKA3USaEdGDu2xYeoWt8Waeo9s09NcGsNhx8gfKnB5isymvaMZCjYK7Lr3dolGBOgf2/0VREzO2ZSPj2yrfIxIudxriYjGHxLBFfQniyDqH8H0bT+mDa31CQ1vr3CfWXdDDmp9rxlbbRggG06ZIhu8hVTrAkkqMtH/c8q/+smtRSgccIGD2augEFsU1xI4F1MwG+64Cz+L2dJsbSKzzgJLw7KbbMwOn4IJMvbIuOnhpAyV0eTOrM2rOaT0M/Voom3GUAlCz/rCNqAWTbg1zHXxcTd; bm_sv=5AC5A3C6ABB14408F00C111A04F46B82~YAAQZ4QVAo8is26IAQAAcCRsnxSVCLXRb+quQ7NMW+wI/7k8Z14ShGTOaOxPd9LQxZNxZsa6ACxrFo/VNXekw30B4eZPZLb+N7Ee9+ABk6v6LVAAo4N+usIfavW+3ADtP/F4CS+Ius1Lbt3m+qaxJTGWWyWL3j7rmWGZlOywOFxL8iNJSpVtoS6kfJl/TAEALJjvEIbi+pOJamZYpsFMuhDCh99Ot4NV0m0tO9FZZWX2+ly11al+ESgewbiwXg==~1; dp1=bu1p/QEBfX0BAX19AQA**68455394^pbf/%23a000e0000001000200000066642014^bl/FR68455394^; ebay=%5Ejs%3D1%5Esbf%3D%23000000%5E; nonsession=BAQAAAYhF58hiAAaAADMABWZkIBQ3NTAxNQDKACBoRVOUOWI5MWUxYWQxODgwYTQ0ZTAxZDJjMmUzZmZmODBiY2QAywABZILznDURRbiFYqWwMTMb+G4a3Yu+wyLuyA**; ns1=BAQAAAYhF58hiAAaAANgAU2ZkIBRjNjl8NjAxXjE2ODYyMzcyMTgwNzNeXjFeM3wyfDV8NHw3fDEwfDQyfDQzfDExXl5eNF4zXjEyXjEyXjJeMV4xXjBeMV4wXjFeNjQ0MjQ1OTA3NXq1/TdTTuiGs141oU0ocy2Wm1lV; s=CgADuAIRkg0RUMwZodHRwczovL3d3dy5lYmF5LmNvbS9zY2gvaS5odG1sP19mc3JwPTEmX2Zyb209UjQwJl9ua3c9aGVybWVzK2V2ZWx5bmUmX3NhY2F0PTAmTEhfU29sZD0xJnJ0PW5jJl9vYWE9MSZfZGNhdD0xNjkyOTEjaXRlbTUyOWQyODdjYjUHAPgAIGSDRFQ5YjkxZTFhZDE4ODBhNDRlMDFkMmMyZTNmZmY4MGJjZABW5tY*',
+# }
+#         url = f"/sch/ajax/refine?no_encode_refine_params=1&_fsrp=1&rt=nc&_from=R40&_nkw={brand_encoded}+{model_encoded}&_sacat=0&&_oaa=1&LH_Sold=1&_aspectname=aspect-Model&modules=SEARCH_REFINEMENTS_MODEL_V2%3Afa"
+#         conn.request("GET", url, headers=headers)
 
 
-        response = conn.getresponse()
-        response_content = response.read().decode()
-        data = json.loads(response_content)
-        # logging.info(curl_from_response(response, "GET", "https://www.ebay.com" + url, headers, ""))
+#         response = conn.getresponse()
+#         response_content = response.read().decode()
+#         data = json.loads(response_content)
+#         # logging.info(curl_from_response(response, "GET", "https://www.ebay.com" + url, headers, ""))
 
-        data = data['group'][0]
-        # logging.info("data: %s", data)
+#         data = data['group'][0]
+#         # logging.info("data: %s", data)
 
         
-        models = []
-        for group in data['entries']:
-            if 'fieldId' in group and group['fieldId'] == 'aspect-Model':
-                for entry in group['entries']:
-                    if entry['paramValue'] != '!':
-                        models.append(entry['label']['textSpans'][0]['text'])
+#         models = []
+#         for group in data['entries']:
+#             if 'fieldId' in group and group['fieldId'] == 'aspect-Model':
+#                 for entry in group['entries']:
+#                     if entry['paramValue'] != '!':
+#                         models.append(entry['label']['textSpans'][0]['text'])
 
-                logging.info(f"models: {models}")
+#                 logging.info(f"models: {models}")
 
 
 
-        logging.info(f"Retrieved {len(models)} models for {brand} {model}")
-        # Store the result in the cache, with an expiration time of 1 hour (3600 seconds)
-        r.set(query_key, json.dumps(models), ex=3600)
+#         logging.info(f"Retrieved {len(models)} models for {brand} {model}")
+#         # Store the result in the cache, with an expiration time of 1 hour (3600 seconds)
+#         r.set(query_key, json.dumps(models), ex=3600)
         
-        return models
-    except Exception as e:
-        logging.error("Exception occurred", exc_info=True)
+#         return models
+#     except Exception as e:
+#         logging.error("Exception occurred", exc_info=True)
+
+
+
 
 # Function to get sold products from vestiairecollective
 def get_sold_products(brand, model):
@@ -151,19 +154,70 @@ def get_sold_products(brand, model):
         offset = 0
         while True:
             data = {
-                "pagination": {"offset": offset, "limit": 100},
-                "fields": ["name", "description", "brand", "model", "country", "price", "discount", "link", "sold", "likes",
-                           "seller", "directShipping", "local", "pictures", "colors", "size", "stock", brand + " " + model],
-                "facets": {
-                    "fields": ["brand", "universe", "country", "stock", "color", "categoryLvl0", "priceRange", "price",
-                               "condition", "region", "watchMechanism", "discount", "sold", "localCountries",
-                               "sellerBadge", "isOfficialStore", "materialLvl0", "dealEligible"],
-                    "stats": ["price"]},
-                "q": f"{brand} {model}",
-                "sortBy": "relevance",
-                "filters": {"sold": ["1"]},
-                "locale": {"country": "FR", "currency": "EUR", "language": "en", "sizeType": "FR"}
-            }
+                    "pagination": {
+                        "offset": 0,
+                        "limit": 100
+                    },
+                    "fields": [
+                        "name",
+                        "description",
+                        "brand",
+                        "model",
+                        "condition",
+                        "country",
+                        "price",
+                        "discount",
+                        "link",
+                        "sold",
+                        "likes",
+                        "seller",
+                        "directShipping",
+                        "local",
+                        "pictures",
+                        "colors",
+                        "size",
+                        "stock"
+                    ],
+                    "facets": {
+                        "fields": [
+                        "brand",
+                        "universe",
+                        "color",
+                        "categoryLvl0",
+                        "priceRange",
+                        "price",
+                        "condition",
+                        "region",
+                        "watchMechanism",
+                        "discount",
+                        "sold",
+                        "sellerBadge",
+                        "materialLvl0"
+                        ],
+                        "stats": [
+                        "price"
+                        ]
+                    },
+                    "q": f"{brand} {model}",
+                    "sortBy": "relevance",
+                    "filters": {
+                        "catalogLinksWithoutLanguage": [
+                        "/women-bags/handbags/"
+                        ],
+                        "universe.id": [
+                        "1"
+                        ],
+                        "sold": [
+                        "0"
+                        ]
+                    },
+                    "locale": {
+                        "country": "FR",
+                        "currency": "EUR",
+                        "language": "en",
+                        "sizeType": "FR"
+                    }
+                    }
             conn.request("POST", url, body=json.dumps(data), headers=headers)
             response = conn.getresponse()
             data = json.loads(response.read().decode())
@@ -249,8 +303,8 @@ def get_product_details(product_id, retries=3):
 def main(brand, model):
     try:
         # Get models
-        logging.info(f"Getting models...")
-        models = get_models(brand, model)
+        # logging.info(f"Getting models...")
+        # models = get_models(brand, model)
         collection = db["handbags"]
 
         # Get sold products
