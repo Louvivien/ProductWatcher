@@ -140,17 +140,18 @@ def product_list():
 ## Load offers page
 @app.route('/product_detail/<brand>/<model>', methods=['GET'])
 def product_detail(brand, model):
-    cache_key = f'product_detail_{brand}_{model}'
-    page = cache.get(cache_key)
-    if page is None:
-        page = render_template('offers.html', brand=brand, model=model)
-        cache.set(cache_key, page, timeout=3600)  # Cache the page for 3600 seconds
-        is_cached = False
-    else:
-        is_cached = True
+    # cache_key = f'product_detail_{brand}_{model}'
+    # page = cache.get(cache_key)
+    # if page is None:
+    page = render_template('offers.html', brand=brand, model=model)
+    #     cache.set(cache_key, page, timeout=3600)  # Cache the page for 3600 seconds
+    #     is_cached = False
+    # else:
+    #     is_cached = True
     response = make_response(page)
-    response.headers['X-From-Cache'] = str(is_cached)
+    # response.headers['X-From-Cache'] = str(is_cached)
     return response
+
 
 # Load offers data 1
 @app.route('/product_detail/data/stockx/<brand>/<model>', methods=['GET'])
@@ -243,9 +244,8 @@ def get_color():
 # Load offers profits
 @app.route('/get_profit/<brand>/<model>/<path:color>/<buying_price>', methods=['GET'])
 def get_profit(brand, model, color, buying_price):
-    # print("get_profit route called")  
     brand = unidecode(unquote(brand))  
-    # print(f"Color: {color}")
+    color = unidecode(unquote(color))
     cache_key = f'profit_{brand}_{model}_{color}_{buying_price}'
     profit_data = cache.get(cache_key)
     is_cached = False
@@ -261,6 +261,7 @@ def get_profit(brand, model, color, buying_price):
             return jsonify({"error": str(e)}), 500
 
     return jsonify(profit_data, from_cache=is_cached)
+
     
 
 ################## Sell ##################

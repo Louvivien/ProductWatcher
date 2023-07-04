@@ -54,10 +54,12 @@ Price Watcher
             <thead>
                 <tr>
                     <th scope="col">Image</th>
-                    <th scope="col">Title</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Model Name</th>
                     <th scope="col">Color</th>
-                    <th scope="col">Average Price</th>
-                    <th scope="col">Sold</th>
+                    <th scope="col">Material</th>
+                    <th scope="col">Vintage</th>
+                    <th scope="col">Condition</th>
                     <th scope="col">Buying Price</th>
                     <th scope="col">Profit</th>
                     <th scope="col">Link</th>
@@ -66,24 +68,37 @@ Price Watcher
                     <th></th>
                     <th>
                         <div class="form-group">
-                            <input type="text" id="title-search" placeholder="Search Title">
+                            <input type="text" id="title-search" placeholder="Search Name">
+                        </div>
+                    </th>
+                    <th>
+                        <div class="form-group">
+                            <input type="text" id="model-search" placeholder="Search Model">
                         </div>
                     </th>
                     <th>
                         <div id="color-search"></div>
                     </th>
+
                     <th>
                         <div class="form-group">
-                            <input type="number" id="average-price-min-search" placeholder="Min">
-                        </div>
-                        -
-                        <div class="form-group">
-                            <input type="number" id="average-price-max-search" placeholder="Max">
+                            <input type="text" id="material-search" placeholder="Search Material">
                         </div>
                     </th>
+
                     <th>
-                        <div id="sold-search"></div>
+                        <div class="form-group">
+                            <input type="text" id="vintage-search" placeholder="Search Vintage">
+                        </div>
                     </th>
+
+                    <th>
+                        <div class="form-group">
+                            <input type="text" id="condition-search" placeholder="Search Condition">
+                        </div>
+                    </th>
+
+
                     <th>
                         <div class="form-group">
                             <input type="number" id="buying-price-min-search" placeholder="Min">
@@ -209,46 +224,36 @@ Price Watcher
         }
     });
 }
-
 function getProfit(brand, model, color, buyingPrice) {
     return new Promise((resolve, reject) => {
-        $j('#profit-calculation-status').text('Calculating profit...');
+        jQuery('#profit-calculation-status').text('Calculating profit...');
 
-        var url = '/get_profit/' + brand + '/' + model + '/' + color + '/' + buyingPrice;
-        $j.get(url, function(data) {
+        var url = '/get_profit/' + encodeURIComponent(brand) + '/' + encodeURIComponent(model) + '/' + encodeURIComponent(color) + '/' + buyingPrice;
+        jQuery.get(url, function(data) {
             console.log('Profit data for color ' + color + ':', data);
-            var profitColor = data['Profit - color'];
+            var profitColor = data['Profit - specific request - for the period'];
             var profitAll = data['Profit- all'];
             var minProfit;
 
             if (profitColor < 0 && profitAll < 0) {
-                // When both are negative, choose the one closer to 0
                 minProfit = Math.max(profitColor, profitAll);
             } else if ((profitColor > 0 && profitAll <= 0) || (profitColor <= 0 && profitAll > 0)) {
-                // When one is positive and the other is 0 or negative, choose the positive
                 minProfit = Math.max(profitColor, profitAll);
             } else if ((profitColor < 0 && profitAll == 0) || (profitColor == 0 && profitAll < 0)) {
-                // When one is negative and the other is 0, choose the negative
                 minProfit = Math.min(profitColor, profitAll);
             } else {
-                // When both are positive, choose the one closer to 0
                 minProfit = Math.min(profitColor, profitAll);
             }
-
-
 
             resolve(minProfit);
         }).fail(function(error) {
             console.log('Error getting profit:', error);
-
-            $j('#profit-calculation-status').text('');
-
-
-
+            jQuery('#profit-calculation-status').text('');
             reject(error);
         });
     });
 }
+
 
 
 var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', 'trainer', 'espadrille', 'mule', 'boot', 'sandal', 'bag charm', 'key ring', 'necklace', 'T-shirt', 'Sunglasses', 'scarf', 'Pendant', 'Jewellery', 'tie', 'skirt', 'flats', 'brooche', 'Earrings', 'cardigan', 'silver ring', 'Coat', 'Vest', 'Dress', 'shirt', 'phone charm', 'choker', 'Knitwear', 'camisole', 'Cashmere top', 'Kelly ring', 'handkerchief', 'Hat', 'stole', 'blazer', 'jumper'];
@@ -268,8 +273,8 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
             console.log('Color stockX:', color);      
             var retailPriceTrait = item['traits'].find(function(trait) { return trait['name'] == 'Retail Price'; });
             brand = item['brand'] || '';
-            averagePrice = item['market']['averageDeadstockPrice'] || '';
-            sold = Number(item['market']['deadstockSold']) || 0;
+            // averagePrice = item['market']['averageDeadstockPrice'] || '';
+            // sold = Number(item['market']['deadstockSold']) || 0;
             buyingPrice = item['market']['highestBid'] || item['market']['lowestAsk'] || (retailPriceTrait ? retailPriceTrait['value'] : '') || '';
             link = "https://stockx.com/fr-fr/" + (item['urlKey'] || '');
             title = (brand + " " + item.name || '');
@@ -284,8 +289,8 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
             color = item.colors.all.length > 0 ? item.colors.all[0].name : '';
             retailPrice = item.discount ? (item.discount.originalPrice.cents / 100).toFixed(0) : '';
             brand = item.brand.name || '';
-            averagePrice = '';
-            sold = item.sold ? 1 : 0;
+            // averagePrice = '';
+            // sold = item.sold ? 1 : 0;
             buyingPrice = (item.price.cents / 100).toFixed(0) || '';
             link = "https://fr.vestiairecollective.com" + (item.link || '');
             title = (brand + " " + item.name || '');
@@ -298,8 +303,8 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
             color = '';
             retailPrice = '';
             brand = item.brand || '';
-            averagePrice = '';
-            sold = item.sold ? 1 : 0;
+            // averagePrice = '';
+            // sold = item.sold ? 1 : 0;
             buyingPrice = item.price || '';
             link = item.link || '';
             title = (item.name || '');
@@ -360,9 +365,11 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
         row = '<tr>' +
         '<td><img src="' + picture_url + '"  style="width: 50px;"></td>' +
         '<td>' + (title || '') + '</td>' +
+        '<td>' + ("" || '') + '</td>' +
         '<td>' + (color || '') + '</td>' +
-        '<td>' + (averagePrice || '') + '</td>' +
-        '<td>' + (sold || '') + '</td>' +
+        '<td>' + ("" || '') + '</td>' +
+        '<td>' + ("" || '') + '</td>' +
+        '<td>' + ("" || '') + '</td>' +
         '<td>' + (buyingPrice + '€' || '') + '</td>' +
         '<td>' + (typeof profit !== 'undefined' ? '<span style="color: ' + (profit > 0 ? 'green' : 'red') + '">' + (profit > 0 ? '+' : '') + Number(profit).toFixed(0) + '€</span>' : 'NaN') + '</td>' +
         '<td><a href="' + link + '" class="btn btn-primary" target="_blank">Buy on ' + source + '</a></td>' +
@@ -374,34 +381,34 @@ var words = ['wallet', 'jacket', 'watch', 'pants', 'shoe', 'belt', 'bracelet', '
 
 
 
-    // Clear the sold checkboxes 
-$j('#sold-search').empty();
+//     // Clear the sold checkboxes 
+// $j('#sold-search').empty();
 
-// Populate the sold checkboxes 
-var soldValues = table.column(4).data().unique().toArray(); 
-soldValues = soldValues.filter(val => val !== ''); 
+// // Populate the sold checkboxes 
+// var soldValues = table.column(4).data().unique().toArray(); 
+// soldValues = soldValues.filter(val => val !== ''); 
 
-console.log('Unique sold values:', soldValues);
-soldValues.forEach(function (value) {
-  $j('#sold-search').append('<input type="checkbox" value="' + value.toString() + '">' + value.toString() + '<br>'); 
-});
+// console.log('Unique sold values:', soldValues);
+// soldValues.forEach(function (value) {
+//   $j('#sold-search').append('<input type="checkbox" value="' + value.toString() + '">' + value.toString() + '<br>'); 
+// });
 
-// Add a "Empty" checkbox that filters for empty values
-$j('#sold-search').append('<input type="checkbox" value="">0<br>');
+// // Add a "Empty" checkbox that filters for empty values
+// $j('#sold-search').append('<input type="checkbox" value="">0<br>');
 
-// Add event listener to the sold checkboxes 
-$j('#sold-search input').on('change', function () {
-  var search = $j('#sold-search input:checked').map(function () {
-    return Number(this.value); 
-  }).get().join('|');
-  search += '|0'; // Add 0 to the filter
+// // Add event listener to the sold checkboxes 
+// $j('#sold-search input').on('change', function () {
+//   var search = $j('#sold-search input:checked').map(function () {
+//     return Number(this.value); 
+//   }).get().join('|');
+//   search += '|0'; // Add 0 to the filter
   
-  if ($j('#sold-search input[value=""]').is(':checked')) {
-    search += '|'; // Also add empty string to filter 
-  }
+//   if ($j('#sold-search input[value=""]').is(':checked')) {
+//     search += '|'; // Also add empty string to filter 
+//   }
   
-  table.column(4).search(search, true, false).draw();
-});
+//   table.column(4).search(search, true, false).draw();
+// });
 
 
     // Clear the color checkboxes 
@@ -458,7 +465,7 @@ $j.fn.dataTable.ext.search.push(
         console.log('Parsed Max:', maxInt);
 
         // Get the buying price from the data for the current row and convert it to an integer
-        var buyingPrice = parseInt(data[5]) || 0;
+        var buyingPrice = parseInt(data[7]) || 0;
 
         console.log('Buying Price:', buyingPrice);
 
@@ -510,12 +517,12 @@ $j.fn.dataTable.ext.search.push(
         console.log('Parsed Min:', minInt);
         console.log('Parsed Max:', maxInt);
 
-        // Get the buying price from the data for the current row and convert it to an integer
-        var profitFilt = parseInt(data[6]) || 0;
+        // Get the profit from the data for the current row and convert it to an integer
+        var profitFilt = parseInt(data[8]) || 0;
 
         console.log('Profit:', profitFilt);
 
-        // If min is less than or equal to buying price and buying price is less than or equal to max, return true
+        // If min is less than or equal to profit and profit is less than or equal to max, return true
         // In all other cases, return false (hide the row)
         if (minInt <= profitFilt && profitFilt <= maxInt) {
             console.log('Row is shown');
@@ -537,6 +544,22 @@ $j(document).ready(function () {
 
 
         $j('#title-search').on('keyup', function () {
+            table.columns(1).search(this.value).draw();
+        });
+
+        $j('#model-search').on('keyup', function () {
+            table.columns(2).search(this.value).draw();
+        });
+
+        $j('#material-search').on('keyup', function () {
+            table.columns(4).search(this.value).draw();
+        });
+
+        $j('#vintage-search').on('keyup', function () {
+            table.columns(4).search(this.value).draw();
+        });
+
+        $j('#condition-search').on('keyup', function () {
             table.columns(1).search(this.value).draw();
         });
 
@@ -622,11 +645,11 @@ var intervalId = setInterval(function() {
 
 
 
-            $j('#average-price-min-search, #average-price-max-search').on('keyup', function () {
-                var min = $j('#average-price-min-search').val();
-                var max = $j('#average-price-max-search').val();
-                table.column(4).search(min + '|' + max, true, false).draw();
-            });
+            // $j('#average-price-min-search, #average-price-max-search').on('keyup', function () {
+            //     var min = $j('#average-price-min-search').val();
+            //     var max = $j('#average-price-max-search').val();
+            //     table.column(4).search(min + '|' + max, true, false).draw();
+            // });
 
 
 
