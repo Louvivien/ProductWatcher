@@ -80,6 +80,7 @@ Sales Stats
             { "data": "model" },
             { "data": "name" },
             { "data": "color" },
+            { "data": "material" }, 
             { 
                 "data": "price", 
                 "render": function (data, type, row) {
@@ -91,11 +92,13 @@ Sales Stats
             },
             { "data": "likes" },
             { "data": "timeToSell" },
+            { "data": "vintage" }, 
+            { "data": "condition" }, 
             {
                 "data": "link",
                 "render": function(data, type, row, meta){
                     if(type === 'display'){
-                        data = '<a href="' + data + '" class="btn btn-primary">Sell on VC</a>';
+                        data = '<a href="' + data + '" class="btn btn-primary">See on VC</a>';
                     }
                     return data;
                 }
@@ -121,8 +124,20 @@ Sales Stats
             table.columns(1).search(this.value).draw();
         });
 
+        $j('#material-search').on('keyup', function () {
+            table.columns(6).search(this.value).draw();
+        });
+
+        $j('#vintage-search').on('keyup', function () {
+            table.columns(10).search(this.value).draw();
+        });
+
+        $j('#condition-search').on('keyup', function () {
+            table.columns(11).search(this.value).draw();
+        });
+
         // Populate the color checkboxes
-        var colors = table.column(2).data().unique();
+        var colors = table.column(5).data().unique();
         colors.each(function (color) {
             $j('#color-search').append('<input type="checkbox" value="' + color + '">' + color + '<br>');
         });
@@ -132,9 +147,8 @@ Sales Stats
             var search = $j('#color-search input:checked').map(function () {
                 return this.value;
             }).get().join('|');
-            table.column(2).search(search, true, false).draw();
+            table.column(5).search(search, true, false).draw();
         });
-
 
 
     // Add event listener to the timeToSell range inputs
@@ -270,9 +284,12 @@ Sales Stats
                 <th>Model</th>
                 <th>Name</th>
                 <th>Color</th>
+                <th>Material</th>
                 <th>Price</th>
                 <th>Likes</th>
                 <th>Time to Sell</th>
+                <th>Vintage</th>
+                <th>Condition</th>
                 <th>Link</th>
 
             </tr>
@@ -307,6 +324,8 @@ Sales Stats
                         <input type="text" placeholder="Search Name">
                     </div>
                 </th>
+
+
                 
                 <th>
                     <div class="form-group" id="color-search">
@@ -314,8 +333,12 @@ Sales Stats
                             <input type="checkbox" value="{{ color }}">{{ color }}<br>
                         {% endfor %}
                     </div>
-                </th>
                 
+                <th>
+                    <div class="form-group" id="material-search">
+                        <input type="text" placeholder="Search Material">
+                    </div>
+                </th>
 
 
                 <th>
@@ -342,6 +365,19 @@ Sales Stats
                     </th>
 
 
+                    <th>
+                        <div class="form-group" id="vintage-search">
+                            <input type="text" placeholder="Search Vintage">
+                        </div>
+                    </th>
+
+                    <th>
+                        <div class="form-group" id="condition-search">
+                            <input type="text" placeholder="Search Condition">
+                        </div>
+                    </th>
+
+
                 <th>
                     <div id="link-search">
                         <input type="text" placeholder="Search Link">
@@ -362,13 +398,16 @@ Sales Stats
                         <td>{{ product.brand.name|default('') if 'brand' in product else '' }}</td>
                         <td>{{ product.model.name|default('') if 'model' in product else '' }}</td>
                         <td>{{ product.name|default('') }}</td>
-                        <td>{{ (product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else '')|default('') }}</td>
+                        <td>{{ product.color if 'color' in product else '' }}</td>
+                        <td>{{ product.material if 'material' in product else '' }}</td>
                         <td>{{ ('%.0f'|format(product.price.cents/100.0) if product.price and product.price.cents else 'N/A') }}€</td>
                         <td>{{ product.likes|default('') }}</td>
                         <td>{{ product.timeToSell|default('') }}</td>
+                        <td>{{ product.vintage if 'vintage' in product else '' }}</td>
+                        <td>{{ product.condition.label if 'condition' in product else '' }}</td>
                         <td>
                             {% if product.link %}
-                                <a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary" target="_blank">Sell on VC</a>
+                                <a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary" target="_blank">See on VC</a>
                             {% else %}
                                 <a href="#">""</a>
                             {% endif %}

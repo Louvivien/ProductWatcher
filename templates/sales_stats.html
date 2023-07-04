@@ -237,9 +237,12 @@ Sales Stats
                 <th>Product ID</th>
                 <th>Name</th>
                 <th>Color</th>
+                <th>Material</th>
                 <th>Price</th>
                 <th>Likes</th>
                 <th>Time to Sell</th>
+                <th>Vintage</th>
+                <th>Condition</th>
                 <th>Link</th>
             </tr>
             <tr>
@@ -260,6 +263,13 @@ Sales Stats
                     </div>
                 </th>
                 <th>
+                    <div class="form-group" id="material-search">
+                        <input type="text" placeholder="Search Material">
+                    </div>
+                </th>
+
+
+                <th>
                     <div class="form-group" id="price-search">
                         <input type="number" id="price-min" placeholder="Min Price">
                         <input type="number" id="price-max" placeholder="Max Price">
@@ -277,6 +287,21 @@ Sales Stats
                         <input type="number" id="timeToSell-max" placeholder="Max Time to Sell">
                     </div>
                 </th>
+
+
+                <th>
+                    <div class="form-group" id="vintage-search">
+                        <input type="text" placeholder="Search Vintage">
+                    </div>
+                </th>
+
+                <th>
+                    <div class="form-group" id="condition-search">
+                        <input type="text" placeholder="Search Condition">
+                    </div>
+                </th>
+
+
                 <th>
                     <div class="form-group" id="link-search">
                         <input type="text" placeholder="Search Link">
@@ -292,11 +317,14 @@ Sales Stats
                 <td><img data-src="{{ 'https://images.vestiairecollective.com/produit/' + product_id + '-1_3.jpg' }}" class="lazy" style="width: 50px"></td>
                 <td>{{ product.id }}</td>
                 <td>{{ product.name }}</td>
-                <td>{{ product.colors.all[0].name if product.colors and product.colors.all and product.colors.all[0].name else 'N/A' }}</td>
+                <td>{{ product.color if 'color' in product else '' }}</td>
+                <td>{{ product.material if 'material' in product else '' }}</td>
                 <td>{{ (product.price.cents/100)|int if product.price and product.price.cents else 'N/A' }}€</td>
                 <td>{{ product.likes }}</td>
                 <td>{{ product.timeToSell }}</td>
-                <td><a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary" target="_blank">Sell on VC</a></td>
+                <td>{{ product.vintage if 'vintage' in product else '' }}</td>
+                <td>{{ product.condition.label if 'condition' in product else '' }}</td>
+                <td><a href="{{ 'https://fr.vestiairecollective.com/' + product.link }}" class="btn btn-primary" target="_blank">See on VC</a></td>
             </tr>
             {% endfor %}
         </tbody>

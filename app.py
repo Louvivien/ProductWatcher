@@ -55,7 +55,7 @@ import atexit
 import logging
 
 log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+# log.setLevel(logging.ERROR)
 
 
 
@@ -286,10 +286,8 @@ def sales_stats_allmodels():
             all_products = list(collection.find().skip((page - 1) * per_page).limit(per_page))  # Get all products with pagination
 
             # Get all unique colors in the current collection
-            colors = collection.distinct('colors.all.name')
+            colors = collection.distinct('color')
             all_colors.update(colors)
-
-            sold_items = [item for item in all_products if item.get('sold')]
 
             all_stats.append({
                 'collection_name': collection_name,
@@ -297,7 +295,9 @@ def sales_stats_allmodels():
                 'currency': "EUR"
             })
         cache.set(cache_key, all_stats, timeout=36000)  # Cache the data for 36000 seconds
-
+        
+        
+        # print(colors)
     return render_template('sales_stats_allmodels.html', all_stats=all_stats, colors=all_colors, from_cache=is_cached)
 
 
@@ -386,20 +386,24 @@ def sales_stats_data():
 
         all_products = list(collection.find(query).sort(sort).skip((page - 1) * per_page).limit(per_page))
 
-        for product in all_products:
-            product_data = {
-                "image": 'https://images.vestiairecollective.com/produit/' + str(product.get('id', '')) + '-1_3.jpg',
-                "id": product.get('id', ''),
-                "brand": product.get('brand', {}).get('name', '') if 'brand' in product else '',
-                "model": product.get('model', {}).get('name', '') if 'model' in product else '',
-                "name": product.get('name', ''),
-                "color": product.get('colors', {}).get('all', [{}])[0].get('name', '') if product.get('colors') and product.get('colors').get('all') else '',
-                "price": product.get('price', {}).get('cents', 0)/100 if product.get('price') and product.get('price').get('cents') else '',
-                "likes": product.get('likes', ''),
-                "timeToSell": product.get('timeToSell', ''),
-                "link": 'https://fr.vestiairecollective.com/' + product.get('link', '') if product.get('link') else ''
-            }
-            all_products_data.append(product_data)
+    for product in all_products:
+        product_data = {
+            "image": 'https://images.vestiairecollective.com/produit/' + str(product.get('id', '')) + '-1_3.jpg',
+            "id": product.get('id', ''),
+            "brand": product.get('brand', {}).get('name', '') if 'brand' in product else '',
+            "model": product.get('model', {}).get('name', '') if 'model' in product else '',
+            "name": product.get('name', ''),
+            "color": product.get('color', ''),
+            "material": product.get('material', '') if 'material' in product else '',
+            "price": product.get('price', {}).get('cents', 0)/100 if product.get('price') and product.get('price').get('cents') else '',
+            "likes": product.get('likes', ''),
+            "timeToSell": product.get('timeToSell', ''),
+            "vintage": product.get('vintage', '') if 'vintage' in product else '',
+            "condition": product.get('condition', {}).get('label', '') if 'condition' in product else '',
+            "link": 'https://fr.vestiairecollective.com/' + product.get('link', '') if product.get('link') else ''
+        }
+        all_products_data.append(product_data)
+
 
 
     records_total = collection.count_documents({})
