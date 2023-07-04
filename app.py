@@ -52,14 +52,16 @@ from flask_caching import Cache
 
 import atexit
 
+import logging
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 
 
 
 # Define the list of products to watch
 from config import products
-
-
-
 
 
 # Load .env file
@@ -99,7 +101,7 @@ cache = Cache(app, config={
 })
 
 
-# scheduler.start()
+scheduler.start()
 
 
 
@@ -153,7 +155,7 @@ def product_detail(brand, model):
 # Load offers data 1
 @app.route('/product_detail/data/stockx/<brand>/<model>', methods=['GET'])
 def get_stockx_data(brand, model):
-    print("load stockx data")
+    # print("load stockx data")
     cache_key = f'stockx_data_{brand}_{model}'
     stockx_data = cache.get(cache_key)
     if stockx_data is None:
@@ -174,7 +176,7 @@ def get_stockx_data(brand, model):
 # Load offers data 2
 @app.route('/product_detail/data/vestiaire/<brand>/<model>', methods=['GET'])
 def get_vestiaire_data(brand, model):
-    print("load vestiaire data")
+    # print("load vestiaire data")
     is_cached = False
     cache_key = f'vestiaire_data_{brand}_{model}'
     vestiaire_data = cache.get(cache_key)
@@ -195,7 +197,7 @@ def get_vestiaire_data(brand, model):
 # Load offers data 3
 @app.route('/product_detail/data/original/<brand>/<model>', methods=['GET'])
 def get_original_data(brand, model):
-    print("load original data")
+    # print("load original data")
     is_cached = False
     cache_key = f'original_data_{brand}_{model}'
     original_data = cache.get(cache_key)
@@ -216,7 +218,7 @@ def get_original_data(brand, model):
  # Load offers colors
 @app.route('/get_image_color', methods=['POST'])
 def get_color():
-    print("get color")
+    # print("get color")
     from scripts.getcolor import get_image_color
     data = request.get_json()
     image_url = data.get('image_url')
@@ -241,10 +243,9 @@ def get_color():
 # Load offers profits
 @app.route('/get_profit/<brand>/<model>/<path:color>/<buying_price>', methods=['GET'])
 def get_profit(brand, model, color, buying_price):
-    print("get_profit route called")  
+    # print("get_profit route called")  
     brand = unidecode(unquote(brand))  
-    print("Logging color") 
-    print(f"Color: {color}")
+    # print(f"Color: {color}")
     cache_key = f'profit_{brand}_{model}_{color}_{buying_price}'
     profit_data = cache.get(cache_key)
     is_cached = False
@@ -525,7 +526,7 @@ def process_request(request_id, brand, model, color, buying_price, days):
         gc.collect()
 
         # Log the final status
-        print(f"Final status for request {request_id}: {status_dict[request_id]}")
+        # print(f"Final status for request {request_id}: {status_dict[request_id]}")
 
     except Exception as e:
         # If an error occurs, update the status to "Error" and store the error message

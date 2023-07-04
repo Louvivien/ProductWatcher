@@ -25,6 +25,7 @@ def call_root():
     response = requests.get(base_url)
     if response.status_code == 200:
         print(f"Uptime check page up and running")
+        
 def call_product_detail():
     global proxies_process
     # Acquire the lock before running the function

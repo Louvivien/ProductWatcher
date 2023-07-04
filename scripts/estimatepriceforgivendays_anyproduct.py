@@ -1,6 +1,8 @@
 # Improvements
 # recommended price all should take into account number of days
 # ideallly give all intermediate results for each parameters
+# log/print?
+
 
 
 
@@ -24,7 +26,7 @@ from bson import json_util
 root_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(root_dir)  
 dotenv_path = os.path.join(parent_dir, '.env')
-print(dotenv_path)
+# print(dotenv_path)
 load_dotenv(dotenv_path)
 
 # Set up logging
@@ -79,7 +81,7 @@ def closest_color(requested_color):
         min_colors[(rd + gd + bd)] = name
     return min_colors[min(min_colors.keys())]
 def estimate_price(brand, model, color=None, buying_price=None, days=None, material=None, condition=None, modelName=None, vintage=False):  
-    print(f"Parameters: brand={brand}, model={model}, color={color}, buying_price={buying_price}, days={days}, material={material}, condition={condition}, modelName={modelName}, vintage={vintage}")
+    # print(f"Parameters: brand={brand}, model={model}, color={color}, buying_price={buying_price}, days={days}, material={material}, condition={condition}, modelName={modelName}, vintage={vintage}")
 
     # Create a unique key for this query
     query_key = f"{brand}_{model}"
@@ -104,7 +106,7 @@ def estimate_price(brand, model, color=None, buying_price=None, days=None, mater
         filtered_prices = [price for price in same_brand_model_prices if lower_bound <= price <= upper_bound]     
         avg_price_same_brand_model = statistics.mean(filtered_prices) if filtered_prices else 0 
     else:
-        print("No prices found for the same brand and model. Setting related variables to 0.")
+        # print("No prices found for the same brand and model. Setting related variables to 0.")
         lower_bound = 0
         upper_bound = 0
         avg_price_same_brand_model = 0
@@ -125,7 +127,8 @@ def estimate_price(brand, model, color=None, buying_price=None, days=None, mater
                 closest_named_color = closest_color(requested_color)
                 additional_options["color"] = {"$regex": closest_named_color, "$options": "i"}
             except ValueError:
-                print(f"Color {color} not recognized. Ignoring color option.")
+                # print(f"Color {color} not recognized. Ignoring color option.")
+                print(f"")
     if material not in [None, ""]:
         additional_options["material"] = {"$regex": f"^{material}$", "$options": "i"}
     if condition not in [None, ""]:
@@ -152,7 +155,7 @@ def estimate_price(brand, model, color=None, buying_price=None, days=None, mater
         filtered_prices = [price for price in same_brand_model_request_for_period_prices if lower_bound <= price <= upper_bound]
         avg_price_same_brand_model_request_for_period = statistics.mean(filtered_prices) if filtered_prices else 0
     else:
-        print("No prices found for the same brand and model with the specific request for the period. Setting related variables to 0.")
+        # print("No prices found for the same brand and model with the specific request for the period. Setting related variables to 0.")
         lower_bound = 0
         upper_bound = 0
         avg_price_same_brand_model_request_for_period = 0
@@ -166,20 +169,19 @@ def estimate_price(brand, model, color=None, buying_price=None, days=None, mater
     else:
         profit_request = 0
 
-    print(f"Number of bags: {int(len(same_brand_model_general))}")
-    print(f"Average price: {int(round(avg_price_same_brand_model_general))}€")
-    print(f"Average price - for the period: {int(round(avg_price_same_brand_model))}€")
-    print(f"Recommended price - all: {int(round(rec_price_all))}€")
-    print(f"Profit- all: {int(round(profit_all))}€")
-    print(f"")
+    # print(f"Number of bags: {int(len(same_brand_model_general))}")
+    # print(f"Average price: {int(round(avg_price_same_brand_model_general))}€")
+    # print(f"Average price - for the period: {int(round(avg_price_same_brand_model))}€")
+    # print(f"Recommended price - all: {int(round(rec_price_all))}€")
+    # print(f"Profit- all: {int(round(profit_all))}€")
+    # print(f"")
 
-    # print(f"Number of bags - specific request: {int(len(same_brand_model_request_general))}")
-    # print(f"Average price - specific request: {int(round(avg_price_same_brand_model_request))}€")
-    print(f"Number of bags - specific request - for the period: {int(len(same_brand_model_request_for_period))}")
-    print(f"Average price - specific request - for the period: {int(round(avg_price_same_brand_model_request_for_period))}€")
-    print(f"Recommended price - specific request: {int(round(rec_price_request))}€")
-    print(f"Profit - specific request: {int(round(profit_request))}€")
-    print(f"")
+
+    # print(f"Number of bags - specific request - for the period: {int(len(same_brand_model_request_for_period))}")
+    # print(f"Average price - specific request - for the period: {int(round(avg_price_same_brand_model_request_for_period))}€")
+    # print(f"Recommended price - specific request: {int(round(rec_price_request))}€")
+    # print(f"Profit - specific request: {int(round(profit_request))}€")
+    # print(f"")
 
     result = {        
         "Number of bags": int(len(same_brand_model_general)),        
@@ -187,9 +189,7 @@ def estimate_price(brand, model, color=None, buying_price=None, days=None, mater
         "Average price - for the period": int(round(avg_price_same_brand_model)),     
         "Recommended price - all": int(round(rec_price_all)),        
         "Profit- all": int(round(profit_all)),
-        # "Number of bags - specific request": int(len(same_brand_model_request_general)),                      
         "Number of bags - specific request - for the period": int(len(same_brand_model_request_for_period)),
-        # "Average price - specific request": int(round(avg_price_same_brand_model_request)), 
         "Average price - specific request - for the period": int(round(avg_price_same_brand_model_request_for_period)), 
         "Recommended price - specific request - for the period": int(round(rec_price_request)),        
         "Profit - specific request - for the period": int(round(profit_request)), 

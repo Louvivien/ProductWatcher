@@ -1,3 +1,7 @@
+# Improvements
+# load list of products dynamically
+
+
 import requests
 import random
 import time
@@ -53,12 +57,12 @@ def find_working_proxy(proxies):
         try:
             response = requests.get(url, proxies={"http": proxy, "https": proxy}, timeout=30)
             if response.status_code == 200:
-                print(f"Found working proxy: {proxy}")
+                # print(f"Found working proxy: {proxy}")
                 return proxy
         except Exception as e:
-            print(f"Error with proxy {proxy}: {e}")
-            print(f"")
-            
+            # print(f"Error with proxy {proxy}: {e}")
+            # print(f"")
+            return None
     print("No working proxy found")
     return None
 
@@ -88,7 +92,7 @@ def search_stockx(product, proxy):
     try:
         response = requests.get('https://stockx.com/api/browse?_search=' +  product_name, headers=headers, proxies=proxies, timeout=10)
         if "captcha-error" in response.text or "<h1>Access Denied</h1>" in response.text or "Enable JavaScript and cookies" in response.text:
-            print(f"Proxy {proxy} failed to bypass Cloudflare. Adding to blacklist.")
+            # print(f"Proxy {proxy} failed to bypass Cloudflare. Adding to blacklist.")
             with open(blacklist_file, "a") as file:
                 file.write(proxy + "\n")
             return False
@@ -97,8 +101,8 @@ def search_stockx(product, proxy):
             print(f"")
             return True
     except Exception as e:
-        print(f"Error with proxy {proxy}: {e}")
-        print(f"")
+        # print(f"Error with proxy {proxy}: {e}")
+        # print(f"")
         if "Failed to establish a new connection" in str(e):
             return None  # Return None if this specific error occurs
         return False
@@ -109,8 +113,8 @@ def check_working_proxies():
             working_proxies = [proxy.strip() for proxy in file.readlines()]
         for proxy in working_proxies:
             if not search_stockx(random.choice(products), proxy):
-                print(f"Removing non-working proxy: {proxy}")
-                print(f"")
+                # print(f"Removing non-working proxy: {proxy}")
+                # print(f"")
                 working_proxies.remove(proxy)
         with open(working_proxies_file, "w") as file:
             for proxy in working_proxies:
@@ -138,8 +142,8 @@ def main():
             with open(blacklist_file, "r") as file:
                 blacklist = file.readlines()
             if proxy + "\n" in blacklist:
-                print(f"Skipping blacklisted proxy: {proxy}")
-                print(f"")
+                # print(f"Skipping blacklisted proxy: {proxy}")
+                # print(f"")
                 continue
             with open(working_proxies_file, "r") as file:
                 working_proxies = file.readlines()
