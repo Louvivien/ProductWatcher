@@ -99,7 +99,7 @@ cache = Cache(app, config={
 })
 
 
-scheduler.start()
+# scheduler.start()
 
 
 
@@ -413,7 +413,7 @@ def sales_stats_data():
 
     return jsonify(response)
 
-################## Estimate once ##################
+################## Estimate Prices ##################
 
 ## Estimate Price page
 @app.route('/estimate_price/', methods=['GET'])
@@ -532,18 +532,30 @@ def process_request(request_id, brand, model, color, buying_price, days):
         status_dict[request_id] = {"status": "Error", "error": str(e)}
         print(f"Error occurred for request {request_id}: {e}")
         
+from flask import request
+
 # Estimate Price route 
-@app.route('/estimate_price/<brand>/<model>/<color>/<buying_price>/<days>', methods=['GET'])
+@app.route('/estimate_price/<brand>/<model>/<color>/<buying_price>/<days>', methods=['POST'])
 def estimate(brand, model, color, buying_price, days):
     # Convert the buying_price and days to int as they are passed as strings in the URL
     buying_price = int(buying_price)
     days = int(days)
 
+    # Get the data from the request body
+    data = request.get_json()
+
+    # Extract the parameters from the data
+    modelName = data.get('modelName')
+    material = data.get('material')
+    condition = data.get('condition')
+    vintage = data.get('vintage') == 'true'
+
     # Call the function from your script and get the result
-    result = estimate_price(brand, model, color, buying_price, days)
+    result = estimate_price(brand, model, color, buying_price, days, material, condition, modelName, vintage)
 
     # Return the result as JSON
     return jsonify(result)
+
 
 
 

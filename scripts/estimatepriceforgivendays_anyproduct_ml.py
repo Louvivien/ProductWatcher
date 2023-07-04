@@ -1,3 +1,8 @@
+# Improvements
+# should work with none
+# should take into account 9 parameters
+
+
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os

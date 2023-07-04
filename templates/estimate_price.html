@@ -29,19 +29,36 @@ Estimate Price
 
     <form id="estimate-form">
         <div class="form-group">
-            <input type="text" id="brand" placeholder="Brand" required class="form-control">
+            <input type="text" id="brand" placeholder="Brand*" required class="form-control">
         </div>
         <div class="form-group">
-            <input type="text" id="model" placeholder="Model" required class="form-control">
+            <input type="text" id="model" placeholder="Model*" required class="form-control">
         </div>
         <div class="form-group">
-            <input type="text" id="color" placeholder="Color" required class="form-control">
+            <input type="text" id="modelName" placeholder="Model Name" class="form-control">
         </div>
         <div class="form-group">
-            <input type="number" id="buying_price" placeholder="Buying Price" required class="form-control">
+            <input type="text" id="color" placeholder="Color (None if empty)" class="form-control">
         </div>
         <div class="form-group">
-            <input type="number" id="days" placeholder="Days" required class="form-control">
+            <input type="number" id="buying_price" placeholder="Buying Price*" required class="form-control">
+        </div>
+        <div class="form-group">
+            <input type="number" id="days" placeholder="Days*" required class="form-control">
+        </div>
+        <div class="form-group">
+            <input type="text" id="material" placeholder="Material" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>Condition:</label><br>
+            <input type="checkbox" id="condition1" value="Never worn, with tag"> Never worn, with tag<br>
+            <input type="checkbox" id="condition2" value="Never worn"> Never worn<br>
+            <input type="checkbox" id="condition3" value="Very good condition"> Very good condition<br>
+            <input type="checkbox" id="condition4" value="Good condition"> Good condition<br>
+            <input type="checkbox" id="condition5" value="Fair condition"> Fair condition<br>
+        </div>
+        <div class="form-group">
+            <input type="checkbox" id="vintage" value="vintage"> Vintage <i>(Item that is at least 15 years old.)</i><br>
         </div>
         <br></br>
         <div class="form-group">
@@ -69,7 +86,11 @@ var loader = document.getElementById('loader');
 function estimatePriceML() {
     var brand = document.getElementById('brand').value;
     var model = document.getElementById('model').value;
-    var color = document.getElementById('color').value;
+    var modelName = document.getElementById('modelName').value;
+    var color = document.getElementById('color').value || "None";
+    var material = document.getElementById('material').value;
+    var condition = getCondition();
+    var vintage = document.getElementById('vintage').checked ? "true" : "false";
     var buying_price = document.getElementById('buying_price').value;
     var days = document.getElementById('days').value;
 
@@ -123,16 +144,44 @@ function checkStatus(requestId, retryCount = 0) {
     });
 }
 
+function getCondition() {
+    var conditions = ["condition1", "condition2", "condition3", "condition4", "condition5"];
+    var selectedConditions = [];
+    conditions.forEach(function(conditionId) {
+        var conditionElement = document.getElementById(conditionId);
+        if (conditionElement.checked) {
+            selectedConditions.push(conditionElement.value);
+        }
+    });
+    return selectedConditions.join(", ");
+}
+
+
 function estimatePrice() {
     var brand = document.getElementById('brand').value;
     var model = document.getElementById('model').value;
-    var color = document.getElementById('color').value;
+    var modelName = document.getElementById('modelName').value;
+    var color = document.getElementById('color').value || "None";
+    var material = document.getElementById('material').value;
+    var condition = getCondition();
+    var vintage = document.getElementById('vintage').checked ? "true" : "false";
     var buying_price = document.getElementById('buying_price').value;
     var days = document.getElementById('days').value;
 
     loader.style.display = 'block';
 
-    fetch('/estimate_price/' + brand + '/' + model + '/' + color + '/' + buying_price + '/' + days)
+    fetch('/estimate_price/' + brand + '/' + model + '/' + color + '/' + buying_price + '/' + days, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            modelName: modelName,
+            material: material,
+            condition: condition,
+            vintage: vintage
+        }),
+    })
     .then(response => {
         if (!response.ok) {
             throw new Error('HTTP error ' + response.status);
@@ -148,6 +197,7 @@ function estimatePrice() {
         console.error('Error:', error);
     });
 }
+
 
 
 
@@ -192,13 +242,12 @@ function displayResults(data) {
                 </div>
                 <div class="card-body">
                     <p>Number of bags: ${data["Number of bags"]}</p>
-                    <p>Number of bags - color: ${data["Number of bags - color"]}</p>
+                    <p>Number of bags - specific request - for the period: ${data["Number of bags - specific request - for the period"]}</p>
                     <p>Average price: ${Math.round(data["Average price"])} €</p>
-                    <p>Average price - color: ${Math.round(data["Average price - color"])} €</p>
                     <p>Average price (within time limit): ${Math.round(data["Average price - for the period"])} €</p>
-                    <p>Average price - color (within time limit): ${Math.round(data["Average price - color - for the period"])} €</p>
-                    <p>Recommended price - all is ${Math.round(data["Recommended price - all"])} € for a profit of ${Math.round(data["Profit- all"])} €</p>
-                    <p>Recommended price - color is ${Math.round(data["Recommended price - color"])} € for a profit of ${Math.round(data["Profit - color"])} €</p>
+                    <p>Average price - specific request (within time limit): ${Math.round(data["Average price - specific request - for the period"])} €</p>
+                    <p>Recommended price - all: ${Math.round(data["Recommended price - all"])} € for a profit of ${Math.round(data["Profit- all"])} €</p>
+                    <p>Recommended price - specific request (within time limit): ${Math.round(data["Recommended price - specific request - for the period"])} € for a profit of ${Math.round(data["Profit - specific request - for the period"])} €</p>
                 </div>
             </div>
             <br></br>
